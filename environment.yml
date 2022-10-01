@@ -1,0 +1,41 @@
+name: tranquilo_dev
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - python ==3.9
+  - pip
+
+  # Dependencies
+  - pandas
+  - numpy
+  - scipy
+  - jupyterlab
+  - ipython
+  - seaborn
+  - estimagic >=0.4.0
+
+  # Misc Start
+  - setuptools_scm
+  - toml
+  - pytask >=0.2.3
+  - black
+  - nb_black
+  - pre-commit
+  - pdbpp
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  - tox-conda
+  - conda-lock
+  # Misc End
+
+  - pip:
+    - black
+    - blackcellmagic
+    - kaleido
+
+    # Install project
+    - -e .
