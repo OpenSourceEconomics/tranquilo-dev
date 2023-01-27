@@ -1,11 +1,11 @@
-name: tranquilo_dev
+name: tranquilo-dev
 
 channels:
   - conda-forge
   - nodefaults
 
 dependencies:
-  - python ==3.9
+  - python ==3.10
   - pip
 
   # Dependencies
@@ -15,7 +15,16 @@ dependencies:
   - jupyterlab
   - ipython
   - seaborn
-  - estimagic >=0.4.0
+  - plotly
+  - bokeh
+  - sqlalchemy
+  - numba
+  - joblib
+  - nlopt
+  - click
+  - cloudpickle
+  - fuzzywuzzy
+  - pybaum
 
   # Misc Start
   - setuptools_scm
@@ -28,8 +37,6 @@ dependencies:
   - pytest
   - pytest-cov
   - pytest-xdist
-  - tox-conda
-  - conda-lock
   # Misc End
 
   - pip:
@@ -37,5 +44,9 @@ dependencies:
     - blackcellmagic
     - kaleido
 
-    # Install project
+    # local installations
     - -e .
+    - -e ../estimagic
+    - -e ../dfols
+    - -e ../pybobyqa
+

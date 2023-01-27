@@ -12,8 +12,8 @@ src_figures = [
 
 bld_figures = []
 
-src_figures = [SRC.joinpath("figures", f) for f in src_figures]
-bld_figures = [BLD.joinpath("figures", f) for f in bld_figures]
+src_figures = [SRC / "presentation" / "figures" / f for f in src_figures]
+bld_figures = [BLD / "presentation" / "figures" / f for f in bld_figures]
 
 dependencies = {f.name: f for f in src_figures + bld_figures}
 

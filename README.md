@@ -2,10 +2,20 @@
 
 ## Getting Started
 
-Get started by installing the conda environment.
+Get started by installing the conda environment. The conda environment will contain
+local installations of estimagic, dfols and pybobyqa. We thus need the following
+directory structure:
+
+- some_parent_folder
+  - estimagic (git clone https://github.com/OpenSourceEconomics/estimagic.git)
+  - tranquilo-dev
+  - dfols (git clone https://github.com/mpetrosian/dfols.git)
+  - pybobyqa (git clone https://github.com/mpetrosian/pybobyqa.git)
+
+
 
 ```bash
-cd /path/to/project_root
+cd /path/to/tranquilo-dev
 conda env create -f environment.yml
 conda activate tranquilo_dev
 ```
