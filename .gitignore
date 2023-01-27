@@ -160,3 +160,5 @@ dist
 .pytask
 _version.py
 pdfs
+
+sandbox/
