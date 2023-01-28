@@ -8,10 +8,10 @@ BLD = ROOT.joinpath("bld").resolve()
 PUBLIC = BLD.joinpath("public").resolve()
 
 
-N_CORES = 8
+N_CORES = 10
 
 PROBLEM_SETS = {
-    "mw_standard": {
+    "mw": {
         "name": "more_wild",
         "exclude": "brown_almost_linear_medium",
     },
@@ -29,15 +29,49 @@ COMPETITION = {
 
 
 PLOT_CONFIG = {
+    "competition_scalar": {
+        "problem_name": "mw",
+        "scenarios": [
+            "tranquilo_default",
+            "tranquilo_experimental",
+            "nag_bobyqa",
+            "nlopt_bobyqa",
+        ],
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "competition_ls": {
+        "problem_name": "mw",
+        "scenarios": ["tranquilo_ls_default", "tranquilo_ls_experimental", "nag_dfols"],
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "internal_scalar": {
+        "problem_name": "mw",
+        "scenarios": ["tranquilo_default", "tranquilo_experimental"],
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "internal_ls": {
+        "problem_name": "mw",
+        "scenarios": ["tranquilo_ls_default", "tranquilo_ls_experimental"],
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
     "baseline_scalar": {
-        "problem_name": "mw_standard",
-        "scenarios": ["tranquilo_default", "nag_bobyqa", "nlopt_bobyqa"],
+        "problem_name": "mw",
+        "scenarios": [
+            "tranquilo_baseline",
+            "tranquilo_default",
+            "tranquilo_experimental",
+            "nlopt_bobyqa",
+        ],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "baseline_ls": {
-        "problem_name": "mw_standard",
-        "scenarios": ["tranquilo_ls_default", "nag_dfols", "pounders"],
+        "problem_name": "mw",
+        "scenarios": ["tranquilo_ls_baseline", "tranquilo_ls_default", "nag_dfols"],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
@@ -47,7 +81,7 @@ PLOT_CONFIG = {
 TRANQUILO_BASE_OPTIONS = {
     "algo_options": {
         "disable_convergence": True,
-        "stopping.max_iteratios": 150,
+        "stopping.max_iterations": 200,
         "silence_experimental_warning": True,
     },
 }
