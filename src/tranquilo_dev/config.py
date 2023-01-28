@@ -28,23 +28,26 @@ COMPETITION = {
 }
 
 
-PROFILE_PLOTS = {
-    "mw_standard_tranquilo_vs_nag": {
+PLOT_CONFIG = {
+    "baseline_scalar": {
         "problem_name": "mw_standard",
-        "scenarios": ["nag_dfols", "nag_bobyqa", "tranquilo_default"],
-        "y_precision": 1e-3,
-        "normalize_runtime": True,
+        "scenarios": ["tranquilo_default", "nag_bobyqa", "nlopt_bobyqa"],
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "baseline_ls": {
+        "problem_name": "mw_standard",
+        "scenarios": ["tranquilo_ls_default", "nag_dfols", "pounders"],
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
     },
 }
 
 
 TRANQUILO_BASE_OPTIONS = {
-    "algorithm": "tranquilo",
     "algo_options": {
         "disable_convergence": True,
         "stopping.max_iteratios": 150,
         "silence_experimental_warning": True,
     },
 }
-
-__all__ = ["BLD", "PUBLIC", "SRC", "ROOT"]
