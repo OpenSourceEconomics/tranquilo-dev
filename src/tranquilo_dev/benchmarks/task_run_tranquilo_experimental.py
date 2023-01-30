@@ -15,7 +15,7 @@ for functype in ["scalar", "ls"]:
 
     if functype == "scalar":
         algorithm = "tranquilo"
-        radius_factor = 1.5
+        radius_factor = 1.0
         sample_filter = "clustering"
     else:
         algorithm = "tranquilo_ls"
@@ -42,7 +42,7 @@ for functype in ["scalar", "ls"]:
 
         @pytask.mark.produces(OUT / f"{problem_name}_{scenario_name}.pkl")
         @pytask.mark.task(id=name)
-        def task_run_tranquilo_default(
+        def task_run_tranquilo_experiental(
             produces,
             scenario_name=scenario_name,
             optimize_options=optimize_options,
