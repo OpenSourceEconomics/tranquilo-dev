@@ -2,7 +2,6 @@ from copy import deepcopy
 
 import estimagic as em
 import pytask
-from estimagic.optimization.tranquilo.options import HistorySearchOptions
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import N_CORES
 from tranquilo_dev.config import PROBLEM_SETS
@@ -15,14 +14,8 @@ for functype in ["scalar", "ls"]:
 
     if functype == "scalar":
         algorithm = "tranquilo"
-        radius_factor = 1.0
-        sample_filter = "clustering"
     else:
         algorithm = "tranquilo_ls"
-        radius_factor = 1.5
-        sample_filter = "keep_all"
-
-    search_options = HistorySearchOptions(radius_factor=radius_factor)
 
     scenario_name = f"{algorithm}_experimental"
 
@@ -32,8 +25,7 @@ for functype in ["scalar", "ls"]:
 
         optimize_options["algo_options"] = {
             **optimize_options["algo_options"],
-            "sample_filter": sample_filter,
-            "history_search_options": search_options,
+            "filter_options": {"strictness": 1e-6},
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)

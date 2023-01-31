@@ -71,7 +71,12 @@ PLOT_CONFIG = {
     },
     "baseline_ls": {
         "problem_name": "mw",
-        "scenarios": ["tranquilo_ls_baseline", "tranquilo_ls_default", "nag_dfols"],
+        "scenarios": [
+            "tranquilo_ls_baseline",
+            "tranquilo_ls_default",
+            "tranquilo_ls_experimental",
+            "nag_dfols",
+        ],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
