@@ -44,6 +44,7 @@ for functype in ["scalar", "ls"]:
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
+                max_criterion_evaluations=5_000,
             )
 
             em.utilities.to_pickle(res, produces)

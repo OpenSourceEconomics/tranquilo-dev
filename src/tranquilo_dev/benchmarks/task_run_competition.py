@@ -27,6 +27,8 @@ for problem_name, problem_kwargs in PROBLEM_SETS.items():
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
+                max_criterion_evaluations=5_000,
+                disable_convergence=True,
             )
 
             pd.to_pickle(res, produces)
