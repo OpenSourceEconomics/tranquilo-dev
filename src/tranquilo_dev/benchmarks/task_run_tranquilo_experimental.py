@@ -25,7 +25,7 @@ for functype in ["scalar", "ls"]:
 
         optimize_options["algo_options"] = {
             **optimize_options["algo_options"],
-            "filter_options": {"strictness": 1e-6},
+            "noisy": True,
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)

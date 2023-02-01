@@ -14,14 +14,35 @@ PROBLEM_SETS = {
     "mw": {
         "name": "more_wild",
         "exclude": "brown_almost_linear_medium",
-    },
+        "additive_noise": True,
+        "additive_noise_options": {"distribution": "normal", "std": 0.1},
+        "seed": 925408,
+    }
 }
+
+
+def _n_evals(*args, **kwargs):  # noqa: U100
+    return 5
 
 
 COMPETITION = {
     "nlopt_bobyqa": {"algorithm": "nlopt_bobyqa"},
     "nag_bobyqa": {"algorithm": "nag_pybobyqa"},
+    "nag_bobyqa_noisy": {
+        "algorithm": "nag_dfols",
+        "algo_options": {
+            "noise_additive_level": 0.1,
+            "noise_n_evals_per_point": _n_evals,
+        },
+    },
     "nag_dfols": {"algorithm": "nag_dfols"},
+    "nag_dfols_noisy": {
+        "algorithm": "nag_dfols",
+        "algo_options": {
+            "noise_additive_level": 0.1,
+            "noise_n_evals_per_point": _n_evals,
+        },
+    },
     "pounders": {"algorithm": "pounders"},
     "nlopt_neldermead": {"algorithm": "nlopt_neldermead"},
     "scipy_neldermead": {"algorithm": "scipy_neldermead"},
@@ -35,14 +56,19 @@ PLOT_CONFIG = {
             "tranquilo_default",
             "tranquilo_experimental",
             "nag_bobyqa",
-            "nlopt_bobyqa",
+            "nag_bobyqa_noisy",
         ],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "competition_ls": {
         "problem_name": "mw",
-        "scenarios": ["tranquilo_ls_default", "tranquilo_ls_experimental", "nag_dfols"],
+        "scenarios": [
+            "tranquilo_ls_default",
+            "tranquilo_ls_experimental",
+            "nag_dfols",
+            "nag_dfols_noisy",
+        ],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
