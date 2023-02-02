@@ -26,6 +26,7 @@ for functype in ["scalar", "ls"]:
         optimize_options["algo_options"] = {
             **optimize_options["algo_options"],
             "noisy": True,
+            "sample_size_factor": 3,
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)
@@ -44,7 +45,7 @@ for functype in ["scalar", "ls"]:
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
-                max_criterion_evaluations=5_000,
+                max_criterion_evaluations=2_000,
             )
 
             em.utilities.to_pickle(res, produces)
