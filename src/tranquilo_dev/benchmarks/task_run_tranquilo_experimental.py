@@ -6,6 +6,7 @@ from tranquilo_dev.config import BLD
 from tranquilo_dev.config import N_CORES
 from tranquilo_dev.config import PROBLEM_SETS
 from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
+from estimagic.optimization.tranquilo.options import StagnationOptions, HistorySearchOptions, RadiusOptions
 
 
 OUT = BLD / "benchmarks"
@@ -25,8 +26,24 @@ for functype in ["scalar", "ls"]:
 
         optimize_options["algo_options"] = {
             **optimize_options["algo_options"],
-            "noisy": True,
-            "sample_size_factor": 3,
+            # "noisy": True,
+            # "sample_size_factor": 3,
+            # "surrogate_model": "diagonal" if functype == "scalar" else None,
+            # "fitter": "tranquilo" if functype == "scalar" else "ols",
+            "stagnation_options": StagnationOptions(
+                drop=True,
+                max_trials=5,
+                min_relative_step=0.025,
+            ),
+            "sample_filter": "keep_inside",
+            "history_search_options": HistorySearchOptions(
+                radius_factor=2 if functype == "scalar" else 5,
+                radius_type="inscribed",
+            ),
+            "experimental": True,
+            "radius_options": RadiusOptions(
+                min_radius=1e-8,
+            )
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)
@@ -45,7 +62,7 @@ for functype in ["scalar", "ls"]:
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
-                max_criterion_evaluations=2_000,
+                max_criterion_evaluations=3_000,
             )
 
             em.utilities.to_pickle(res, produces)

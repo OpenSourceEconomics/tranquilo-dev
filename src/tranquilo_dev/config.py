@@ -14,10 +14,14 @@ PROBLEM_SETS = {
     "mw": {
         "name": "more_wild",
         "exclude": "brown_almost_linear_medium",
-        "additive_noise": True,
-        "additive_noise_options": {"distribution": "normal", "std": 0.1},
-        "seed": 925408,
-    }
+    },
+    # "mw_noisy": {
+    #     "name": "more_wild",
+    #     "exclude": "brown_almost_linear_medium",
+    #     "additive_noise": True,
+    #     "additive_noise_options": {"distribution": "normal", "std": 0.1},
+    #     "seed": 925408,
+    # },
 }
 
 
@@ -53,9 +57,9 @@ PLOT_CONFIG = {
             "tranquilo_default",
             "tranquilo_experimental",
             "nag_bobyqa",
-            "nag_bobyqa_noisy",
+            # "nag_bobyqa_noisy",
         ],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "competition_ls": {
@@ -64,21 +68,21 @@ PLOT_CONFIG = {
             "tranquilo_ls_default",
             "tranquilo_ls_experimental",
             "nag_dfols",
-            "nag_dfols_noisy",
+            # "nag_dfols_noisy",
         ],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "internal_scalar": {
         "problem_name": "mw",
         "scenarios": ["tranquilo_default", "tranquilo_experimental"],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "internal_ls": {
         "problem_name": "mw",
         "scenarios": ["tranquilo_ls_default", "tranquilo_ls_experimental"],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "baseline_scalar": {
@@ -89,7 +93,7 @@ PLOT_CONFIG = {
             "tranquilo_experimental",
             "nlopt_bobyqa",
         ],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "baseline_ls": {
@@ -100,9 +104,65 @@ PLOT_CONFIG = {
             "tranquilo_ls_experimental",
             "nag_dfols",
         ],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
+    # "competition_scalar_noisy": {
+    #     "problem_name": "mw_noisy",
+    #     "scenarios": [
+    #         "tranquilo_default",
+    #         "tranquilo_experimental",
+    #         "nag_bobyqa",
+    #         "nag_bobyqa_noisy",
+    #     ],
+    #     "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
+    # "competition_ls_noisy": {
+    #     "problem_name": "mw_noisy",
+    #     "scenarios": [
+    #         "tranquilo_ls_default",
+    #         "tranquilo_ls_experimental",
+    #         "nag_dfols",
+    #         "nag_dfols_noisy",
+    #     ],
+    #     "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
+    # "internal_scalar_noisy": {
+    #     "problem_name": "mw_noisy",
+    #     "scenarios": ["tranquilo_default", "tranquilo_experimental"],
+    #     "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
+    # "internal_ls_noisy": {
+    #     "problem_name": "mw_noisy",
+    #     "scenarios": ["tranquilo_ls_default", "tranquilo_ls_experimental"],
+    #     "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
+    # "baseline_scalar_noisy": {
+    #     "problem_name": "mw_noisy",
+    #     "scenarios": [
+    #         "tranquilo_baseline",
+    #         "tranquilo_default",
+    #         "tranquilo_experimental",
+    #         "nlopt_bobyqa",
+    #     ],
+    #     "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
+    # "baseline_ls_noisy": {
+    #     "problem_name": "mw_noisy",
+    #     "scenarios": [
+    #         "tranquilo_ls_baseline",
+    #         "tranquilo_ls_default",
+    #         "tranquilo_ls_experimental",
+    #         "nag_dfols",
+    #     ],
+    #     "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
 }
 
 

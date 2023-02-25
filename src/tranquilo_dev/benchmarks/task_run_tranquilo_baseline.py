@@ -21,7 +21,6 @@ for functype in ["scalar", "ls"]:
     search_options = HistorySearchOptions(
         radius_factor=1.0,
         radius_type="inscribed",
-        shape="cube",
     )
 
     scenario_name = f"{algorithm}_baseline"
@@ -53,6 +52,7 @@ for functype in ["scalar", "ls"]:
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
+                max_criterion_evaluations=3_000,
             )
 
             em.utilities.to_pickle(res, produces)
