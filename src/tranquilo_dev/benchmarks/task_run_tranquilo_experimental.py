@@ -35,15 +35,16 @@ for functype in ["scalar", "ls"]:
                 max_trials=5,
                 min_relative_step=0.025,
             ),
-            "sample_filter": "keep_inside",
             "history_search_options": HistorySearchOptions(
-                radius_factor=2 if functype == "scalar" else 5,
+                radius_factor=2.5 if functype == "scalar" else 5,
                 radius_type="inscribed",
             ),
             "experimental": True,
             "radius_options": RadiusOptions(
                 min_radius=1e-8,
-            )
+            ),
+            "stopping_max_iterations": 200,
+            "stopping_max_criterion_evaluations": 2_000,
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)
@@ -66,3 +67,4 @@ for functype in ["scalar", "ls"]:
             )
 
             em.utilities.to_pickle(res, produces)
+
