@@ -32,11 +32,12 @@ for functype in ["scalar", "ls"]:
             # "fitter": "tranquilo" if functype == "scalar" else "ols",
             "stagnation_options": StagnationOptions(
                 drop=True,
-                max_trials=5,
+                max_trials=3,
                 min_relative_step=0.025,
+                min_relative_step_keep=0.1
             ),
             "history_search_options": HistorySearchOptions(
-                radius_factor=2.5 if functype == "scalar" else 5,
+                radius_factor=4.25 if functype == "scalar" else 5,
                 radius_type="inscribed",
             ),
             "experimental": True,
@@ -46,6 +47,7 @@ for functype in ["scalar", "ls"]:
             "stopping_max_iterations": 200,
             "stopping_max_criterion_evaluations": 2_000,
         }
+
 
         problems = em.get_benchmark_problems(**problem_kwargs)
 
