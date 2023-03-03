@@ -25,9 +25,15 @@ for functype in ["scalar", "ls"]:
 
         optimize_options["algo_options"] = {
             **optimize_options["algo_options"],
-            "disable_convergence": False,
-            "stopping.max_iterations": 400,
-            "stopping.max_criterion_evaluations": 3000,
+            # "fitter": "tranquilo" if functype == "scalar" else None,
+            # "fit_options": {"residualize": True} if functype == "scalar" else None,
+            # "subsolver": "slsqp_sphere",
+            # "solver_options": {"experimental": "True"}
+            # "disable_convergence": False,
+            "stopping.max_iterations": 200,
+            "stopping.max_criterion_evaluations": 2000,
+            # "noisy": True,
+            # "n_evals_per_point": 3,
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)

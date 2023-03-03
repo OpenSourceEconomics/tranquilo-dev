@@ -30,23 +30,23 @@ def _n_evals(*args, **kwargs):  # noqa: U100
 
 
 COMPETITION = {
-    "nlopt_bobyqa": {"algorithm": "nlopt_bobyqa"},
+    # "nlopt_bobyqa": {"algorithm": "nlopt_bobyqa"},
     "nag_bobyqa": {"algorithm": "nag_pybobyqa"},
-    "nag_bobyqa_noisy": {
-        "algorithm": "nag_dfols",
-        "algo_options": {
-            "noise_additive_level": 0.1,
-            "noise_n_evals_per_point": _n_evals,
-        },
-    },
+    # "nag_bobyqa_noisy": {
+    #     "algorithm": "nag_dfols",
+    #     "algo_options": {
+    #         "noise_additive_level": 0.1,
+    #         "noise_n_evals_per_point": _n_evals,
+    #     },
+    # },
     "nag_dfols": {"algorithm": "nag_dfols"},
-    "nag_dfols_noisy": {
-        "algorithm": "nag_dfols",
-        "algo_options": {
-            "noise_additive_level": 0.1,
-            "noise_n_evals_per_point": _n_evals,
-        },
-    },
+    # "nag_dfols_noisy": {
+    #     "algorithm": "nag_dfols",
+    #     "algo_options": {
+    #         "noise_additive_level": 0.1,
+    #         "noise_n_evals_per_point": _n_evals,
+    #     },
+    # },
 }
 
 
