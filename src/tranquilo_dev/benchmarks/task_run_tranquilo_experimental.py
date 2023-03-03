@@ -31,14 +31,10 @@ for functype in ["scalar"]:  # , "ls"]:
             # "subsolver": "slsqp_sphere",
             # "solver_options": {"experimental": "True"}
             "disable_convergence": False,
-            "stopping.max_iterations": 2000 if functype == "scalar" else 500,
-            "stopping.max_criterion_evaluations": 2000,
+            "stopping.max_iterations": 4000 if functype == "scalar" else 500,
+            "stopping.max_criterion_evaluations": 4000,
             # "noisy": True,
             # "n_evals_per_point": 3,
-            "experimental": True,
-            "history_search_options": HistorySearchOptions(
-                radius_factor=4.25 if functype == "scalar" else 5,
-            ),
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)

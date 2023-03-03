@@ -124,9 +124,7 @@ PLOT_CONFIG = {
 
 TRANQUILO_BASE_OPTIONS = {
     "algo_options": {
-        "disable_convergence": True,
-        "stopping.max_iterations": 200,
-        "stopping.max_criterion_evaluations": 2000,
+        "disable_convergence": False,
         "silence_experimental_warning": True,
     },
 }
