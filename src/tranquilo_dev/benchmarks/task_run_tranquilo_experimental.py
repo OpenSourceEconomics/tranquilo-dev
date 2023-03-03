@@ -30,7 +30,7 @@ for functype in ["scalar", "ls"]:
             # "subsolver": "slsqp_sphere",
             # "solver_options": {"experimental": "True"}
             # "disable_convergence": False,
-            "stopping.max_iterations": 200,
+            "stopping.max_iterations": 500 if functype == "scalar" else 300,
             "stopping.max_criterion_evaluations": 2000,
             # "noisy": True,
             # "n_evals_per_point": 3,
