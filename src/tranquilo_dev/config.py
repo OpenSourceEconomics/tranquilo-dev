@@ -67,7 +67,17 @@ if RUN_NOISY:
 
 
 _deterministic_plots = {
-    "competition_scalar": {
+    "competition_nag_scalar": {
+        "problem_name": "mw",
+        "scenarios": [
+            "tranquilo_default",
+            "tranquilo_experimental",
+            "nag_bobyqa",
+        ],
+        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "competition_nlopt_scalar": {
         "problem_name": "mw",
         "scenarios": [
             "tranquilo_default",

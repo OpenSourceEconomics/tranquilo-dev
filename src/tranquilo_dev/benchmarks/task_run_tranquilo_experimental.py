@@ -28,8 +28,8 @@ for functype in ["scalar", "ls"]:
         optimize_options["algo_options"] = {
             **optimize_options["algo_options"],
             "disable_convergence": False,
-            "stopping.max_iterations": 4000 if functype == "scalar" else 500,
-            "stopping.max_criterion_evaluations": 4000,
+            "stopping.max_iterations": 2000 if functype == "scalar" else 500,
+            "stopping.max_criterion_evaluations": 2000,
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)
@@ -48,7 +48,7 @@ for functype in ["scalar", "ls"]:
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
-                max_criterion_evaluations=3_000,
+                max_criterion_evaluations=2_000,
             )
 
             if COMPAT_MODE:
