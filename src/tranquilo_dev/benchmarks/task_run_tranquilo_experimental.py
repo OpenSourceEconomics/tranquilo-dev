@@ -2,7 +2,9 @@ from copy import deepcopy
 
 import estimagic as em
 import pytask
+from tranquilo_dev.benchmarks.compat_mode import filter_tranquilo_benchmark
 from tranquilo_dev.config import BLD
+from tranquilo_dev.config import COMPAT_MODE
 from tranquilo_dev.config import N_CORES
 from tranquilo_dev.config import PROBLEM_SETS
 from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
@@ -48,5 +50,8 @@ for functype in ["scalar", "ls"]:
                 n_cores=N_CORES,
                 max_criterion_evaluations=3_000,
             )
+
+            if COMPAT_MODE:
+                res = filter_tranquilo_benchmark(res)
 
             em.utilities.to_pickle(res, produces)

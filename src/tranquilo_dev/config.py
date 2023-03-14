@@ -9,6 +9,8 @@ PUBLIC = BLD.joinpath("public").resolve()
 
 RUN_DETERMINISTIC = True
 RUN_NOISY = False
+# In compat_mode algorithm_output is removed from the tranquilo results. This avoids
+# pickling problems if different versions of tranquilo are compared to each other.
 COMPAT_MODE = True
 
 

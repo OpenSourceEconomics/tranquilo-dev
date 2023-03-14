@@ -12,8 +12,6 @@ directory structure:
   - dfols (git clone https://github.com/mpetrosian/dfols.git)
   - pybobyqa (git clone https://github.com/mpetrosian/pybobyqa.git)
 
-
-
 ```bash
 cd /path/to/tranquilo-dev
 conda env create -f environment.yml
