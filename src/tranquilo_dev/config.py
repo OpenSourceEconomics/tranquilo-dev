@@ -72,7 +72,7 @@ _deterministic_plots = {
         "scenarios": [
             "tranquilo_default",
             "tranquilo_experimental",
-            "nag_bobyqa",
+            "nlopt_bobyqa",
         ],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
