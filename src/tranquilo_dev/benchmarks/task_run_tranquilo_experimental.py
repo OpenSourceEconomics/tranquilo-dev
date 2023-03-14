@@ -2,7 +2,6 @@ from copy import deepcopy
 
 import estimagic as em
 import pytask
-from estimagic.optimization.tranquilo.options import HistorySearchOptions
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import N_CORES
 from tranquilo_dev.config import PROBLEM_SETS
@@ -11,7 +10,7 @@ from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
 
 OUT = BLD / "benchmarks"
 
-for functype in ["scalar"]:  # , "ls"]:
+for functype in ["scalar", "ls"]:
 
     if functype == "scalar":
         algorithm = "tranquilo"
@@ -26,15 +25,9 @@ for functype in ["scalar"]:  # , "ls"]:
 
         optimize_options["algo_options"] = {
             **optimize_options["algo_options"],
-            "fitter": "tranquilo" if functype == "scalar" else None,
-            "fit_options": {"residualize": True} if functype == "scalar" else None,
-            # "subsolver": "slsqp_sphere",
-            # "solver_options": {"experimental": "True"}
             "disable_convergence": False,
             "stopping.max_iterations": 4000 if functype == "scalar" else 500,
             "stopping.max_criterion_evaluations": 4000,
-            # "noisy": True,
-            # "n_evals_per_point": 3,
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)
