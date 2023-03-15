@@ -12,7 +12,7 @@ from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
 
 OUT = BLD / "benchmarks"
 
-for functype in ["scalar", "ls"]:
+for functype in ["scalar"]:
 
     if functype == "scalar":
         algorithm = "tranquilo"
@@ -30,6 +30,10 @@ for functype in ["scalar", "ls"]:
             "disable_convergence": False,
             "stopping.max_iterations": 2000 if functype == "scalar" else 500,
             "stopping.max_criterion_evaluations": 2000,
+            "sampler": "sphere",
+            "subsolver": "gqtpar",
+            "fitter": "ols",
+            "fit_options": {"residualize": False},
         }
 
         problems = em.get_benchmark_problems(**problem_kwargs)

@@ -37,6 +37,7 @@ for functype in ["scalar", "ls"]:
 
         name = f"{problem_name}_{scenario_name}"
 
+        @pytask.mark.skip
         @pytask.mark.produces(OUT / f"{problem_name}_{scenario_name}.pkl")
         @pytask.mark.task(id=name)
         def task_run_tranquilo_default(

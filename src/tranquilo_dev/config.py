@@ -39,7 +39,7 @@ def _n_evals(*args, **kwargs):  # noqa: U100
 _deterministic_competition = {
     "nlopt_bobyqa": {"algorithm": "nlopt_bobyqa"},
     "nag_bobyqa": {"algorithm": "nag_pybobyqa"},
-    "nag_dfols": {"algorithm": "nag_dfols"},
+    # "nag_dfols": {"algorithm": "nag_dfols"},
 }
 
 _noisy_competition = {
@@ -70,7 +70,7 @@ _deterministic_plots = {
     "competition_nag_scalar": {
         "problem_name": "mw",
         "scenarios": [
-            "tranquilo_default",
+            # "tranquilo_default",
             "tranquilo_experimental",
             "nag_bobyqa",
         ],
@@ -80,23 +80,23 @@ _deterministic_plots = {
     "competition_nlopt_scalar": {
         "problem_name": "mw",
         "scenarios": [
-            "tranquilo_default",
+            # "tranquilo_default",
             "tranquilo_experimental",
             "nlopt_bobyqa",
         ],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
-    "competition_ls": {
-        "problem_name": "mw",
-        "scenarios": [
-            "tranquilo_ls_default",
-            "tranquilo_ls_experimental",
-            "nag_dfols",
-        ],
-        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
-        "convergence_plot_options": {"n_cols": 6},
-    },
+    # "competition_ls": {
+    #     "problem_name": "mw",
+    #     "scenarios": [
+    #         "tranquilo_ls_default",
+    #         "tranquilo_ls_experimental",
+    #         "nag_dfols",
+    #     ],
+    #     "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
 }
 
 _noisy_plots = {
