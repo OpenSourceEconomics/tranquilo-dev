@@ -50,6 +50,7 @@ for functype in ["scalar", "ls"]:
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
                 max_criterion_evaluations=2_000,
+                disable_convergence=False,
             )
 
             if COMPAT_MODE:
