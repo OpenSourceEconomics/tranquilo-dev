@@ -9,6 +9,7 @@ directory structure:
 - some_parent_folder
   - estimagic (git clone https://github.com/OpenSourceEconomics/estimagic.git)
   - tranquilo-dev
+  - tranquilo (git clone https://github.com/OpenSourceEconomics/tranquilo.git)
   - dfols (git clone https://github.com/mpetrosian/dfols.git)
   - pybobyqa (git clone https://github.com/mpetrosian/pybobyqa.git)
 

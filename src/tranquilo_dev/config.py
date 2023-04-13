@@ -20,7 +20,7 @@ PROBLEM_SETS = {}
 if RUN_DETERMINISTIC:
     PROBLEM_SETS["mw"] = {
         "name": "more_wild",
-        "exclude": "brown_almost_linear_medium",
+        "exclude": ["brown_almost_linear_medium"],
     }
 if RUN_NOISY:
     PROBLEM_SETS["mw_noisy"] = {

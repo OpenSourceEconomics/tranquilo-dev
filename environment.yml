@@ -49,3 +49,4 @@ dependencies:
     - -e ../estimagic
     - -e ../dfols
     - -e ../pybobyqa
+    - -e ../tranquilo
