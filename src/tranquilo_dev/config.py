@@ -7,11 +7,11 @@ ROOT = SRC.joinpath("..", "..").resolve()
 BLD = ROOT.joinpath("bld").resolve()
 PUBLIC = BLD.joinpath("public").resolve()
 
-RUN_DETERMINISTIC = True
-RUN_NOISY = False
+RUN_DETERMINISTIC = False
+RUN_NOISY = True
 # In compat_mode algorithm_output is removed from the tranquilo results. This avoids
 # pickling problems if different versions of tranquilo are compared to each other.
-COMPAT_MODE = True
+COMPAT_MODE = False
 
 
 N_CORES = 10
@@ -59,9 +59,7 @@ _noisy_competition = {
     },
 }
 
-COMPETITION = {}
-if RUN_DETERMINISTIC:
-    COMPETITION.update(_deterministic_competition)
+COMPETITION = _deterministic_competition.copy()
 if RUN_NOISY:
     COMPETITION.update(_noisy_competition)
 
@@ -105,7 +103,6 @@ _noisy_plots = {
         "scenarios": [
             "tranquilo_default",
             "tranquilo_experimental",
-            "nag_bobyqa",
             "nag_bobyqa_noisy",
         ],
         "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
@@ -116,7 +113,6 @@ _noisy_plots = {
         "scenarios": [
             "tranquilo_ls_default",
             "tranquilo_ls_experimental",
-            "nag_dfols",
             "nag_dfols_noisy",
         ],
         "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},

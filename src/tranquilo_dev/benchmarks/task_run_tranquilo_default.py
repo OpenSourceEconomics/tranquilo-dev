@@ -35,8 +35,14 @@ for functype in ["scalar", "ls"]:
             "disable_convergence": False,
             "stopping_max_iterations": 2000 if functype == "scalar" else 500,
             "stopping_max_criterion_evaluations": 2000,
-            "acceptance_decider": "classic",
         }
+        if "noisy" in problem_name:
+            optimize_options["algo_options"].update(
+                {
+                    "noisy": True,
+                    "n_evals_per_point": 5,
+                }
+            )
 
         problems = em.get_benchmark_problems(**problem_kwargs)
 
