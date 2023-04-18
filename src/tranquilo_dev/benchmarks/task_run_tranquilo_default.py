@@ -34,13 +34,13 @@ for functype in ["scalar", "ls"]:
             **optimize_options["algo_options"],
             "disable_convergence": False,
             "stopping_max_iterations": 2000 if functype == "scalar" else 500,
-            "stopping_max_criterion_evaluations": 2000,
+            "stopping_max_criterion_evaluations": 6000,
         }
         if "noisy" in problem_name:
             optimize_options["algo_options"].update(
                 {
                     "noisy": True,
-                    "n_evals_per_point": 5,
+                    "acceptance_decider": "noisy",
                 }
             )
 
@@ -50,7 +50,7 @@ for functype in ["scalar", "ls"]:
 
         @pytask.mark.produces(OUT / f"{problem_name}_{scenario_name}.pkl")
         @pytask.mark.task(id=name)
-        def task_run_tranquilo_default(
+        def task_run_tranquilo_experiental(
             produces,
             scenario_name=scenario_name,
             optimize_options=optimize_options,
@@ -60,7 +60,7 @@ for functype in ["scalar", "ls"]:
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
-                max_criterion_evaluations=2_000,
+                max_criterion_evaluations=10_000,
                 disable_convergence=False,
             )
 
