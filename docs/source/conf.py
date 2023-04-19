@@ -8,7 +8,7 @@
 project = "tranquilo-dev"
 author = "Janos Gabler, Tim Mensinger, Sebastian Gsell and Mariam Petrosyan"
 release = "2023"
-copyright = "2023, {author}"  # noqa: A001
+copyright = f"2023, {author}"  # noqa: A001
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
