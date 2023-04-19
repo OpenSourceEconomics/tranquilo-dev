@@ -27,16 +27,17 @@ dependencies:
   - pybaum
 
   # Misc Start
-  - setuptools_scm
-  - toml
-  - pytask >=0.2.3
   - black
   - nb_black
-  - pre-commit
   - pdbpp
+  - pre-commit
+  - pytask >=0.2.3
   - pytest
   - pytest-cov
   - pytest-xdist
+  - sphinx
+  - setuptools_scm
+  - toml
   # Misc End
 
   - pip:
