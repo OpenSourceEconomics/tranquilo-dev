@@ -44,6 +44,7 @@ dependencies:
     - black
     - blackcellmagic
     - kaleido
+    - snakemd
 
     # local installations
     - -e .

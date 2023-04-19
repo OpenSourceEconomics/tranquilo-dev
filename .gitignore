@@ -5,6 +5,10 @@
 
 # bld
 bld/*
+docs/source/bld/*
+docs/source/_static/bld/*
+
+docs/source/index.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
