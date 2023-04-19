@@ -15,8 +15,8 @@ for name, _ in PLOT_CONFIG.items():
 
     @pytask.mark.depends_on(DEPS)
     @pytask.mark.produces(SPHINX_PAGES_BLD / f"{name}.md")
-    @pytask.mark.task(id=f"{plot_type}_plot_{name}")
-    def task_create_profile_plots_markdown(name=name):
+    @pytask.mark.task(id=f"{name}")
+    def task_create_benchmark_reports(name=name):
         doc = snakemd.new_doc()
 
         doc.add_heading(f"{name}")
