@@ -6,27 +6,31 @@ from tranquilo_dev.config import SPHINX_STATIC_BLD
 
 
 for name, _ in PLOT_CONFIG.items():
-    plot_type = "profile"
 
-    @pytask.mark.depends_on(
-        SPHINX_STATIC_BLD / "figures" / f"{plot_type}_plots" / f"{name}.svg"
-    )
+    DEPS = {}
+    for plot_type in ["profile", "deviation"]:
+        DEPS[plot_type] = (
+            SPHINX_STATIC_BLD / "figures" / f"{plot_type}_plots" / f"{name}.svg"
+        )
+
+    @pytask.mark.depends_on(DEPS)
     @pytask.mark.produces(SPHINX_PAGES_BLD / f"{name}.md")
-    @pytask.mark.task(id=f"plot_{name}")
+    @pytask.mark.task(id=f"{plot_type}_plot_{name}")
     def task_create_profile_plots_markdown(name=name):
         doc = snakemd.new_doc()
 
         doc.add_heading(f"{name}")
-        doc.add_paragraph(
-            f"""
-            Profile plot for {name}.
-            """
-        )
 
-        doc.add_paragraph(
-            f"""
-            ![{name}](../_static/bld/figures/profile_plots/{name}.svg)
-            """
-        )
+        for plot_type in ["profile", "deviation"]:
+            doc.add_paragraph(
+                f"""
+                ## {plot_type.capitalize()} Plot
+                """
+            )
+            doc.add_paragraph(
+                f"""
+                ![{plot_type}](../_static/bld/figures/{plot_type}_plots/{name}.svg)
+                """
+            )
 
         doc.dump(SPHINX_PAGES_BLD / name)
