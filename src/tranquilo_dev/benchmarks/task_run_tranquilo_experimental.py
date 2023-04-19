@@ -28,13 +28,14 @@ for functype in ["scalar", "ls"]:
     scenario_name = f"{algorithm_name}_experimental"
 
     for problem_name, problem_kwargs in PROBLEM_SETS.items():
+        MAX_EVALS = 20_000 if "noisy" in problem_name else 2_000
         optimize_options = deepcopy(TRANQUILO_BASE_OPTIONS)
         optimize_options["algorithm"] = algorithm
         optimize_options["algo_options"] = {
             **optimize_options["algo_options"],
             "disable_convergence": False,
             "stopping_max_iterations": 2000 if functype == "scalar" else 500,
-            "stopping_max_criterion_evaluations": 6000,
+            "stopping_max_criterion_evaluations": MAX_EVALS,
         }
         if "noisy" in problem_name:
             optimize_options["algo_options"].update(
@@ -50,7 +51,7 @@ for functype in ["scalar", "ls"]:
 
         @pytask.mark.produces(OUT / f"{problem_name}_{scenario_name}.pkl")
         @pytask.mark.task(id=name)
-        def task_run_tranquilo_experiental(
+        def task_run_tranquilo_experimental(
             produces,
             scenario_name=scenario_name,
             optimize_options=optimize_options,
@@ -60,7 +61,7 @@ for functype in ["scalar", "ls"]:
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
-                max_criterion_evaluations=10_000,
+                max_criterion_evaluations=MAX_EVALS,  # noqa: B023
                 disable_convergence=False,
             )
 

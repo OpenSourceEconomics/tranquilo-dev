@@ -104,9 +104,8 @@ _noisy_plots = {
             "tranquilo_default",
             "tranquilo_experimental",
             "nag_bobyqa_noisy",
-            "tranquilo_noisy_baseline",
         ],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": 2.5e-2, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "competition_ls_noisy": {
@@ -115,9 +114,8 @@ _noisy_plots = {
             "tranquilo_ls_default",
             "tranquilo_ls_experimental",
             "nag_dfols_noisy",
-            "tranquilo_ls_noisy_baseline",
         ],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": 2.5e-2, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
 }

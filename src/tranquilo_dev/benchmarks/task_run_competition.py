@@ -15,6 +15,8 @@ for problem_name, problem_kwargs in PROBLEM_SETS.items():
     for scenario_name, optimize_options in COMPETITION.items():
         name = f"{problem_name}_{scenario_name}"
 
+        MAX_EVALS = 20_000 if "noisy" in problem_name else 2_000
+
         @pytask.mark.produces(OUT / f"{problem_name}_{scenario_name}.pkl")
         @pytask.mark.task(id=name)
         def task_run_competition(
@@ -27,7 +29,7 @@ for problem_name, problem_kwargs in PROBLEM_SETS.items():
                 problems=problems,
                 optimize_options={scenario_name: optimize_options},
                 n_cores=N_CORES,
-                max_criterion_evaluations=2_000,
+                max_criterion_evaluations=MAX_EVALS,  # noqa: B023
                 disable_convergence=True,
             )
 
