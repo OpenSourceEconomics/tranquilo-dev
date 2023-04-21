@@ -78,8 +78,19 @@ _deterministic_plots = {
             "tranquilo_experimental",
             "nag_bobyqa",
         ],
-        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "profile_plot_options": {
+            "y_precision": 1e-3,
+            "normalize_runtime": True,
+        },
         "convergence_plot_options": {"n_cols": 6},
+        "report_options": {
+            "y_precision": 1e-3,
+            "stopping_criterion": "y",
+            "runtime_measure": "n_evaluations",
+            "normalize_runtime": True,
+            "include_all_tracebacks": False,
+            "include_all_non_converged": False,
+        },
     },
     "competition_nlopt_scalar": {
         "problem_name": "mw",
@@ -90,6 +101,14 @@ _deterministic_plots = {
         ],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
+        "report_options": {
+            "y_precision": 1e-3,
+            "stopping_criterion": "y",
+            "runtime_measure": "n_evaluations",
+            "normalize_runtime": True,
+            "include_all_tracebacks": False,
+            "include_all_non_converged": False,
+        },
     },
     "competition_ls": {
         "problem_name": "mw",
@@ -100,6 +119,14 @@ _deterministic_plots = {
         ],
         "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
+        "report_options": {
+            "y_precision": 1e-3,
+            "stopping_criterion": "y",
+            "runtime_measure": "n_evaluations",
+            "normalize_runtime": True,
+            "include_all_tracebacks": False,
+            "include_all_non_converged": False,
+        },
     },
 }
 

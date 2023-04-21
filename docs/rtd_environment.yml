@@ -1,5 +1,5 @@
 ---
-name: docs
+name: tranquilo-dev-docs
 channels:
   - conda-forge
   - nodefaults
