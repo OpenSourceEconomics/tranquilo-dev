@@ -13,6 +13,7 @@ from tranquilo_dev.config import SPHINX_STATIC_BLD
 
 
 for name, info in PLOT_CONFIG.items():
+    name = "competition_ls"
     problem_name = info["problem_name"]
     problems = em.get_benchmark_problems(**PROBLEM_SETS[problem_name])
 
@@ -152,24 +153,25 @@ def _create_reports(problems, scenarios, options, paths):
     )
     converged_info = _converged_info[scenarios]
 
-    convergence_report = _create_convergence_report(converged_info, problems)
+    convergence_report = _create_convergence_report(
+        converged_info, problems, results=results
+    )
 
     rank_report = _create_rank_report(
-        solution_times=df,
+        df=df,
         converged_info=converged_info,
+        convergence_report=convergence_report,
         scenarios=scenarios,
         runtime_measure=options["runtime_measure"],
         normalize_runtime=options["normalize_runtime"],
     )
 
-    traceback_report = _create_traceback_report(
-        results, convergence_report, scenarios, options
-    )
+    traceback_report = _create_traceback_report(results, scenarios, options)
 
     return converged_info, convergence_report, rank_report, traceback_report
 
 
-def _create_convergence_report(converged_info, problems):
+def _create_convergence_report(converged_info, problems, results):
     """Create a DataFrame with all information needed for the convergence report.
 
     Args:
@@ -179,6 +181,11 @@ def _create_convergence_report(converged_info, problems):
         problems (dict): estimagic benchmarking problems dictionary. Keys are the
             problem names. Values contain information on the problem, including the
             solution value.
+        results (dict): estimagic benchmarking results dictionary. Keys are
+            tuples of the form (problem, algorithm), values are dictionaries of the
+            collected information on the benchmark run, including 'criterion_history'
+            and 'time_history'.
+
 
     Returns:
         pandas.DataFrame: columns are the scenarios (i.e. algorithms) and the
@@ -189,14 +196,21 @@ def _create_convergence_report(converged_info, problems):
 
     """
     convergence_report = converged_info.replace({True: "success", False: "failed"})
+
+    for key, value in results.items():
+        if isinstance(value["solution"], str):
+            convergence_report.at[key] = "error"
+
     dim = {problem: len(problems[problem]["inputs"]["params"]) for problem in problems}
     convergence_report["dimensionality"] = convergence_report.index.map(dim)
+
     return convergence_report
 
 
 def _create_rank_report(
-    solution_times,
+    df,
     converged_info,
+    convergence_report,
     scenarios,
     runtime_measure,
     normalize_runtime,
@@ -204,22 +218,15 @@ def _create_rank_report(
     """Create a DataFrame with all information needed for the rank report.
 
     Args:
-        df (pandas.DataFrame): tidy DataFrame with the following columns:
-            - problem
-            - algorithm
-            - n_evaluations
-            - walltime
-            - criterion
-            - criterion_normalized
-            - monotone_criterion
-            - monotone_criterion_normalized
-            - parameter_distance
-            - parameter_distance_normalized
-            - monotone_parameter_distance
-            - monotone_parameter_distance_normalized
+        df (pandas.DataFrame): contains 'problem', 'algorithm' and 'runtime_measure'
+            as columns.
         converged_info (pandas.DataFrame): columns are the algorithms, index are the
             problems. The values are boolean and True when the algorithm arrived at
             the solution with the desired precision.
+        convergence_report (pandas.DataFrame): columns are the scenarios (i.e.
+            algorithms) and the dimensionality of the problems, index are the
+            problems. For the scenario columns, the values are strings that are either
+            "success" "failed", or "error".
         scenarios (list): list of the names of the algorithms that should be included
             in the report.
         runtime_measure (str): "n_evaluations", "n_batches" or "walltime".
@@ -237,9 +244,7 @@ def _create_rank_report(
             "failed".
 
     """
-    solution_times = solution_times.groupby(["problem", "algorithm"])[
-        runtime_measure
-    ].max()
+    solution_times = df.groupby(["problem", "algorithm"])[runtime_measure].max()
 
     if normalize_runtime:
         solution_times = solution_times.unstack()
@@ -257,12 +262,12 @@ def _create_rank_report(
 
     df_wide = solution_times.pivot(index="problem", columns="algorithm", values="rank")
     rank_report = df_wide.astype(str)[scenarios]
-    rank_report[~converged_info] = "failed"
+    rank_report[~converged_info] = convergence_report[scenarios]
 
     return rank_report
 
 
-def _create_traceback_report(results, convergence_report, scenarios, options):
+def _create_traceback_report(results, scenarios, options):
     """Create a DataFrame with the traceback of all problems that have not been solved.
 
     Args:
@@ -270,9 +275,6 @@ def _create_traceback_report(results, convergence_report, scenarios, options):
             tuples of the form (problem, algorithm), values are dictionaries of the
             collected information on the benchmark run, including 'criterion_history'
             and 'time_history'.
-        convergence_report (pandas.DataFrame): columns are the algorithms, index are
-            the problems. The values are boolean and True when the algorithm arrived at
-            the solution with the desired precision.
         scenarios (list): list of the names of the algorithms that should be included
             in the report.
         options (dict): dictionary with the following keys:
@@ -316,7 +318,6 @@ def _create_traceback_report(results, convergence_report, scenarios, options):
 
     for key, value in results.items():
         if isinstance(value["solution"], str):
-            convergence_report.at[key] = "error"
             tracebacks[key[1]][key[0]] = value["solution"]
 
     traceback_report = pd.DataFrame.from_dict(tracebacks, orient="columns")
