@@ -61,14 +61,11 @@ for name, info in PLOT_CONFIG.items():
             for scenario in df_tracebacks:
                 if not df_tracebacks[scenario].isnull().any():
                     doc.add_heading(scenario, level=3)
-                    rows = df_tracebacks[scenario].reset_index().values.tolist()
-                    header = ["problem", "traceback"]
-                    doc.add_table(header, rows)
-                    doc.add_raw(
-                        f"```python"
-                        f"\n{df_tracebacks[scenario].reset_index().values.tolist()}"
-                        f"\n```"
-                    )
+                    tracebacks = df_tracebacks[scenario].to_dict()
+                    for problem in tracebacks.keys():
+                        traceback = tracebacks[problem]
+                        doc.add_heading(problem, level=4)
+                        doc.add_raw(f"```python \n{traceback} \n```")
 
         # 5. Convergence plots of all problems that have not been solved by tranquilo
         tranquilo_scenarios = [
