@@ -30,6 +30,13 @@ for name, info in PLOT_CONFIG.items():
     def task_create_benchmark_reports(
         name=name, info=info, path_to_results=DEPS_RESULTS
     ):
+        (
+            converged_info,
+            convergence_report,
+            rank_report,
+            traceback_report,
+        ) = _create_reports(info=info, path_to_results=path_to_results)
+
         doc = snakemd.new_doc()
         doc.add_heading(f"{name}", level=1)
 
@@ -41,13 +48,10 @@ for name, info in PLOT_CONFIG.items():
             )
 
         # 2. Convergence report
-        df_out, converged_info, df_tracebacks, rank_report = _get_convergence_info(
-            info=info, path_to_results=path_to_results
-        )
         doc.add_heading("Convergence Report", level=2)
-        rows_con = df_out.reset_index().values.tolist()
-        header_con = ["problem"] + info["scenarios"] + ["dimensionality"]
-        doc.add_table(header_con, rows_con)
+        rows = convergence_report.reset_index().values.tolist()
+        header = ["problem"] + info["scenarios"] + ["dimensionality"]
+        doc.add_table(header, rows)
 
         # 3. Rank report
         doc.add_heading("Rank Report", level=2)
@@ -56,16 +60,16 @@ for name, info in PLOT_CONFIG.items():
         doc.add_table(header, rows)
 
         # 4. Error messages, grouped by scenario
-        if len(df_tracebacks) > 0:
+        if len(traceback_report) > 0:
             doc.add_heading("Traceback Report", level=2)
-            for scenario in df_tracebacks:
-                if not df_tracebacks[scenario].isnull().any():
+            for scenario in traceback_report:
+                if not traceback_report[scenario].isnull().all():
                     doc.add_heading(scenario, level=3)
-                    tracebacks = df_tracebacks[scenario].to_dict()
-                    for problem in tracebacks.keys():
-                        traceback = tracebacks[problem]
-                        doc.add_heading(problem, level=4)
-                        doc.add_raw(f"```python \n{traceback} \n```")
+                    tracebacks = traceback_report[scenario].to_dict()
+                    for problem, traceback in tracebacks.items():
+                        if isinstance(traceback, str):
+                            doc.add_heading(problem, level=4)
+                            doc.add_raw(f"```python \n{traceback} \n```")
 
         # 5. Convergence plots of all problems that have not been solved by tranquilo
         tranquilo_scenarios = [
@@ -88,7 +92,9 @@ for name, info in PLOT_CONFIG.items():
         doc.dump(SPHINX_PAGES_BLD / name)
 
 
-def _get_convergence_info(info, path_to_results):
+def _create_reports(info, path_to_results):
+    scenarios = info["scenarios"]
+
     results = {}
     for path in path_to_results.values():
         results = {**results, **pd.read_pickle(path)}
@@ -97,7 +103,6 @@ def _get_convergence_info(info, path_to_results):
     options = info["profile_plot_options"]
     y_precision = options["y_precision"] if "y_precision" in options.keys() else None
     x_precision = options["x_precision"] if "x_precision" in options.keys() else None
-
     if y_precision and not x_precision:
         stopping_criterion = "y"
     elif x_precision and not y_precision:
@@ -109,43 +114,60 @@ def _get_convergence_info(info, path_to_results):
             "Either y_precision or x_precision (or both)" "must be specified."
         )
 
-    df, converged_info = create_convergence_histories(
+    df, _converged_info = create_convergence_histories(
         problems=problems,
         results=results,
         stopping_criterion=stopping_criterion,
         x_precision=x_precision,
         y_precision=y_precision,
     )
+    converged_info = _converged_info[scenarios]
 
-    runtime_measure = "walltime"
+    convergence_report = _create_convergence_report(converged_info, problems)
+
+    rank_report = _create_rank_report(
+        df, converged_info, scenarios, problems, runtime_measure="walltime"
+    )
+
+    traceback_report = _create_traceback_report(results, convergence_report, scenarios)
+
+    return converged_info, convergence_report, rank_report, traceback_report
+
+
+def _create_convergence_report(converged_info, problems):
+    convergence_report = converged_info.replace({True: "success", False: "failed"})
+    dim = {problem: len(problems[problem]["inputs"]["params"]) for problem in problems}
+    convergence_report["dimensionality"] = convergence_report.index.map(dim)
+    return convergence_report
+
+
+def _create_rank_report(
+    df, converged_info, scenarios, problems, runtime_measure="walltime"
+):
     solution_times = df.groupby(["problem", "algorithm"])[runtime_measure].max()
     solution_times = solution_times.reset_index()
     solution_times = solution_times.sort_values(["problem", runtime_measure])
     solution_times["rank"] = np.tile(
-        np.arange(len(info["scenarios"]), dtype=int), len(problems)
+        np.arange(len(scenarios), dtype=int), len(problems)
     )
+
     df_wide = solution_times.pivot(index="problem", columns="algorithm", values="rank")
     df_wide[~converged_info] = 999
-    rank_report = df_wide[info["scenarios"]]
+    rank_report = df_wide[scenarios]
 
-    df_out = converged_info.replace({True: "success", False: "failed"})
+    return rank_report
 
+
+def _create_traceback_report(results, convergence_report, scenarios):
     tracebacks = {}
-    for scenario in info["scenarios"]:
+    for scenario in scenarios:
         tracebacks[scenario] = {}
 
     for key, value in results.items():
         if isinstance(value["solution"], str):
-            df_out.at[key] = "error"
+            convergence_report.at[key] = "error"
             tracebacks[key[1]][key[0]] = value["solution"]
 
-    df_tracebacks = pd.DataFrame.from_dict(tracebacks, orient="columns")
+    traceback_report = pd.DataFrame.from_dict(tracebacks, orient="columns")
 
-    dim = {problem: len(problems[problem]["inputs"]["params"]) for problem in problems}
-    df_out["dimensionality"] = df_out.index.map(dim)
-
-    return df_out, converged_info, df_tracebacks, rank_report
-
-
-def _create_rank_report():
-    pass
+    return traceback_report
