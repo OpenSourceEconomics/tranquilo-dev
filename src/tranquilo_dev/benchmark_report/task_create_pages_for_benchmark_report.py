@@ -1,4 +1,5 @@
 import estimagic as em
+import numpy as np
 import pandas as pd
 import pytask
 import snakemd
@@ -40,7 +41,7 @@ for name, info in PLOT_CONFIG.items():
             )
 
         # 2. Convergence report
-        df_out, converged_info, df_tracebacks = _get_convergence_info(
+        df_out, converged_info, df_tracebacks, rank_report = _get_convergence_info(
             info=info, path_to_results=path_to_results
         )
         doc.add_heading("Convergence Report", level=2)
@@ -49,6 +50,10 @@ for name, info in PLOT_CONFIG.items():
         doc.add_table(header_con, rows_con)
 
         # 3. Rank report
+        doc.add_heading("Rank Report", level=2)
+        rows = rank_report.reset_index().values.tolist()
+        header = ["problem"] + info["scenarios"]
+        doc.add_table(header, rows)
 
         # 4. Error messages, grouped by scenario
         if len(df_tracebacks) > 0:
@@ -59,13 +64,18 @@ for name, info in PLOT_CONFIG.items():
                     rows = df_tracebacks[scenario].reset_index().values.tolist()
                     header = ["problem", "traceback"]
                     doc.add_table(header, rows)
+                    doc.add_raw(
+                        f"```python"
+                        f"\n{df_tracebacks[scenario].reset_index().values.tolist()}"
+                        f"\n```"
+                    )
 
         # 5. Convergence plots of all problems that have not been solved by tranquilo
         tranquilo_scenarios = [
             col for col in converged_info.columns if "tranquilo" in col
         ]
         doc.add_heading(
-            "Convergence Plots of Problems Not Solved by tranquilo", level=2
+            "Convergence Plots for Problems Not Solved by tranquilo", level=2
         )
         for scenario in tranquilo_scenarios:
             doc.add_heading(scenario, level=3)
@@ -87,13 +97,22 @@ def _get_convergence_info(info, path_to_results):
         results = {**results, **pd.read_pickle(path)}
     problems = em.get_benchmark_problems(**PROBLEM_SETS[info["problem_name"]])
 
-    options = info["profile_plot_options"].keys()
-    if "y_precision" in options and "x_precision" not in options:
-        stopping_criterion = "y"
-        x_precision = None
-        y_precision = info["profile_plot_options"]["y_precision"]
+    options = info["profile_plot_options"]
+    y_precision = options["y_precision"] if "y_precision" in options.keys() else None
+    x_precision = options["x_precision"] if "x_precision" in options.keys() else None
 
-    _, converged_info = create_convergence_histories(
+    if y_precision and not x_precision:
+        stopping_criterion = "y"
+    elif x_precision and not y_precision:
+        stopping_criterion = "x"
+    elif y_precision and x_precision:
+        stopping_criterion = "x_and_y"
+    else:
+        raise NotImplementedError(  # noqa: TC003
+            "Either y_precision or x_precision (or both)" "must be specified."
+        )
+
+    df, converged_info = create_convergence_histories(
         problems=problems,
         results=results,
         stopping_criterion=stopping_criterion,
@@ -101,10 +120,18 @@ def _get_convergence_info(info, path_to_results):
         y_precision=y_precision,
     )
 
-    # TO-DO: sort by wall time
+    runtime_measure = "walltime"
+    solution_times = df.groupby(["problem", "algorithm"])[runtime_measure].max()
+    solution_times = solution_times.reset_index()
+    solution_times = solution_times.sort_values(["problem", runtime_measure])
+    solution_times["rank"] = np.tile(
+        np.arange(len(info["scenarios"]), dtype=int), len(problems)
+    )
+    df_wide = solution_times.pivot(index="problem", columns="algorithm", values="rank")
+    df_wide[~converged_info] = 999
+    rank_report = df_wide[info["scenarios"]]
 
-    boolean_to_string = {True: "success", False: "failed"}
-    df_out = converged_info.replace(boolean_to_string)
+    df_out = converged_info.replace({True: "success", False: "failed"})
 
     tracebacks = {}
     for scenario in info["scenarios"]:
@@ -120,7 +147,7 @@ def _get_convergence_info(info, path_to_results):
     dim = {problem: len(problems[problem]["inputs"]["params"]) for problem in problems}
     df_out["dimensionality"] = df_out.index.map(dim)
 
-    return df_out, converged_info, df_tracebacks
+    return df_out, converged_info, df_tracebacks, rank_report
 
 
 def _create_rank_report():
