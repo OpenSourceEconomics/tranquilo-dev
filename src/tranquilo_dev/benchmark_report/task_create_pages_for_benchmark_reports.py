@@ -13,7 +13,7 @@ from tranquilo_dev.config import SPHINX_STATIC_BLD
 
 
 for name, info in PLOT_CONFIG.items():
-    name = "competition_ls"
+
     problem_name = info["problem_name"]
     problems = em.get_benchmark_problems(**PROBLEM_SETS[problem_name])
 
@@ -31,13 +31,13 @@ for name, info in PLOT_CONFIG.items():
     @pytask.mark.task(id=name)
     def task_create_pages(name=name, info=info, problems=problems, paths=DEPS_RESULTS):
         scenarios = info["scenarios"]
-        options = _process_report_options_and_set_defaults(info["report_options"])
+        options = process_report_options_and_set_defaults(info["report_options"])
         (
             converged_info,
             convergence_report,
             rank_report,
             traceback_report,
-        ) = _create_reports(
+        ) = create_reports(
             problems=problems,
             scenarios=scenarios,
             options=options,
@@ -100,7 +100,52 @@ for name, info in PLOT_CONFIG.items():
         doc.dump(SPHINX_PAGES_BLD / name)
 
 
-def _create_reports(problems, scenarios, options, paths):
+def process_report_options_and_set_defaults(options):
+    """Process report options and set defaults.
+
+    Args:
+        options (dict): dictionary of the report options with the keys below.
+            In case any of them are missing, we set the default values.
+            - stopping_criterion (str): one of "x_and_y", "x_or_y", "x", "y".
+                Determines how convergence is determined from the two precisions.
+            - x_precision (float or None): how close an algorithm must have gotten to
+                the true parameter values (as percent of the Euclidean distance between
+                start and solution parameters) before the criterion for clipping and
+                convergence is fulfilled.
+            - y_precision (float or None): how close an algorithm must have gotten to
+                the true criterion values (as percent of the distance between start
+                and solution criterion value) before the criterion for clipping and
+                convergence is fulfilled.
+            - runtime_measure (str): "n_evaluations", "n_batches" or "walltime".
+            - normalize_runtime (bool): If True the runtime each algorithm needed for
+                each problem is scaled by the time the fastest algorithm needed. If
+                True, the resulting plot is what Moré and Wild (2009) called data
+                profiles.
+           - include_all_tracebacks (bool): If True, all tracebacks of all scenarios
+                are included in the traceback report. If False, only tracebacks of the
+                tranquilo algorithms are included.
+            - include_all_non_converged (bool): If True, all convergence plots of all
+                algorithms that have not converged on a problem are included in the
+                convergence report. If False, only problems that have not been solved
+                by tranquilo are included.
+
+    Returns:
+        dict: dictionary with the keys as described above, where missing keys have been
+            set to their default values.
+
+    """
+    return {
+        "stopping_criterion": options.get("stopping_criterion", "y"),
+        "x_precision": options.get("x_precision", None),
+        "y_precision": options.get("y_precision", None),
+        "runtime_measure": options.get("runtime_measure", "n_evaluations"),
+        "normalize_runtime": options.get("normalize_runtime", False),
+        "include_all_tracebacks": options.get("include_all_tracebacks", False),
+        "include_all_non_converged": options.get("include_all_non_converged", False),
+    }
+
+
+def create_reports(problems, scenarios, options, paths):
     """Create all reports for a given benchmarking competition.
 
     Args:
@@ -323,48 +368,3 @@ def _create_traceback_report(results, scenarios, options):
     traceback_report = pd.DataFrame.from_dict(tracebacks, orient="columns")
 
     return traceback_report
-
-
-def _process_report_options_and_set_defaults(options):
-    """Process report options and set defaults.
-
-    Args:
-        options (dict): dictionary of the report options with the keys below.
-            In case any of them are missing, we set the default values.
-            - stopping_criterion (str): one of "x_and_y", "x_or_y", "x", "y".
-                Determines how convergence is determined from the two precisions.
-            - x_precision (float or None): how close an algorithm must have gotten to
-                the true parameter values (as percent of the Euclidean distance between
-                start and solution parameters) before the criterion for clipping and
-                convergence is fulfilled.
-            - y_precision (float or None): how close an algorithm must have gotten to
-                the true criterion values (as percent of the distance between start
-                and solution criterion value) before the criterion for clipping and
-                convergence is fulfilled.
-            - runtime_measure (str): "n_evaluations", "n_batches" or "walltime".
-            - normalize_runtime (bool): If True the runtime each algorithm needed for
-                each problem is scaled by the time the fastest algorithm needed. If
-                True, the resulting plot is what Moré and Wild (2009) called data
-                profiles.
-           - include_all_tracebacks (bool): If True, all tracebacks of all scenarios
-                are included in the traceback report. If False, only tracebacks of the
-                tranquilo algorithms are included.
-            - include_all_non_converged (bool): If True, all convergence plots of all
-                algorithms that have not converged on a problem are included in the
-                convergence report. If False, only problems that have not been solved
-                by tranquilo are included.
-
-    Returns:
-        dict: dictionary with the keys as described above, where missing keys have been
-            set to their default values.
-
-    """
-    return {
-        "stopping_criterion": options.get("stopping_criterion", "y"),
-        "x_precision": options.get("x_precision", None),
-        "y_precision": options.get("y_precision", None),
-        "runtime_measure": options.get("runtime_measure", "n_evaluations"),
-        "normalize_runtime": options.get("normalize_runtime", False),
-        "include_all_tracebacks": options.get("include_all_tracebacks", False),
-        "include_all_non_converged": options.get("include_all_non_converged", False),
-    }
