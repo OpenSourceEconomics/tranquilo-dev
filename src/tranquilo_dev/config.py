@@ -22,7 +22,7 @@ ROOT = SRC.joinpath("..", "..").resolve()
 BLD = ROOT.joinpath("bld").resolve()
 PUBLIC = BLD.joinpath("public").resolve()
 
-RUN_DETERMINISTIC = False
+RUN_DETERMINISTIC = True
 RUN_NOISY = True
 COMPAT_MODE = False
 
@@ -42,7 +42,7 @@ def get_tranquilo_version(functype):
     return "tranquilo" if functype == "scalar" else "tranquilo_ls"
 
 
-N_CORES = 10
+N_CORES = 14
 
 PROBLEM_SETS = {
     "mw": {
@@ -163,19 +163,35 @@ _deterministic_plots = {
         },
         "convergence_plot_options": {"n_cols": 6},
     },
+    "parallelization_ls": {
+        "problem_name": "mw",
+        "scenarios": [
+            "tranquilo_ls_parallel_2",
+            "tranquilo_ls_parallel_4",
+            "tranquilo_ls_parallel_8",
+            "dfols",
+        ],
+        "profile_plot_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "normalize_runtime": True,
+            "runtime_measure": "n_batches",
+        },
+        "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
+        "deviation_plot_options": {"runtime_measure": "n_batches"},
+    },
 }
 
 _noisy_plots = {
-    # "competition_scalar_noisy": {
-    #     "problem_name": "mw_noisy",
-    #     "scenarios": [
-    #         "tranquilo_default",
-    #         "tranquilo_experimental",
-    #         "nag_bobyqa_noisy_5",
-    #     ],
-    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
-    #     "convergence_plot_options": {"n_cols": 6},
-    # },
+    "competition_scalar_noisy": {
+        "problem_name": "mw_noisy",
+        "scenarios": [
+            "tranquilo_default",
+            "tranquilo_experimental",
+            "nag_bobyqa_noisy_5",
+        ],
+        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
     "competition_ls_noisy": {
         "problem_name": "mw_noisy",
         "scenarios": [
