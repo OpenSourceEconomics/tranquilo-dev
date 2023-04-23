@@ -1,6 +1,21 @@
-"""This module contains the general configuration of the project."""
-from pathlib import Path
+"""This module contains the general configuration of the project.
 
+Below an overview of the non-trivial concepts:
+
+PROBLEM_SETS: This is a dictionary that defines the problems that can be used in
+benchmarks. The keys are names, the values are dictionaries with keyword arguments for
+`em.get_benchmark_problems`.
+
+COMPETITION: This is a dictionary that defines the optimizer configurations against
+which we want to compare tranquilo. The keys are the names of the optimizer
+configurations, the values are dictionaries with keyword arguments for the minimization.
+
+PLOT_CONFIG: This is a dictionary that defines which problem-optimizer combinations are
+plotted against each other. Only combinations that are used in some plot will actually
+run.
+
+"""
+from pathlib import Path
 
 SRC = Path(__file__).parent.resolve()
 ROOT = SRC.joinpath("..", "..").resolve()
@@ -12,66 +27,106 @@ SPHINX_PAGES_BLD = SPHINX.joinpath("bld").resolve()
 SPHINX_STATIC_BLD = SPHINX.joinpath("_static/bld").resolve()
 
 RUN_DETERMINISTIC = True
-RUN_NOISY = False
-# In compat_mode algorithm_output is removed from the tranquilo results. This avoids
-# pickling problems if different versions of tranquilo are compared to each other.
-COMPAT_MODE = True
+RUN_NOISY = True
+COMPAT_MODE = False
+
+NOISY_Y_TOL = 0.01
+DETERMINISTIC_Y_TOL = 1e-3
 
 
-N_CORES = 10
+def get_max_criterion_evaluations(noisy):
+    return 5_000 if noisy else 2_000
 
-PROBLEM_SETS = {}
-if RUN_DETERMINISTIC:
-    PROBLEM_SETS["mw"] = {
+
+def get_max_iterations(noisy, functype):  # noqa: U100
+    return 500 if functype == "ls" else 2000
+
+
+def get_tranquilo_version(functype):
+    return "tranquilo" if functype == "scalar" else "tranquilo_ls"
+
+
+N_CORES = 14
+
+PROBLEM_SETS = {
+    "mw": {
         "name": "more_wild",
         "exclude": ["brown_almost_linear_medium"],
-    }
-if RUN_NOISY:
-    PROBLEM_SETS["mw_noisy"] = {
+    },
+    "mw_noisy": {
         "name": "more_wild",
         "exclude": "brown_almost_linear_medium",
         "additive_noise": True,
-        "additive_noise_options": {"distribution": "normal", "std": 0.1},
+        "additive_noise_options": {"distribution": "normal", "std": 1.2},
         "seed": 925408,
-    }
+    },
+}
 
 
-def _n_evals(*args, **kwargs):  # noqa: U100
+def _n_evals_5(*args, **kwargs):  # noqa: U100
     return 5
 
 
-_deterministic_competition = {
+def _n_evals_3(*args, **kwargs):  # noqa: U100
+    return 3
+
+
+def _n_evals_10(*args, **kwargs):  # noqa: U100
+    return 10
+
+
+COMPETITION = {
     "nlopt_bobyqa": {"algorithm": "nlopt_bobyqa"},
     "nag_bobyqa": {"algorithm": "nag_pybobyqa"},
-    "nag_dfols": {"algorithm": "nag_dfols"},
-}
-
-_noisy_competition = {
-    "nag_bobyqa_noisy": {
+    "dfols": {"algorithm": "nag_dfols"},
+    "pounders": {"algorithm": "pounders"},
+    "nlopt_neldermead": {"algorithm": "nlopt_neldermead"},
+    "nag_bobyqa_noisy_3": {
         "algorithm": "nag_dfols",
         "algo_options": {
             "noise_additive_level": 0.1,
-            "noise_n_evals_per_point": _n_evals,
+            "noise_n_evals_per_point": _n_evals_3,
         },
     },
-    "nag_dfols_noisy": {
+    "dfols_noisy_3": {
         "algorithm": "nag_dfols",
         "algo_options": {
             "noise_additive_level": 0.1,
-            "noise_n_evals_per_point": _n_evals,
+            "noise_n_evals_per_point": _n_evals_3,
+        },
+    },
+    "nag_bobyqa_noisy_5": {
+        "algorithm": "nag_dfols",
+        "algo_options": {
+            "noise_additive_level": 0.1,
+            "noise_n_evals_per_point": _n_evals_5,
+        },
+    },
+    "dfols_noisy_5": {
+        "algorithm": "nag_dfols",
+        "algo_options": {
+            "noise_additive_level": 0.1,
+            "noise_n_evals_per_point": _n_evals_5,
+        },
+    },
+    "nag_bobyqa_noisy_10": {
+        "algorithm": "nag_dfols",
+        "algo_options": {
+            "noise_additive_level": 0.1,
+            "noise_n_evals_per_point": _n_evals_10,
+        },
+    },
+    "dfols_noisy_10": {
+        "algorithm": "nag_dfols",
+        "algo_options": {
+            "noise_additive_level": 0.1,
+            "noise_n_evals_per_point": _n_evals_10,
         },
     },
 }
-
-COMPETITION = {}
-if RUN_DETERMINISTIC:
-    COMPETITION.update(_deterministic_competition)
-if RUN_NOISY:
-    COMPETITION.update(_noisy_competition)
-
 
 _deterministic_plots = {
-    "competition_nag_scalar": {
+    "competition_scalar": {
         "problem_name": "mw",
         "scenarios": [
             "tranquilo_default",
@@ -79,27 +134,9 @@ _deterministic_plots = {
             "nag_bobyqa",
         ],
         "profile_plot_options": {
-            "y_precision": 1e-3,
+            "y_precision": DETERMINISTIC_Y_TOL,
             "normalize_runtime": True,
         },
-        "convergence_plot_options": {"n_cols": 6},
-        "report_options": {
-            "y_precision": 1e-3,
-            "stopping_criterion": "y",
-            "runtime_measure": "n_evaluations",
-            "normalize_runtime": True,
-            "include_all_tracebacks": False,
-            "include_all_non_converged": False,
-        },
-    },
-    "competition_nlopt_scalar": {
-        "problem_name": "mw",
-        "scenarios": [
-            "tranquilo_default",
-            "tranquilo_experimental",
-            "nlopt_bobyqa",
-        ],
-        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
         "report_options": {
             "y_precision": 1e-3,
@@ -115,9 +152,12 @@ _deterministic_plots = {
         "scenarios": [
             "tranquilo_ls_default",
             "tranquilo_ls_experimental",
-            "nag_dfols",
+            "dfols",
         ],
-        "profile_plot_options": {"y_precision": 1e-3, "normalize_runtime": True},
+        "profile_plot_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "normalize_runtime": True,
+        },
         "convergence_plot_options": {"n_cols": 6},
         "report_options": {
             "y_precision": 1e-3,
@@ -128,6 +168,45 @@ _deterministic_plots = {
             "include_all_non_converged": False,
         },
     },
+    "scalar_and_ls": {
+        "problem_name": "mw",
+        "scenarios": [
+            "dfols",
+            "tranquilo_ls_default",
+            "nlopt_bobyqa",
+            "tranquilo_default",
+            "nlopt_neldermead",
+        ],
+        "profile_plot_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "normalize_runtime": True,
+        },
+        "convergence_plot_options": {"n_cols": 6},
+        "report_options": {
+            "y_precision": 1e-3,
+            "stopping_criterion": "y",
+            "runtime_measure": "n_evaluations",
+            "normalize_runtime": True,
+            "include_all_tracebacks": False,
+            "include_all_non_converged": False,
+        },
+    },
+    "parallelization_ls": {
+        "problem_name": "mw",
+        "scenarios": [
+            "tranquilo_ls_parallel_2",
+            "tranquilo_ls_parallel_4",
+            "tranquilo_ls_parallel_8",
+            "dfols",
+        ],
+        "profile_plot_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "normalize_runtime": True,
+            "runtime_measure": "n_batches",
+        },
+        "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
+        "deviation_plot_options": {"runtime_measure": "n_batches"},
+    },
 }
 
 _noisy_plots = {
@@ -136,10 +215,9 @@ _noisy_plots = {
         "scenarios": [
             "tranquilo_default",
             "tranquilo_experimental",
-            "nag_bobyqa",
-            "nag_bobyqa_noisy",
+            "nag_bobyqa_noisy_5",
         ],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
     "competition_ls_noisy": {
@@ -147,10 +225,20 @@ _noisy_plots = {
         "scenarios": [
             "tranquilo_ls_default",
             "tranquilo_ls_experimental",
-            "nag_dfols",
-            "nag_dfols_noisy",
+            "dfols_noisy_5",
         ],
-        "profile_plot_options": {"y_precision": 1e-2, "normalize_runtime": True},
+        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "noisy_ls": {
+        "problem_name": "mw_noisy",
+        "scenarios": [
+            "dfols_noisy_3",
+            "dfols_noisy_5",
+            "dfols_noisy_10",
+            "tranquilo_ls_default",
+        ],
+        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
     },
 }
@@ -163,9 +251,35 @@ if RUN_NOISY:
     PLOT_CONFIG.update(_noisy_plots)
 
 
+UNUSED_PLOTS = {
+    "noisy": {
+        "problem_name": "mw_noisy",
+        "scenarios": [
+            "nag_bobyqa_noisy_3",
+            "nag_bobyqa_noisy_5",
+            "nag_bobyqa_noisy_10",
+            "tranquilo_default",
+        ],
+        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
+}
+
+
 TRANQUILO_BASE_OPTIONS = {
     "algo_options": {
         "disable_convergence": False,
         "silence_experimental_warning": True,
     },
 }
+
+
+BENCHMARK_CASES = []
+for info in PLOT_CONFIG.values():
+    for scenario in info["scenarios"]:
+        BENCHMARK_CASES.append((info["problem_name"], scenario))
+
+
+COMPETITION_CASES = [case for case in BENCHMARK_CASES if "tranquilo" not in case[1]]
+
+TRANQUILO_CASES = [case for case in BENCHMARK_CASES if "tranquilo" in case[1]]

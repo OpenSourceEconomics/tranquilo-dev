@@ -7,59 +7,69 @@ from tranquilo import tranquilo_ls
 from tranquilo_dev.benchmarks.compat_mode import filter_tranquilo_benchmark
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import COMPAT_MODE
+from tranquilo_dev.config import get_max_criterion_evaluations
+from tranquilo_dev.config import get_max_iterations
+from tranquilo_dev.config import get_tranquilo_version
 from tranquilo_dev.config import N_CORES
 from tranquilo_dev.config import PROBLEM_SETS
 from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
+from tranquilo_dev.config import TRANQUILO_CASES
+
+
+ALGORITHMS = {
+    "tranquilo": tranquilo,
+    "tranquilo_ls": tranquilo_ls,
+}
 
 
 OUT = BLD / "benchmarks"
 
 for functype in ["scalar", "ls"]:
-
-    if functype == "scalar":
-        algorithm = tranquilo
-        algorithm_name = "tranquilo"
-    elif functype == "ls":
-        algorithm = tranquilo_ls
-        algorithm_name = "tranquilo_ls"
-    else:
-        raise ValueError(f"Unknown functype {functype}")
-
-    scenario_name = f"{algorithm_name}_experimental"
-
     for problem_name, problem_kwargs in PROBLEM_SETS.items():
-        optimize_options = deepcopy(TRANQUILO_BASE_OPTIONS)
-        optimize_options["algorithm"] = algorithm
-        optimize_options["algo_options"] = {
-            **optimize_options["algo_options"],
-            "disable_convergence": False,
-            "stopping_max_iterations": 2000 if functype == "scalar" else 500,
-            "stopping_max_criterion_evaluations": 2000,
-            "acceptance_decider": "classic",
-            "batch_size": 4,
-        }
+        algorithm_name = get_tranquilo_version(functype)
+        algorithm = ALGORITHMS[algorithm_name]
+        scenario_name = f"{algorithm_name}_experimental"
+        noisy = "noisy" in problem_name
+        max_iterations = get_max_iterations(noisy=noisy, functype=functype)
+        max_evals = get_max_criterion_evaluations(noisy=noisy)
 
-        problems = em.get_benchmark_problems(**problem_kwargs)
+        if (problem_name, scenario_name) in TRANQUILO_CASES:
 
-        name = f"{problem_name}_{scenario_name}"
+            optimize_options = deepcopy(TRANQUILO_BASE_OPTIONS)
+            optimize_options["algorithm"] = algorithm
+            optimize_options["algo_options"] = {
+                **optimize_options["algo_options"],
+                "stopping_max_iterations": max_iterations,
+                "stopping_max_criterion_evaluations": max_evals,
+            }
+            if noisy:
+                optimize_options["algo_options"].update(
+                    {
+                        "noisy": True,
+                    }
+                )
 
-        @pytask.mark.produces(OUT / f"{problem_name}_{scenario_name}.pkl")
-        @pytask.mark.task(id=name)
-        def task_run_tranquilo_experiental(
-            produces,
-            scenario_name=scenario_name,
-            optimize_options=optimize_options,
-            problems=problems,
-        ):
-            res = em.run_benchmark(
+            problems = em.get_benchmark_problems(**problem_kwargs)
+
+            name = f"{problem_name}_{scenario_name}"
+
+            @pytask.mark.produces(OUT / f"{problem_name}_{scenario_name}.pkl")
+            @pytask.mark.task(id=name)
+            def task_run_tranquilo_experimental(
+                produces,
+                scenario_name=scenario_name,
+                optimize_options=optimize_options,
                 problems=problems,
-                optimize_options={scenario_name: optimize_options},
-                n_cores=N_CORES,
-                max_criterion_evaluations=2_000,
-                disable_convergence=False,
-            )
+            ):
+                res = em.run_benchmark(
+                    problems=problems,
+                    optimize_options={scenario_name: optimize_options},
+                    n_cores=N_CORES,
+                    max_criterion_evaluations=max_evals,  # noqa: B023
+                    disable_convergence=False,
+                )
 
-            if COMPAT_MODE:
-                res = filter_tranquilo_benchmark(res)
+                if COMPAT_MODE:
+                    res = filter_tranquilo_benchmark(res)
 
-            em.utilities.to_pickle(res, produces)
+                em.utilities.to_pickle(res, produces)
