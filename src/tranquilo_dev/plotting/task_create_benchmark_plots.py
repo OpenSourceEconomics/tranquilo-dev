@@ -115,12 +115,5 @@ for name, info in PLOT_CONFIG.items():
                         if trace.name == trace_name:
                             trace.update(kwargs)
                 if name == "scalar_and_ls":
-                    ymax = []
-                    ymin = []
-                    for trace in fig.data:
-                        ymin.append(trace.y[0])
-                        ymax.append(trace.y[-8])
                     fig.update_xaxes(range=[trace.x[0], trace.x[-8]])
-                    fig.update_yaxes(range=[min(ymin), max(ymax) * 1.1])
-
             fig.write_image(produces)
