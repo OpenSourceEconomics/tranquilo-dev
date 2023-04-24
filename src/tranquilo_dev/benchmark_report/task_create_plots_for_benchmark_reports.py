@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import estimagic as em
 import pandas as pd
 import pytask
@@ -18,13 +20,19 @@ for name, info in PLOT_CONFIG.items():
 
     for plot_type in ["profile", "deviation"]:
 
+        plot_options = deepcopy(info).get(f"{plot_type}_plot_options", {})
+
         OUT = SPHINX_STATIC_BLD / "figures" / f"{plot_type}_plots"
 
         @pytask.mark.depends_on(DEPS)
         @pytask.mark.produces(OUT / f"{name}.svg")
         @pytask.mark.task(id=f"benchmark_report_{plot_type}_plot_{name}")
         def task_create_profile_and_deviation_plots(
-            depends_on, produces, info=info, plot_type=plot_type
+            depends_on,
+            produces,
+            info=info,
+            plot_type=plot_type,
+            plot_options=plot_options,
         ):
             results = {}
             for path in depends_on.values():
@@ -38,18 +46,21 @@ for name, info in PLOT_CONFIG.items():
             }
 
             plot_func = func_dict[plot_type]
-            kwargs = info.get(f"{plot_type}_plot_options", {})
 
             fig = plot_func(
                 problems=problems,
                 results=results,
-                **kwargs,
+                **plot_options,
             )
 
             fig.write_image(produces)
 
     plot_type = "convergence"
+    plot_options = deepcopy(info).get(f"{plot_type}_plot_options", {})
+    plot_options["combine_plots_in_grid"] = False
+
     problems = em.get_benchmark_problems(**PROBLEM_SETS[info["problem_name"]])
+
     OUT_DICT = {}
     for problem in problems.keys():
         OUT_DICT[problem] = (
@@ -64,7 +75,7 @@ for name, info in PLOT_CONFIG.items():
     @pytask.mark.produces(OUT_DICT)
     @pytask.mark.task(id=f"benchmark_report_{plot_type}_plot_{name}_{problem}")
     def task_create_convergence_plots(
-        depends_on, produces, info=info, plot_type=plot_type
+        depends_on, produces, info=info, plot_options=plot_options
     ):
         results = {}
         for path in depends_on.values():
@@ -72,13 +83,10 @@ for name, info in PLOT_CONFIG.items():
 
         problems = em.get_benchmark_problems(**PROBLEM_SETS[info["problem_name"]])
 
-        kwargs = info.get(f"{plot_type}_plot_options", {})
-        kwargs["combine_plots_in_grid"] = False
-
         figs = convergence_plot(
             problems=problems,
             results=results,
-            **kwargs,
+            **plot_options,
         )
 
         for key, fig in figs.items():

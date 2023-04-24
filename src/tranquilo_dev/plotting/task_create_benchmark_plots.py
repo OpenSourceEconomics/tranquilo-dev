@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import estimagic as em
 import pandas as pd
 import pytask
@@ -18,13 +20,19 @@ for name, info in PLOT_CONFIG.items():
 
     for plot_type in ["convergence", "profile", "deviation"]:
 
+        plot_options = deepcopy(info).get(f"{plot_type}_plot_options", {})
+
         OUT = BLD / "figures" / f"{plot_type}_plots"
 
         @pytask.mark.depends_on(DEPS)
         @pytask.mark.produces(OUT / f"{name}.svg")
         @pytask.mark.task(id=f"{plot_type}_plot_{name}")
         def task_create_benchmark_plots(
-            depends_on, produces, info=info, plot_type=plot_type
+            depends_on,
+            produces,
+            info=info,
+            plot_type=plot_type,
+            plot_options=plot_options,
         ):
             results = {}
             for path in depends_on.values():
@@ -39,12 +47,11 @@ for name, info in PLOT_CONFIG.items():
             }
 
             plot_func = func_dict[plot_type]
-            kwargs = info.get(f"{plot_type}_plot_options", {})
 
             fig = plot_func(
                 problems=problems,
                 results=results,
-                **kwargs,
+                **plot_options,
             )
 
             fig.write_image(produces)
