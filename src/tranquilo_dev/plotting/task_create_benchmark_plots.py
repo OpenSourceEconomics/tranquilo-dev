@@ -5,9 +5,66 @@ from estimagic import convergence_plot
 from estimagic import profile_plot
 from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.config import BLD
-from tranquilo_dev.config import LINE_SETTINGS
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
+
+LINE_SETTINGS = {"parallelization_ls": {}, "noisy_ls": {}, "scalar_and_ls": {}}
+
+tranquilo_scenarios = [
+    sc for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"] if "tranquilo" in sc
+]
+tranquilo_scenarios = sorted(tranquilo_scenarios, key=lambda x: int(x.split("_")[-1]))
+
+competitor = [
+    sc
+    for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"]
+    if sc not in tranquilo_scenarios
+][0]
+LINE_SETTINGS["parallelization_ls"][competitor] = {
+    "line": {"color": "#e53935", "dash": "solid"},
+}
+
+
+alphas = [0.38, 0.6, 1]
+
+for i, scenario in enumerate(tranquilo_scenarios):
+    LINE_SETTINGS["parallelization_ls"][scenario] = {
+        "line": {"color": "#014683", "dash": "solid"},
+        "opacity": alphas[i],
+    }
+dfols_scenarios = [sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if "dfols" in sc]
+dfols_scenarios = sorted(dfols_scenarios, key=lambda x: int(x.split("_")[-1]))
+
+tranquilo_noisy = [
+    sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if sc not in dfols_scenarios
+][0]
+LINE_SETTINGS["noisy_ls"][tranquilo_noisy] = {
+    "line": {"color": "#014683", "dash": "solid"},
+}
+
+for i, scenario in enumerate(dfols_scenarios):
+    LINE_SETTINGS["noisy_ls"][scenario] = {
+        "line": {"color": "#e53935", "dash": "solid"},
+        "opacity": alphas[i],
+    }
+LINE_SETTINGS["scalar_and_ls"]["dfols"] = {
+    "line": {"color": "#e53935", "dash": "solid"}
+}
+
+LINE_SETTINGS["scalar_and_ls"]["tranquilo_default"] = {
+    "line": {"color": "#014683", "dash": "solid"},
+    "opacity": 0.6,
+}
+
+LINE_SETTINGS["scalar_and_ls"]["tranquilo_ls_default"] = {
+    "line": {"color": "#014683", "dash": "solid"},
+}
+LINE_SETTINGS["scalar_and_ls"]["nlopt_bobyqa"] = {
+    "line": {"color": "green", "dash": "solid"},
+}
+LINE_SETTINGS["scalar_and_ls"]["nlopt_neldermead"] = {
+    "line": {"color": "orange", "dash": "solid"},
+}
 
 
 for name, info in PLOT_CONFIG.items():
@@ -51,8 +108,19 @@ for name, info in PLOT_CONFIG.items():
                 "noisy_ls",
                 "scalar_and_ls",
             ]:
+
                 for trace_name, kwargs in LINE_SETTINGS[name].items():
                     for trace in fig.data:
+
                         if trace.name == trace_name:
                             trace.update(kwargs)
+                if name == "scalar_and_ls":
+                    ymax = []
+                    ymin = []
+                    for trace in fig.data:
+                        ymin.append(trace.y[0])
+                        ymax.append(trace.y[-8])
+                    fig.update_xaxes(range=[trace.x[0], trace.x[-8]])
+                    fig.update_yaxes(range=[min(ymin), max(ymax) * 1.1])
+
             fig.write_image(produces)
