@@ -46,7 +46,7 @@ def get_tranquilo_version(functype):
     return "tranquilo" if functype == "scalar" else "tranquilo_ls"
 
 
-N_CORES = 14
+N_CORES = 4
 
 PROBLEM_SETS = {
     "mw": {
@@ -139,7 +139,7 @@ _deterministic_plots = {
         },
         "convergence_plot_options": {"n_cols": 6},
         "report_options": {
-            "y_precision": 1e-3,
+            "y_precision": DETERMINISTIC_Y_TOL,
             "stopping_criterion": "y",
             "runtime_measure": "n_evaluations",
             "normalize_runtime": True,
@@ -160,7 +160,7 @@ _deterministic_plots = {
         },
         "convergence_plot_options": {"n_cols": 6},
         "report_options": {
-            "y_precision": 1e-3,
+            "y_precision": DETERMINISTIC_Y_TOL,
             "stopping_criterion": "y",
             "runtime_measure": "n_evaluations",
             "normalize_runtime": True,
@@ -183,7 +183,7 @@ _deterministic_plots = {
         },
         "convergence_plot_options": {"n_cols": 6},
         "report_options": {
-            "y_precision": 1e-3,
+            "y_precision": DETERMINISTIC_Y_TOL,
             "stopping_criterion": "y",
             "runtime_measure": "n_evaluations",
             "normalize_runtime": True,
@@ -206,6 +206,14 @@ _deterministic_plots = {
         },
         "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
         "deviation_plot_options": {"runtime_measure": "n_batches"},
+        "report_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "stopping_criterion": "y",
+            "runtime_measure": "n_evaluations",
+            "normalize_runtime": True,
+            "include_all_tracebacks": False,
+            "include_all_non_converged": False,
+        },
     },
 }
 

@@ -22,7 +22,7 @@ for name, info in PLOT_CONFIG.items():
 
         @pytask.mark.depends_on(DEPS)
         @pytask.mark.produces(OUT / f"{name}.svg")
-        @pytask.mark.task(id=f"{plot_type}_plot_{name}")
+        @pytask.mark.task(id=f"benchmark_report_{plot_type}_plot_{name}")
         def task_create_profile_and_deviation_plots(
             depends_on, produces, info=info, plot_type=plot_type
         ):
@@ -51,18 +51,18 @@ for name, info in PLOT_CONFIG.items():
     plot_type = "convergence"
     problems = em.get_benchmark_problems(**PROBLEM_SETS[info["problem_name"]])
     OUT_DICT = {}
-    for prob in problems.keys():
-        OUT_DICT[prob] = (
+    for problem in problems.keys():
+        OUT_DICT[problem] = (
             SPHINX_STATIC_BLD
             / "figures"  # noqa: W503
             / f"{plot_type}_plots"  # noqa: W503
             / f"{name}"  # noqa: W503
-            / f"{prob}.svg"  # noqa: W503
+            / f"{problem}.svg"  # noqa: W503
         )
 
     @pytask.mark.depends_on(DEPS)
     @pytask.mark.produces(OUT_DICT)
-    @pytask.mark.task(id=f"{plot_type}_plots_{name}")
+    @pytask.mark.task(id=f"benchmark_report_{plot_type}_plot_{name}_{problem}")
     def task_create_convergence_plots(
         depends_on, produces, info=info, plot_type=plot_type
     ):

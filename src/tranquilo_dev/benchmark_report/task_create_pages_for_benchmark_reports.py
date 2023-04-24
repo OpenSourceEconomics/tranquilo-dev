@@ -3,7 +3,7 @@ import pandas as pd
 import pytask
 import snakemd
 from estimagic.benchmarking.process_benchmark_results import (
-    create_convergence_histories,
+    process_benchmark_results,
 )
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import PLOT_CONFIG
@@ -21,6 +21,14 @@ for name, info in PLOT_CONFIG.items():
     DEPS_FIGURES = {}
     for scenario in info["scenarios"]:
         DEPS_RESULTS[scenario] = BLD / "benchmarks" / f"{problem_name}_{scenario}.pkl"
+        for problem in problems.keys():
+            DEPS_FIGURES["convergence"] = (
+                SPHINX_STATIC_BLD
+                / "figures"  # noqa: W503
+                / "convergence_plots"  # noqa: W503
+                / f"{name}"  # noqa: W503
+                / f"{problem}.svg"  # noqa: W503
+            )
     for plot_type in ["profile", "deviation"]:
         DEPS_FIGURES[plot_type] = (
             SPHINX_STATIC_BLD / "figures" / f"{plot_type}_plots" / f"{name}.svg"
@@ -28,16 +36,22 @@ for name, info in PLOT_CONFIG.items():
 
     @pytask.mark.depends_on(DEPS_FIGURES | DEPS_RESULTS)
     @pytask.mark.produces(SPHINX_PAGES_BLD / f"{name}.md")
-    @pytask.mark.task(id=name)
-    def task_create_pages(name=name, info=info, problems=problems, paths=DEPS_RESULTS):
+    @pytask.mark.task(id=f"markdown_pages_{name}")
+    def task_create_pages(
+        produces,
+        name=name,
+        info=info,
+        problems=problems,
+        paths=DEPS_RESULTS,
+    ):
         scenarios = info["scenarios"]
-        options = process_report_options_and_set_defaults(info["report_options"])
+        options = _process_report_options_and_set_defaults(info)
         (
             converged_info,
             convergence_report,
             rank_report,
             traceback_report,
-        ) = create_reports(
+        ) = _create_reports(
             problems=problems,
             scenarios=scenarios,
             options=options,
@@ -78,14 +92,12 @@ for name, info in PLOT_CONFIG.items():
                             doc.add_heading(problem, level=4)
                             doc.add_raw(f"```python \n{traceback} \n```")
 
-        # 5. Convergence plots of all problems that have not been solved
+        # 5. Convergence plots of problems that have not been solved
         if options["include_all_non_converged"]:
             convergence_scenarios = scenarios
         else:
             convergence_scenarios = [s for s in scenarios if "tranquilo" in s]
-        doc.add_heading(
-            "Convergence Plots for Problems Not Solved by tranquilo", level=2
-        )
+        doc.add_heading("Convergence Plots for Problems Not Solved", level=2)
         for scenario in convergence_scenarios:
             doc.add_heading(scenario, level=3)
             problems_not_solved = converged_info.index[
@@ -97,15 +109,18 @@ for name, info in PLOT_CONFIG.items():
                     f"(../_static/bld/figures/convergence_plots/{name}/{problem}.svg)"
                 )
 
-        doc.dump(SPHINX_PAGES_BLD / name)
+        doc.dump(produces.parent / name)
 
 
-def process_report_options_and_set_defaults(options):
+def _process_report_options_and_set_defaults(info):
     """Process report options and set defaults.
 
     Args:
-        options (dict): dictionary of the report options with the keys below.
-            In case any of them are missing, we set the default values.
+        info (dict): nested dictionary with information about the benchmarking task.
+
+    Returns:
+        dict: dictionary with the keys as described below, where missing keys have been
+            set to their default values:
             - stopping_criterion (str): one of "x_and_y", "x_or_y", "x", "y".
                 Determines how convergence is determined from the two precisions.
             - x_precision (float or None): how close an algorithm must have gotten to
@@ -129,23 +144,23 @@ def process_report_options_and_set_defaults(options):
                 convergence report. If False, only problems that have not been solved
                 by tranquilo are included.
 
-    Returns:
-        dict: dictionary with the keys as described above, where missing keys have been
-            set to their default values.
-
     """
+    report_options = info.get("report_options", {})
+
     return {
-        "stopping_criterion": options.get("stopping_criterion", "y"),
-        "x_precision": options.get("x_precision", None),
-        "y_precision": options.get("y_precision", None),
-        "runtime_measure": options.get("runtime_measure", "n_evaluations"),
-        "normalize_runtime": options.get("normalize_runtime", False),
-        "include_all_tracebacks": options.get("include_all_tracebacks", False),
-        "include_all_non_converged": options.get("include_all_non_converged", False),
+        "stopping_criterion": report_options.get("stopping_criterion", "y"),
+        "x_precision": report_options.get("x_precision", 1e-4),
+        "y_precision": report_options.get("y_precision", 1e-4),
+        "runtime_measure": report_options.get("runtime_measure", "n_evaluations"),
+        "normalize_runtime": report_options.get("normalize_runtime", False),
+        "include_all_tracebacks": report_options.get("include_all_tracebacks", False),
+        "include_all_non_converged": report_options.get(
+            "include_all_non_converged", False
+        ),
     }
 
 
-def create_reports(problems, scenarios, options, paths):
+def _create_reports(problems, scenarios, options, paths):
     """Create all reports for a given benchmarking competition.
 
     Args:
@@ -189,7 +204,7 @@ def create_reports(problems, scenarios, options, paths):
     for path in paths.values():
         results = {**results, **pd.read_pickle(path)}
 
-    df, _converged_info = create_convergence_histories(
+    histories, _converged_info = process_benchmark_results(
         problems=problems,
         results=results,
         stopping_criterion=options["stopping_criterion"],
@@ -203,7 +218,7 @@ def create_reports(problems, scenarios, options, paths):
     )
 
     rank_report = _create_rank_report(
-        df=df,
+        histories=histories,
         converged_info=converged_info,
         convergence_report=convergence_report,
         scenarios=scenarios,
@@ -253,7 +268,7 @@ def _create_convergence_report(converged_info, problems, results):
 
 
 def _create_rank_report(
-    df,
+    histories,
     converged_info,
     convergence_report,
     scenarios,
@@ -263,8 +278,8 @@ def _create_rank_report(
     """Create a DataFrame with all information needed for the rank report.
 
     Args:
-        df (pandas.DataFrame): contains 'problem', 'algorithm' and 'runtime_measure'
-            as columns.
+        histories (pandas.DataFrame): contains 'problem', 'algorithm' and
+            'runtime_measure' as columns.
         converged_info (pandas.DataFrame): columns are the algorithms, index are the
             problems. The values are boolean and True when the algorithm arrived at
             the solution with the desired precision.
@@ -289,7 +304,7 @@ def _create_rank_report(
             "failed".
 
     """
-    solution_times = df.groupby(["problem", "algorithm"])[runtime_measure].max()
+    solution_times = histories.groupby(["problem", "algorithm"])[runtime_measure].max()
 
     if normalize_runtime:
         solution_times = solution_times.unstack()
@@ -363,7 +378,8 @@ def _create_traceback_report(results, scenarios, options):
 
     for key, value in results.items():
         if isinstance(value["solution"], str):
-            tracebacks[key[1]][key[0]] = value["solution"]
+            if key[1] in traceback_scenarios:
+                tracebacks[key[1]][key[0]] = value["solution"]
 
     traceback_report = pd.DataFrame.from_dict(tracebacks, orient="columns")
 

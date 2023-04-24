@@ -5,9 +5,14 @@ from tranquilo_dev.config import SPHINX
 from tranquilo_dev.config import SPHINX_PAGES_BLD
 
 
-@pytask.mark.depends_on(SPHINX_PAGES_BLD / f"{list(PLOT_CONFIG.keys())[0]}.md")
+DEPS = {}
+for name in PLOT_CONFIG.keys():
+    DEPS[name] = SPHINX_PAGES_BLD / f"{name}.md"
+
+
+@pytask.mark.depends_on(DEPS)
 @pytask.mark.produces(SPHINX / "index.md")
-def task_create_index():
+def task_create_index(produces):
     doc = snakemd.new_doc()
 
     doc.add_heading("Welcome to tranquilo-dev's benchmark reports!")
@@ -23,4 +28,4 @@ def task_create_index():
         """
     )
 
-    doc.dump(SPHINX / "index")
+    doc.dump(produces.parent / "index")

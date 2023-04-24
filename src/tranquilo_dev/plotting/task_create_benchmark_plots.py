@@ -10,12 +10,13 @@ from tranquilo_dev.config import PROBLEM_SETS
 
 
 for name, info in PLOT_CONFIG.items():
+
     problem_name = info["problem_name"]
     DEPS = {}
     for scenario in info["scenarios"]:
         DEPS[scenario] = BLD / "benchmarks" / f"{problem_name}_{scenario}.pkl"
 
-    for plot_type in ["profile", "convergence", "deviation"]:
+    for plot_type in ["convergence", "profile", "deviation"]:
 
         OUT = BLD / "figures" / f"{plot_type}_plots"
 
@@ -32,8 +33,8 @@ for name, info in PLOT_CONFIG.items():
             problems = em.get_benchmark_problems(**PROBLEM_SETS[info["problem_name"]])
 
             func_dict = {
-                "profile": profile_plot,
                 "convergence": convergence_plot,
+                "profile": profile_plot,
                 "deviation": deviation_plot,
             }
 
