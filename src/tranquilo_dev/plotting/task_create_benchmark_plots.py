@@ -20,20 +20,34 @@ competitor = [
     sc
     for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"]
     if sc not in tranquilo_scenarios
-]
+][0]
 LINE_SETTINGS["parallelization_ls"][competitor] = {
     "line": {"color": "red", "dash": "solid"},
 }
 
 
-alphas = [0.5, 0.8, 1]
+alphas = [0.25, 0.5, 1]
 
 for i, scenario in enumerate(tranquilo_scenarios):
     LINE_SETTINGS["parallelization_ls"][scenario] = {
         "line": {"color": "blue", "dash": "solid"},
         "opacity": alphas[i],
     }
+dfols_scenarios = [sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if "dfols" in sc]
+dfols_scenarios = sorted(dfols_scenarios, key=lambda x: x.split("_")[-1])
 
+tranquilo_noisy = competitor = [
+    sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if sc not in dfols_scenarios
+][0]
+LINE_SETTINGS["noisy_ls"][tranquilo_noisy] = {
+    "line": {"color": "blue", "dash": "solid"},
+}
+
+for i, scenario in enumerate(dfols_scenarios):
+    LINE_SETTINGS["noisy_ls"][scenario] = {
+        "line": {"color": "red", "dash": "solid"},
+        "opacity": alphas[i],
+    }
 
 for name, info in PLOT_CONFIG.items():
     problem_name = info["problem_name"]
@@ -72,8 +86,9 @@ for name, info in PLOT_CONFIG.items():
                 **kwargs,
             )
             if plot_type == "profile":
-                for trace_name, kwargs in LINE_SETTINGS[name].items():
-                    for trace in fig.data:
-                        if trace.name == trace_name:
-                            trace.update(kwargs)
+                if name in ["parallelization_ls", "noisy_ls", "scalar_and_ls"]:
+                    for trace_name, kwargs in LINE_SETTINGS[name].items():
+                        for trace in fig.data:
+                            if trace.name == trace_name:
+                                trace.update(kwargs)
             fig.write_image(produces)
