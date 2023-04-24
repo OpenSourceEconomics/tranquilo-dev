@@ -42,7 +42,7 @@ def get_tranquilo_version(functype):
     return "tranquilo" if functype == "scalar" else "tranquilo_ls"
 
 
-N_CORES = 14
+N_CORES = 6
 
 PROBLEM_SETS = {
     "mw": {
