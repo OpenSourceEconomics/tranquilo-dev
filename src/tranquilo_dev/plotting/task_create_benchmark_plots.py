@@ -46,10 +46,13 @@ for name, info in PLOT_CONFIG.items():
                 results=results,
                 **kwargs,
             )
-            if plot_type == "profile":
-                if name in ["parallelization_ls", "noisy_ls", "scalar_and_ls"]:
-                    for trace_name, kwargs in LINE_SETTINGS[name].items():
-                        for trace in fig.data:
-                            if trace.name == trace_name:
-                                trace.update(kwargs)
+            if plot_type == "profile" and name in [
+                "parallelization_ls",
+                "noisy_ls",
+                "scalar_and_ls",
+            ]:
+                for trace_name, kwargs in LINE_SETTINGS[name].items():
+                    for trace in fig.data:
+                        if trace.name == trace_name:
+                            trace.update(kwargs)
             fig.write_image(produces)
