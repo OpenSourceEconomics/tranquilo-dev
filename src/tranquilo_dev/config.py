@@ -255,3 +255,62 @@ for info in PLOT_CONFIG.values():
 COMPETITION_CASES = [case for case in BENCHMARK_CASES if "tranquilo" not in case[1]]
 
 TRANQUILO_CASES = [case for case in BENCHMARK_CASES if "tranquilo" in case[1]]
+
+
+LINE_SETTINGS = {"parallelization_ls": {}, "noisy_ls": {}, "scalar_and_ls": {}}
+
+tranquilo_scenarios = [
+    sc for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"] if "tranquilo" in sc
+]
+tranquilo_scenarios = sorted(tranquilo_scenarios, key=lambda x: int(x.split("_")[-1]))
+
+competitor = [
+    sc
+    for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"]
+    if sc not in tranquilo_scenarios
+][0]
+LINE_SETTINGS["parallelization_ls"][competitor] = {
+    "line": {"color": "#e53935", "dash": "solid"},
+}
+
+
+alphas = [0.25, 0.5, 1]
+
+for i, scenario in enumerate(tranquilo_scenarios):
+    LINE_SETTINGS["parallelization_ls"][scenario] = {
+        "line": {"color": "blue", "dash": "solid"},
+        "opacity": alphas[i],
+    }
+dfols_scenarios = [sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if "dfols" in sc]
+dfols_scenarios = sorted(dfols_scenarios, key=lambda x: int(x.split("_")[-1]))
+
+tranquilo_noisy = [
+    sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if sc not in dfols_scenarios
+][0]
+LINE_SETTINGS["noisy_ls"][tranquilo_noisy] = {
+    "line": {"color": "blue", "dash": "solid"},
+}
+
+for i, scenario in enumerate(dfols_scenarios):
+    LINE_SETTINGS["noisy_ls"][scenario] = {
+        "line": {"color": "#e53935", "dash": "solid"},
+        "opacity": alphas[i],
+    }
+LINE_SETTINGS["scalar_and_ls"]["dfols"] = {
+    "line": {"color": "#e53935", "dash": "solid"}
+}
+
+LINE_SETTINGS["scalar_and_ls"]["tranquilo_default"] = {
+    "line": {"color": "blue", "dash": "solid"},
+    "opacity": 0.6,
+}
+
+LINE_SETTINGS["scalar_and_ls"]["tranquilo_ls_default"] = {
+    "line": {"color": "blue", "dash": "solid"},
+}
+LINE_SETTINGS["scalar_and_ls"]["nlopt_bobyqa"] = {
+    "line": {"color": "green", "dash": "solid"},
+}
+LINE_SETTINGS["scalar_and_ls"]["nlopt_neldermead"] = {
+    "line": {"color": "orange", "dash": "solid"},
+}

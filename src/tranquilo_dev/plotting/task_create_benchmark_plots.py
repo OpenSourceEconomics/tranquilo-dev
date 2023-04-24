@@ -5,49 +5,10 @@ from estimagic import convergence_plot
 from estimagic import profile_plot
 from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.config import BLD
+from tranquilo_dev.config import LINE_SETTINGS
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
 
-
-LINE_SETTINGS = {"parallelization_ls": {}, "noisy_ls": {}, "scalar_and_ls": {}}
-
-tranquilo_scenarios = [
-    sc for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"] if "tranquilo" in sc
-]
-tranquilo_scenarios = sorted(tranquilo_scenarios, key=lambda x: x.split("_")[-1])
-
-competitor = [
-    sc
-    for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"]
-    if sc not in tranquilo_scenarios
-][0]
-LINE_SETTINGS["parallelization_ls"][competitor] = {
-    "line": {"color": "red", "dash": "solid"},
-}
-
-
-alphas = [0.25, 0.5, 1]
-
-for i, scenario in enumerate(tranquilo_scenarios):
-    LINE_SETTINGS["parallelization_ls"][scenario] = {
-        "line": {"color": "blue", "dash": "solid"},
-        "opacity": alphas[i],
-    }
-dfols_scenarios = [sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if "dfols" in sc]
-dfols_scenarios = sorted(dfols_scenarios, key=lambda x: x.split("_")[-1])
-
-tranquilo_noisy = competitor = [
-    sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if sc not in dfols_scenarios
-][0]
-LINE_SETTINGS["noisy_ls"][tranquilo_noisy] = {
-    "line": {"color": "blue", "dash": "solid"},
-}
-
-for i, scenario in enumerate(dfols_scenarios):
-    LINE_SETTINGS["noisy_ls"][scenario] = {
-        "line": {"color": "red", "dash": "solid"},
-        "opacity": alphas[i],
-    }
 
 for name, info in PLOT_CONFIG.items():
     problem_name = info["problem_name"]
