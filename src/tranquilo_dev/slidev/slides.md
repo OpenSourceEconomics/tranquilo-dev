@@ -25,7 +25,8 @@ transition: slide-left
 css: unocss
 ---
 
-# Tranquilo
+<p style="font-size: 3em;">Tranquilo</p>
+
 ## A trustregion optimizer for economists by economists
 
 Janoś Gabler, University of Bonn
@@ -133,7 +134,7 @@ layout: center
 layout: fact
 ---
 
-# Recap: Trustregion optimizers
+<p style="font-size: 3em;">Recap: Trustregion optimizers</p>
 
 
 ---
@@ -204,7 +205,7 @@ layout: center
 layout: fact
 ---
 
-# Noise-free and serial case
+<p style="font-size: 3em;">Noise-free and serial case</p>
 
 ---
 layout: center

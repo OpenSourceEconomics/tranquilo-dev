@@ -4,6 +4,9 @@
 
     h1 {
         @apply text-4xl;
+        position: absolute;
+        top: 1em;
+        left: 1em;
     }
 
     h2 {
@@ -31,6 +34,5 @@
         @apply opacity-40;
 
     }
-
 
 }
