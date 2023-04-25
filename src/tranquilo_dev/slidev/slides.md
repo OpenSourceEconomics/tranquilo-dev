@@ -54,7 +54,7 @@ layout: center
 - Simulated cases are noisy
 - 6 to 10 parameters
 - Function evaluation takes 30 minutes
-- Could only be solve with manual intervention
+- Painful manual intervention needed
 </div>
 <div>
 
@@ -64,7 +64,7 @@ layout: center
 - Backwards induction is hard to parallelize
 - Simulated choices are noisy
 - 10 to 50 parameters
-- Function evaluation takes between a few seconds and minutes
+- Potentially expensive function
 
 </div>
 </div>
@@ -80,7 +80,6 @@ layout: center
 - Suitable for data fitting problems
 - Designed for non-expert users
 - Assumption: Criterion function is expensive!
-- Internally: Modular framework for algorithm development
 
 ---
 layout: center
@@ -141,10 +140,10 @@ layout: fact
 layout: center
 ---
 
-# Steps of a derivative free trustregion optimizer
+# Derivative free trustregion optimization
 
-- Define a region around current x (the trustregion)
-- Maintain a sample around current x on which criterion is evaluated
+- Define a region around $x_k$
+- Maintain a sample of $x$s on which criterion is evaluated
 - Fit a regression or interpolation model on the sample
 - Optimize the surrogate model to create a candidate
 - Accept or reject the candidate
@@ -154,7 +153,7 @@ layout: center
 layout: center
 ---
 
-# Model quality, Rho and radius management
+# Model quality, Rho, and Radius
 
 
 <div class="flex gap-8">
@@ -166,19 +165,21 @@ $k$: iteration counter
 
 $x_k$: current x
 
+$M_k$: surrogate model
+
 $s_k$: candidate step
 
-$M_k$: surrogate model
 
 $\rho = \frac{F(x_k) - F(x_k + s_k)}{M_k(x_k) - M_k(x_k + s_k)}$
 
 </div>
 <div>
 
-- Goal: Sample as few new points as possible
+- Goal?
+  - Sample few new points
+  - Make large progress
 - Model only needs to be good enough to point downhill
-  - No lower bound on $R^2$ or sample geometry
-- Taylor like error bounds on surrogate model
+- Taylor like error bounds on $M_k$
   - Small $\rho$: decrease radius
   - Large $\rho$: increase radius
 - Preview: This will fail in noisy case!
@@ -192,9 +193,9 @@ $\rho = \frac{F(x_k) - F(x_k + s_k)}{M_k(x_k) - M_k(x_k + s_k)}$
 layout: center
 ---
 
-# Exploiting least squares structure
+# Least squares structure
 
-- Surrogate model needs to be flexible enough to have internal minima
+- Surrogate should allow for internal minima
   - Quadratic model: $1 + n + \frac{n(n+1)}{2}$ points
   - Regularized quadratic model: $2n + 1$ points
 - Underdetermined models often defeat intuition
@@ -323,6 +324,13 @@ layout: center
 
 
 ---
+layout: fact
+---
+
+<p style="font-size: 3em;">Parallel case</p>
+
+
+---
 layout: center
 ---
 
@@ -439,6 +447,13 @@ layout: center
 
 
 ---
+layout: fact
+---
+
+<p style="font-size: 3em;">Noisy case</p>
+
+
+---
 layout: center
 ---
 
@@ -469,9 +484,18 @@ layout: center
 transition: fade
 ---
 
-# Why is it so hard to pick `n_evaluations`?
+# Why is it hard to pick sample sizes?
 
-<img src="noise_plot_0.svg" class="rounded" width="500" />
+<img src="noise_plot_1.svg" class="rounded" width="450" />
+
+---
+layout: center
+transition: fade
+---
+
+# Why is it hard to pick sample sizes?
+
+<img src="noise_plot_2.svg" class="rounded" width="450" />
 
 
 ---
@@ -479,48 +503,16 @@ layout: center
 transition: fade
 ---
 
-# Why is it so hard to pick `n_evaluations`?
+# Why is it hard to pick sample sizes?
 
-<img src="noise_plot_1.svg" class="rounded" width="500" />
-
----
-layout: center
-transition: fade
----
-
-# Why is it so hard to pick `n_evaluations`?
-
-<img src="noise_plot_2.svg" class="rounded" width="500" />
+<img src="noise_plot_3.svg" class="rounded" width="450" />
 
 
 ---
 layout: center
-transition: fade
 ---
 
-# Why is it so hard to pick `n_evaluations`?
-
-<img src="noise_plot_3.svg" class="rounded" width="500" />
-
----
-layout: center
----
-
-# Estimating noise variance
-
-- Scan history for all points with multiple evaluations of criterion
-- Restrict to ones that are
-  - close to current trustregion
-  - have the most function evaluations
-- Estimate the variance of the noise term from those points
-  - Can handle correlated noise terms on residuals
-  - Locally constant approximation to an arbitrary noise term
-
----
-layout: center
----
-
-# A different perspective on radius management
+# A different perspective on radius and $\rho$
 
 <div class="grid grid-cols-2 gap-4">
 <div>
@@ -539,7 +531,7 @@ layout: center
 
 - Problem: Random error
 - Tuning parameter: Sample size
-- Performance metric: ???
+- Performance metric: $\rho_{noise}$
 
 </div>
 </div>
@@ -549,52 +541,60 @@ layout: center
 layout: center
 ---
 
-# Simulation for the sampling step
+# Step 1: Estimate noise variance
 
-- Need to find $\rho_{noise}$
-  - low if we have too few samples to make progress
-  - independent of approximation error
-- Take the current surrogate model $M_k(x)$ as approximation of criterion function
-- Use the variance estimate to simulate a noisy samples
+- Scan history for all points with multiple evaluations of criterion
+- Restrict to ones that are
+  - close to current trustregion
+  - have the most function evaluations
+- Estimate
+  - $\sigma_k$: variance of the noise on a scalar criterion function
+  - $\Sigma_k$: covariance matrix of the noise on the least-squares residuals
+- Locally constant approximation to an arbitrary noise term
+
+---
+layout: center
+---
+
+# Step 2: Simulate $\rho_{noise}$
+
+- Surrogate model $M_k(x)$ approximates the criterion function
+- Use $M_k$ and $\sigma_k$ to simulate a noisy sample
 - Fit a model $\tilde{M_{k}}(x)$ on the simulated sample
 - Optimize $\tilde{M_{k}}(x)$ to get a suggested step $\tilde{s_k}$
-- $\rho_{noise}$
-
-
-
+- $\rho_{noise} = \frac{M(x_k) - M(x_k + \tilde{s}_k)}{\tilde{M_k}(x_k) - \tilde{M_k}(x_k + \tilde{s}_k)}$
+- Repeat the simulation
+- Increase sample size if most rhos are small
 
 
 ---
 layout: center
 ---
 
-# Power analysis for the acceptance step
+# Noise in the acceptance step
+
+- Noise free acceptance step is trivial
+- Now: Does candidate have a lower expected value?
+- Intuition: Needs large sample if values are close
 
 
-<div class="flex gap-12">
-<div>
+---
+layout: center
+---
+
+# Step 3: Power analysis
+
+- Power analysis: $\frac{n_1 n_2}{n_s + n_2} \geq \sigma^2 \Big[\frac{\Phi^{-1}(1 - \alpha) + \Phi^{-1}(1 - \beta)}{\Delta_{min}} \Big]^2$
 
 
-- $n_1, n_2$: sample sizes
-- $\sigma^2$: noise variance
+
+- $n_1, n_2$: number of evaluations at current and candidate x
 - $\alpha$: confidence level
 - $1 - \beta$: power level
-- $\Delta_{min}$: effect size
+- $\Delta_{min} = M_k(x_k) - M_k(x_k + s_k)$: Minimal detectable effect size
+- Can calculate $n_1$ and $n_2$ that minimize new function evaluations
 
 
-</div>
-<div>
-
-- Noise free acceptance step is trivial: smaller value is better
-- Now: Which value has the lower expectation?
-- Intuition: Needs large sample if values are close
-- Model yields expected improvement: $M_k(x_k) - M_k(x_k + s_k)$
-- Power analysis: $\frac{n_1 n_2}{n_s + n_2} \geq \sigma^2 \Big[\frac{\Phi^{-1}(1 - \alpha) + \Phi^{-1}(1 - \beta)}{\Delta_{min}} \Big]^2$
-- Use expected improvement as $\Delta_{min}$
-
-
-</div>
-</div>
 
 
 ---
