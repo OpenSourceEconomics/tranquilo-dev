@@ -3,10 +3,11 @@
     font-size: 1.25rem;
 
     h1 {
-        @apply text-4xl;
+        @apply text-5xl;
         position: absolute;
         top: 1em;
         left: 1em;
+        color: #0E4187;
     }
 
     h2 {
