@@ -37,7 +37,6 @@ Tim Mensinger, University of Bonn
 Mariam Petrosyan, University of Bonn
 
 
-
 ---
 layout: center
 ---
@@ -129,6 +128,14 @@ layout: center
 | Parallel     | ❌         | ❌         | 〰         | 〰          | ❌          | ✅           |
 | Least-squares| ❌         | ❌         | ❌         |✅          | ✅          | ❌           |
 
+
+---
+layout: fact
+---
+
+# Recap: Trustregion optimizers
+
+
 ---
 layout: center
 ---
@@ -184,66 +191,123 @@ $\rho = \frac{F(x_k) - F(x_k + s_k)}{M_k(x_k) - M_k(x_k + s_k)}$
 layout: center
 ---
 
-# A simple example: $f(x) = \sum_i x_i^2$
+# Exploiting least squares structure
+
+- Surrogate model needs to be flexible enough to have internal minima
+  - Quadratic model: $1 + n + \frac{n(n+1)}{2}$ points
+  - Regularized quadratic model: $2n + 1$ points
+- Underdetermined models often defeat intuition
+- Fit linear models $m_{ki}(x) = \alpha_{ki} + g_{ki}^T x$ for each residual $f_i(x)$
+- Form $M_k(x) = ...$
+
+---
+layout: fact
+---
+
+# Noise-free and serial case
+
+---
+layout: center
+---
+
+# Tranquilo and Tranquilo-LS
+
+- **T**rust**R**egion **A**daptive **N**oise robust **QU**adrat**I**c or **L**inear approximation **O**ptimizer
+- Fairly standard trustregion optimizers
+  - Sampling: Approximate Fekete points
+  - Subsolvers: GQTPAR or BNTR
+  - Radius management: Same as pounders
+- Key differences
+  - History search and variable sample size
+  - Switch from round to cubic trustregions close to bounds
+  - Same code for scalar and least-squares version!
+
+---
+layout: center
+---
+
+# Tranquilo-LS in action
+
+
+<div class="grid grid-cols-2 gap-12">
+<div>
+
+- Criterion function: $f(x) = \sum_i x_i^2$
+- Start parameters: $x_0 = (1, 1)$
+- Global optimum: $x^* = (0, 0)$
+
+
+</div>
+<div>
 
 <img src="sphere.png" class="rounded" width="500" />
 
----
-layout: center
-transition: fade-out
----
-
-<img src="animation_0.svg" class="rounded" width="600" />
+</div>
+</div>
 
 
 ---
 layout: center
-transition: fade-out
+transition: fade
 ---
 
-<img src="animation_1.svg" class="rounded" width="600" />
-
-
----
-layout: center
-transition: fade-out
----
-
-<img src="animation_2.svg" class="rounded" width="600" />
+<img src="animation_0.svg" class="rounded" width="500" />
 
 
 ---
 layout: center
-transition: fade-out
+transition: fade
 ---
 
-<img src="animation_3.svg" class="rounded" width="600" />
-
-
----
-layout: center
-transition: fade-out
----
-
-<img src="animation_4.svg" class="rounded" width="600" />
+<img src="animation_1.svg" class="rounded" width="500" />
 
 
 ---
 layout: center
-transition: fade-out
+transition: fade
 ---
 
-<img src="animation_5.svg" class="rounded" width="600" />
+<img src="animation_2.svg" class="rounded" width="500" />
 
+
+---
+layout: center
+transition: fade
+---
+
+<img src="animation_3.svg" class="rounded" width="500" />
+
+
+---
+layout: center
+transition: fade
+---
+
+<img src="animation_4.svg" class="rounded" width="500" />
+
+
+---
+layout: center
+transition: fade
+---
+
+<img src="animation_5.svg" class="rounded" width="500" />
 
 
 ---
 layout: center
 ---
 
-# Exploiting least squares structure
+# Benchmarking
 
-
+- Moré-Wild Benchmark set
+- 52 leasts-squares problems with 2 to 12 parameters
+- Was used in pounders, PyBobyqa and DFO-LS papers
+- Local optimization problems without bounds
+- Differentiable (but we don't use derivatives)
+- Profile plots
+  - Y-axis: share of solved problems
+  - X-axis: (normalized) runtime in terms of function evaluations
 
 
 ---
@@ -261,15 +325,105 @@ layout: center
 
 # Cost model for parallel optimization
 
+- Most economists have access to:
+  - 4 to 8 cores on a laptop/desktop
+  - 16 to 64 cores on a server
+- In practice, criterion functions are often not parallelized
+  - Lack of knowledge or time to write parallel code
+  - Some problems are hard to parallelize
+- Cost model with batch size $b$:
+  - Up to $b$ parallel evaluations have the same cost as one evaluation
 
+---
+layout: center
+transition: fade
+---
+
+# Idea 1: Parallel line search
+
+<img src="origin_plot.svg" class="rounded" width="400" />
+
+
+---
+layout: center
+transition: fade
+---
+
+# Idea 1: Parallel line search
+
+<img src="line_points_1.svg" class="rounded" width="400" />
+
+
+---
+layout: center
+transition: fade
+---
+
+# Idea 1: Parallel line search
+
+<img src="line_points_2.svg" class="rounded" width="400" />
+
+
+---
+layout: center
+transition: fade
+---
+
+# Idea 1: Parallel line search
+
+<img src="line_points_3.svg" class="rounded" width="400" />
+
+
+---
+layout: center
+transition: fade
+---
+
+# Idea 2: Speculative sampling
+
+<img src="origin_plot.svg" class="rounded" width="400" />
+
+---
+layout: center
+transition: fade
+---
+
+# Idea 2: Speculative sampling
+
+<img src="empty_speculative_trustregion_small_scale.svg" class="rounded" width="400" />
+
+
+---
+layout: center
+transition: fade
+---
+
+# Idea 2: Speculative sampling
+
+<img src="sampled_speculative_trustregion_small_scale.svg" class="rounded" width="400" />
 
 
 ---
 layout: center
 ---
 
-# Tranquilo strategies for parallelization
+# Combining the two
 
+- If candidate is close to trustregion border:
+  - Allocate up to three function evaluations to a line search
+- If "free" function evaluations are left:
+  - Do speculative sampling
+- If any line-search or speculative point yields improvement
+  - Accept them as new x
+
+
+---
+layout: center
+---
+
+# Line search + Speculation
+
+<img src="line_and_speculative_points.svg" class="rounded" width="400" />
 
 
 ---
@@ -285,8 +439,11 @@ layout: center
 layout: center
 ---
 
-# Problems caused by noise in trustregion optimizers
+# Problems caused by noise
 
+- Model does not approximate well
+- $\rho$ is low in many iterations
+- Radius shrinks to zero -> optimization fails
 
 ---
 layout: center
@@ -294,12 +451,75 @@ layout: center
 
 # How DFOLS handles noise
 
+- Evaluate criterion multiple times at each point and average
+- Re-start if trustregion collapses
+- How many evaluations is decided by the user based on
+  - Current radius
+  - $\rho$
+  - Iteration counter $(k)$
+  - restart counter
+- Very hard to get right!
+
+
+---
+layout: center
+transition: fade
+---
+
+# Why is it so hard to pick `n_evaluations`?
+
+<img src="noise_plot_0.svg" class="rounded" width="500" />
+
+
+---
+layout: center
+transition: fade
+---
+
+# Why is it so hard to pick `n_evaluations`?
+
+<img src="noise_plot_1.svg" class="rounded" width="500" />
+
+---
+layout: center
+transition: fade
+---
+
+# Why is it so hard to pick `n_evaluations`?
+
+<img src="noise_plot_2.svg" class="rounded" width="500" />
+
+
+---
+layout: center
+transition: fade
+---
+
+# Why is it so hard to pick `n_evaluations`?
+
+<img src="noise_plot_3.svg" class="rounded" width="500" />
 
 ---
 layout: center
 ---
 
-# Why is it so hard to pick `n_evaluations`?
+# Estimating noise variance
+
+- Scan history for all points with multiple evaluations of criterion
+- Restrict to ones that are
+  - close to current trustregion
+  - have the most function evaluations
+- Estimate the variance of the noise term from those points
+  - Can handle correlated noise terms on residuals
+  - Locally constant approximation to an arbitrary noise term
+
+---
+layout: center
+---
+
+# Power analysis for the acceptance step
+
+-
 
 
 ---
@@ -308,13 +528,11 @@ layout: center
 
 # Simulation for the sampling step
 
+- Key Idea: Treat random error in a similar to approximation error
+    - T
 
+- Question: What can take the place of $rho$
 
----
-layout: center
----
-
-# Power analysis for the acceptance step
 
 
 
@@ -333,10 +551,12 @@ layout: center
 
 # Summary
 
-
-
----
-layout: center
----
-
-# Outlook
+- We created a modular framework for derivative free trustregion optimization
+- Same code for scalar and least-squares version
+- Performance in noise-free and serial setting is similar to existing optimizers
+- Two ideas for parallelization:
+  - Line search
+  - Speculative sampling
+- Two ideas for noise handling
+  - Simulate $\rho_{noise}$ in sampling step
+  - Power analysis for acceptance step
