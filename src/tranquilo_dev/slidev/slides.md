@@ -197,8 +197,10 @@ layout: center
   - Quadratic model: $1 + n + \frac{n(n+1)}{2}$ points
   - Regularized quadratic model: $2n + 1$ points
 - Underdetermined models often defeat intuition
-- Fit linear models $m_{ki}(x) = \alpha_{ki} + g_{ki}^T x$ for each residual $f_i(x)$
-- Form $M_k(x) = ...$
+- Least-square structure helps
+  - Fit linear models $m_{i}(x) = a_{i} + b_{i}^T x$ for each residual $f_i(x)$
+  - $M(x) = \sum_i m_{i}(x)^2 = \sum_i a_{i}^2 + \sum_i 2a_{i} b_{i}^T x + \sum_i x^T b_{i}b_{i}^T x = \alpha + g^T x + \frac{1}{2} x^T H x$
+  - Fully determined model with just $n + 1$ points
 
 ---
 layout: fact
@@ -517,9 +519,29 @@ layout: center
 layout: center
 ---
 
-# Power analysis for the acceptance step
+# A different perspective on radius management
 
--
+<div class="grid grid-cols-2 gap-4">
+<div>
+
+## Noise-free case
+
+- Problem: Approximation error
+- Tuning parameter: Radius
+- Performance metric: $\rho$
+
+
+</div>
+<div>
+
+## Noisy case
+
+- Problem: Random error
+- Tuning parameter: Sample size
+- Performance metric: ???
+
+</div>
+</div>
 
 
 ---
@@ -528,12 +550,50 @@ layout: center
 
 # Simulation for the sampling step
 
-- Key Idea: Treat random error in a similar to approximation error
-    - T
+- Need to find $\rho_{noise}$
+  - low if we have too few samples to make progress
+  - independent of approximation error
+- Take the current surrogate model $M_k(x)$ as approximation of criterion function
+- Use the variance estimate to simulate a noisy samples
+- Fit a model $\tilde{M_{k}}(x)$ on the simulated sample
+- Optimize $\tilde{M_{k}}(x)$ to get a suggested step $\tilde{s_k}$
+- $\rho_{noise}$
 
-- Question: What can take the place of $rho$
 
 
+
+
+---
+layout: center
+---
+
+# Power analysis for the acceptance step
+
+
+<div class="flex gap-12">
+<div>
+
+
+- $n_1, n_2$: sample sizes
+- $\sigma^2$: noise variance
+- $\alpha$: confidence level
+- $1 - \beta$: power level
+- $\Delta_{min}$: effect size
+
+
+</div>
+<div>
+
+- Noise free acceptance step is trivial: smaller value is better
+- Now: Which value has the lower expectation?
+- Intuition: Needs large sample if values are close
+- Model yields expected improvement: $M_k(x_k) - M_k(x_k + s_k)$
+- Power analysis: $\frac{n_1 n_2}{n_s + n_2} \geq \sigma^2 \Big[\frac{\Phi^{-1}(1 - \alpha) + \Phi^{-1}(1 - \beta)}{\Delta_{min}} \Big]^2$
+- Use expected improvement as $\Delta_{min}$
+
+
+</div>
+</div>
 
 
 ---
