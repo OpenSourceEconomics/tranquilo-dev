@@ -42,41 +42,25 @@ Mariam Petrosyan, University of Bonn
 layout: center
 ---
 
-# Prototypical optimization problems
+# Prototypical optimization problem
 
-<div class="grid grid-cols-2 gap-4">
-<div>
 
-## Agent-based Covid Model
-
-- Fit simulated time series to data
-- Computational bottleneck is serial
-- Simulated cases are noisy
-- 6 to 10 parameters
-- Function evaluation takes 30 minutes
-- Painful manual intervention needed
-</div>
-<div>
-
-## DCDP Models
-
+- Discrete choice dynamic programming model
 - Fit simulated choices to data
 - Backwards induction is hard to parallelize
 - Simulated choices are noisy
 - 10 to 50 parameters
-- Potentially expensive function
+- Each simulation run takes a few minutes
 
-</div>
-</div>
 
 ---
 layout: center
 ---
 
-# Goals
+# Goals for an optimizer
 
-- Robust if function evaluations are noisy
-- Parallelize at the level of function evaluations
+- Robust to noise
+- Parallel function evaluations
 - Suitable for data fitting problems
 - Designed for non-expert users
 - Assumption: Criterion function is expensive!
@@ -120,13 +104,13 @@ layout: center
 
 # Existing optimizers
 
-|              | Nelder-Mead| Bobyqa     | PyBobyqa   |DFO-LS       |Pounders     | Parallel NM |
+|              | Nelder-Mead| Bobyqa     | PyBobyqa   |DFO-LS       |POUNDERS     | Parallel NM |
 |--------------|------------|------------|------------|-------------|-------------|-------------|
 | Library      | Nlopt      | Nlopt      | NAG        | NAG         | TAO         | (estimagic) |
-| Class        | simplex    | trustregion| trustregion| trustregion | trustregion |simplex      |
-| Noisy        | 〰         | ❌         | ✅         | ✅          | ❌          |〰           |
-| Parallel     | ❌         | ❌         | 〰         | 〰          | ❌          | ✅           |
-| Least-squares| ❌         | ❌         | ❌         |✅          | ✅          | ❌           |
+| Class        | simplex    | trustregion| trustregion| trustregion | trustregion | simplex     |
+| Noisy        | (yes)      | no         | yes        | yes         | no          | (yes)       |
+| Parallel     | no         | no         | (yes)      | (yes)       | no          | yes         |
+| Least-squares| no         | no         | no         | yes         | yes         | no          |
 
 
 ---
@@ -143,11 +127,11 @@ layout: center
 # Derivative free trustregion optimization
 
 - Define a region around $x_k$
-- Maintain a sample of $x$s on which criterion is evaluated
+- Maintain a sample of $x$s and corresponding function evaluations
 - Fit a regression or interpolation model on the sample
 - Optimize the surrogate model to create a candidate
-- Accept or reject the candidate
-- Adjust the radius
+- Evaluate the function at the candidate
+- Accept or reject and adjust radius
 
 ---
 layout: center
@@ -156,7 +140,7 @@ layout: center
 # Model quality, Rho, and Radius
 
 
-<div class="flex gap-8">
+<div class="flex gap-20">
 <div>
 
 $F$: criterion function
@@ -175,10 +159,10 @@ $\rho = \frac{F(x_k) - F(x_k + s_k)}{M_k(x_k) - M_k(x_k + s_k)}$
 </div>
 <div>
 
-- Goal?
+- Goal:
   - Sample few new points
   - Make large progress
-- Model only needs to be good enough to point downhill
+- Model does not have to be great!
 - Taylor like error bounds on $M_k$
   - Small $\rho$: decrease radius
   - Large $\rho$: increase radius
@@ -197,7 +181,7 @@ layout: center
 
 - Surrogate should allow for internal minima
   - Quadratic model: $1 + n + \frac{n(n+1)}{2}$ points
-  - Regularized quadratic model: $2n + 1$ points
+  - $2n + 1$ points with regularization
 - Underdetermined models often defeat intuition
 - Least-square structure helps
   - Fit linear models $m_{i}(x) = a_{i} + b_{i}^T x$ for each residual $f_i(x)$
@@ -216,11 +200,11 @@ layout: center
 
 # Tranquilo and Tranquilo-LS
 
-- **T**rust**R**egion **A**daptive **N**oise robust **QU**adrat**I**c or **L**inear approximation **O**ptimizer
-- Fairly standard trustregion optimizers
+- <span style="color: #0E4187; font-weight: bold;">T</span>rust<span style="color: #0E4187; font-weight: bold;">R</span>egion <span style="color: #0E4187; font-weight: bold;">A</span>daptive <span style="color: #0E4187; font-weight: bold;">N</span>oise robust <span style="color: #0E4187; font-weight: bold;">QU</span>adrat<span style="color: #0E4187; font-weight: bold;">I</span>c or <span style="color: #0E4187; font-weight: bold;">L</span>inear approximation <span style="color: #0E4187; font-weight: bold;">O</span>ptimizer
+- Fairly standard trustregion framework
   - Sampling: Approximate Fekete points
   - Subsolvers: GQTPAR or BNTR
-  - Radius management: Same as pounders
+  - Radius management: Same as POUNDERS
 - Key differences
   - History search and variable sample size
   - Switch from round to cubic trustregions close to bounds
@@ -306,12 +290,12 @@ layout: center
 
 - Moré-Wild Benchmark set
 - 52 leasts-squares problems with 2 to 12 parameters
-- Was used in pounders, PyBobyqa and DFO-LS papers
-- Local optimization problems without bounds
+- Used in POUNDERS, PyBobyqa and DFO-LS papers
 - Differentiable (but we don't use derivatives)
 - Profile plots
   - Y-axis: share of solved problems
-  - X-axis: (normalized) runtime in terms of function evaluations
+  - X-axis: computational cost in function evaluations
+  - For each problem, cost is standardized by the cost of the best optimizer
 
 
 ---
@@ -343,7 +327,8 @@ layout: center
   - Lack of knowledge or time to write parallel code
   - Some problems are hard to parallelize
 - Cost model with batch size $b$:
-  - Up to $b$ parallel evaluations have the same cost as one evaluation
+  - Want to avoid idle cores
+  - $b$ parallel evaluations have same cost as one
 
 ---
 layout: center
@@ -441,7 +426,7 @@ layout: center
 layout: center
 ---
 
-# Benchmark: Parallel tranquilo vs. DFOLS
+# Benchmark: Parallel tranquilo vs. DFO-LS
 
 <img src="bld/figures/profile_plots/parallelization_ls.svg" class="rounded" width="700" />
 
@@ -467,10 +452,10 @@ layout: center
 layout: center
 ---
 
-# How DFOLS handles noise
+# How DFO-LS handles noise
 
-- Evaluate criterion multiple times at each point and average
 - Re-start if trustregion collapses
+- Evaluate criterion multiple times at each point and average
 - How many evaluations is decided by the user based on
   - Current radius
   - $\rho$
@@ -512,7 +497,7 @@ transition: fade
 layout: center
 ---
 
-# A different perspective on radius and $\rho$
+# A different look on radius and $\rho$
 
 <div class="grid grid-cols-2 gap-4">
 <div>
@@ -531,7 +516,7 @@ layout: center
 
 - Problem: Random error
 - Tuning parameter: Sample size
-- Performance metric: $\rho_{noise}$
+- Need: $\rho_{noise}$
 
 </div>
 </div>
@@ -584,7 +569,7 @@ layout: center
 
 # Step 3: Power analysis
 
-- Power analysis: $\frac{n_1 n_2}{n_s + n_2} \geq \sigma^2 \Big[\frac{\Phi^{-1}(1 - \alpha) + \Phi^{-1}(1 - \beta)}{\Delta_{min}} \Big]^2$
+- Power analysis: $\frac{n_1 n_2}{n_1 + n_2} \geq \sigma^2 \Big[\frac{\Phi^{-1}(1 - \alpha) + \Phi^{-1}(1 - \beta)}{\Delta_{min}} \Big]^2$
 
 
 
@@ -601,7 +586,7 @@ layout: center
 layout: center
 ---
 
-# Benchmark: Noisy tranquilo vs. DFOLS
+# Benchmark: Noisy tranquilo vs. DFO-LS
 
 <img src="bld/figures/profile_plots/noisy_ls.svg" class="rounded" width="700" />
 
