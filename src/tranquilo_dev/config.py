@@ -138,13 +138,10 @@ _deterministic_plots = {
             "normalize_runtime": True,
         },
         "convergence_plot_options": {"n_cols": 6},
-        "report_options": {
+        "convergence_report_options": {"y_precision": DETERMINISTIC_Y_TOL},
+        "rank_report_options": {
             "y_precision": DETERMINISTIC_Y_TOL,
-            "stopping_criterion": "y",
-            "runtime_measure": "n_evaluations",
             "normalize_runtime": True,
-            "include_all_tracebacks": False,
-            "include_all_non_converged": False,
         },
     },
     "competition_ls": {
@@ -159,13 +156,10 @@ _deterministic_plots = {
             "normalize_runtime": True,
         },
         "convergence_plot_options": {"n_cols": 6},
-        "report_options": {
+        "convergence_report_options": {"y_precision": DETERMINISTIC_Y_TOL},
+        "rank_report_options": {
             "y_precision": DETERMINISTIC_Y_TOL,
-            "stopping_criterion": "y",
-            "runtime_measure": "n_evaluations",
             "normalize_runtime": True,
-            "include_all_tracebacks": False,
-            "include_all_non_converged": False,
         },
     },
     "scalar_and_ls": {
@@ -182,13 +176,10 @@ _deterministic_plots = {
             "normalize_runtime": True,
         },
         "convergence_plot_options": {"n_cols": 6},
-        "report_options": {
+        "convergence_report_options": {"y_precision": DETERMINISTIC_Y_TOL},
+        "rank_report_options": {
             "y_precision": DETERMINISTIC_Y_TOL,
-            "stopping_criterion": "y",
-            "runtime_measure": "n_evaluations",
             "normalize_runtime": True,
-            "include_all_tracebacks": False,
-            "include_all_non_converged": False,
         },
     },
     "parallelization_ls": {
@@ -206,13 +197,10 @@ _deterministic_plots = {
         },
         "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
         "deviation_plot_options": {"runtime_measure": "n_batches"},
-        "report_options": {
+        "convergence_report_options": {"y_precision": DETERMINISTIC_Y_TOL},
+        "rank_report_options": {
             "y_precision": DETERMINISTIC_Y_TOL,
-            "stopping_criterion": "y",
-            "runtime_measure": "n_evaluations",
             "normalize_runtime": True,
-            "include_all_tracebacks": False,
-            "include_all_non_converged": False,
         },
     },
 }

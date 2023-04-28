@@ -80,19 +80,33 @@ for name, info in PLOT_CONFIG.items():
 
         plot_options = deepcopy(info).get(f"{plot_type}_plot_options", {})
 
-        OUT = BLD / "figures" / f"{plot_type}_plots"
+        problems = em.get_benchmark_problems(**PROBLEM_SETS[info["problem_name"]])
+
+        OUT = {plot_type: BLD / "figures" / f"{plot_type}_plots" / f"{name}.svg"}
+        if plot_type == "convergence":
+            for problem in problems.keys():
+                OUT[problem] = (
+                    BLD
+                    / "figures"  # noqa: W503
+                    / f"{plot_type}_plots"  # noqa: W503
+                    / f"{name}"  # noqa: W503
+                    / f"{problem}.svg"  # noqa: W503
+                )
 
         @pytask.mark.depends_on(DEPS)
-        @pytask.mark.produces(OUT / f"{name}.svg")
+        @pytask.mark.produces(OUT)
         @pytask.mark.task(id=f"{plot_type}_plot_{name}")
         def task_create_benchmark_plots(
-            depends_on, produces, info=info, plot_type=plot_type, plot_options=plot_options, name=name
+            depends_on,
+            produces,
+            plot_type=plot_type,
+            plot_options=plot_options,
+            problems=problems,
+            name=name,
         ):
             results = {}
             for path in depends_on.values():
                 results = {**results, **pd.read_pickle(path)}
-
-            problems = em.get_benchmark_problems(**PROBLEM_SETS[info["problem_name"]])
 
             func_dict = {
                 "convergence": convergence_plot,
@@ -120,4 +134,14 @@ for name, info in PLOT_CONFIG.items():
                             trace.update(kwargs)
                 if name == "scalar_and_ls":
                     fig.update_xaxes(range=[trace.x[0], trace.x[-8]])
-            fig.write_image(produces)
+            fig.write_image(produces[plot_type])
+
+            if plot_type == "convergence":
+                plot_options["combine_plots_in_grid"] = False
+                fig_dict = convergence_plot(
+                    problems=problems,
+                    results=results,
+                    **plot_options,
+                )
+                for prob, fig in fig_dict.items():
+                    fig.write_image(produces[prob])
