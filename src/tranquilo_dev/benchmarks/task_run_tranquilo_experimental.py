@@ -2,8 +2,6 @@ from copy import deepcopy
 
 import estimagic as em
 import pytask
-from tranquilo import tranquilo
-from tranquilo import tranquilo_ls
 from tranquilo_dev.benchmarks.compat_mode import filter_tranquilo_benchmark
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import COMPAT_MODE
@@ -17,8 +15,8 @@ from tranquilo_dev.config import TRANQUILO_CASES
 
 
 ALGORITHMS = {
-    "tranquilo": tranquilo,
-    "tranquilo_ls": tranquilo_ls,
+    "tranquilo": "tranquilo",
+    "tranquilo_ls": "tranquilo_ls",
 }
 
 
