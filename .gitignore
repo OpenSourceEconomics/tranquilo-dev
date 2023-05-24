@@ -6,6 +6,8 @@
 # bld
 bld/*
 bld/
+bld_paper/
+aux_paper/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

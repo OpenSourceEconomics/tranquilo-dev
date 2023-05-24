@@ -30,6 +30,7 @@ dependencies:
   - setuptools_scm
   - toml
   - pytask >=0.2.3
+  - pytask-latex
   - black
   - nb_black
   - pre-commit

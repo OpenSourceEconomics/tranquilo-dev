@@ -60,6 +60,7 @@ repos:
             Pygments,
         ]
         args: [--ignore, "N806, D404, D100, D103"]
+        exclude: ^src/tranquilo_dev/paper/__init__.py
 -   repo: https://github.com/guilatrova/tryceratops
     rev: v1.0.1
     hooks:
@@ -69,6 +70,8 @@ repos:
     hooks:
     -   id: codespell
         args: [--skip, "*.html,*ipynb,*.bib,paper/"]
+        exclude: ^src/tranquilo_dev/paper/
+
 -   repo: https://github.com/executablebooks/mdformat
     rev: 0.7.14
     hooks:

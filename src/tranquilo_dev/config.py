@@ -21,6 +21,8 @@ SRC = Path(__file__).parent.resolve()
 ROOT = SRC.joinpath("..", "..").resolve()
 BLD = ROOT.joinpath("bld").resolve()
 PUBLIC = BLD.joinpath("public").resolve()
+AUX_PAPER = ROOT.joinpath("aux_paper").resolve()
+BLD_PAPER = ROOT.joinpath("bld_paper").resolve()
 
 RUN_DETERMINISTIC = True
 RUN_NOISY = True

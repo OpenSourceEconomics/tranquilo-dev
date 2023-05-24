@@ -1,0 +1,68 @@
+% !TeX document-id = {41e45e82-ef69-4afe-b598-4ca4a64e5ec2}
+% !TeX program = pdflatex
+% !TeX TS-program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/
+
+% !BIB program = biber
+% !BIB TS-program = biber
+% !TeX TXS-program:bibliography = txs:///biber
+
+%%%%%%%%%%%%%%%%
+%%  PREAMBLE  %%
+%%%%%%%%%%%%%%%%
+
+\documentclass[a4paper, 10pt]{article}
+
+\newcommand{\papertitle}{Tranquilo}
+\newcommand*\mean[1]{\bar{#1}}
+
+% To ``accept'' all changes in the document:
+% \PassOptionsToPackage{final}{changes}
+\input{preamble/Preamble_Fundamental_packages}
+\hypersetup{
+	pdftitle={\papertitle},
+	pdfauthor={Janoś Gabler, Sebastian Gsell, Tim Mensinger, Mariam Petrosyan}
+	}
+	\subimport{preamble/}{Preamble_Page_layout_general}
+	\subimport{preamble/}{Preamble_Page_layout_paper}
+	\subimport{preamble/}{Preamble_Fonts_Charter_FiraSans}
+	\subimport{preamble/}{Preamble_Sansserif_math}
+	\subimport{preamble/}{Preamble_BibLaTeX_AER}
+	\subimport{preamble/}{Preamble_Commenting_and_highlighting}
+	\subimport{preamble/}{Preamble_Miscellaneous}
+
+	\hyphenation{inter-tem-po-ral}
+
+\bibliography{refs.bib}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%
+%%  DOCUMENT BODY  %%
+%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+\selectlanguage{USenglish} \frenchspacing
+
+\input{titlepage/titlepage}
+
+\input{introduction}
+
+\clearpage
+
+\begin{appendices}
+
+\end{appendices}
+
+\newpage
+
+\phantomsection % Needed for the bibliography bookmark to point to the correct page
+
+\begin{refcontext}
+	\printbibliography[heading=bibintoc]
+\end{refcontext}
+
+
+\end{document}
