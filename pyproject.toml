@@ -6,10 +6,10 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.0"]
 write_to = "src/tranquilo_dev/_version.py"
 
 [tool.pytask.ini_options]
-paths = "./src/tranquilo_dev"
+paths = ["./src/tranquilo_dev","./paper"]
 
 [tool.interrogate]
 ignore-init-module = true
 ignore-nested-functions = true
-exclude = ["setup.py", "docs", "bld"]
+exclude = ["setup.py", "docs", "bld","bld_paper","aux_paper"]
 ignore-regex = ["task_*"]

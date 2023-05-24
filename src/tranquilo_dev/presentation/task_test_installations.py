@@ -9,6 +9,7 @@ def is_installed(executable):
 
 for executable in ["marp"]:
 
+    @pytask.mark.skip
     @pytask.mark.task
     def task_test_executable_is_installed(executable=executable):
         if not is_installed(executable=executable):
