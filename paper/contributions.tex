@@ -7,7 +7,7 @@
 
 \textit{Parallelization:} Our algorithm allows for concurrent evaluations of the criterion functions. We make use of parallelization to obtain the initial sample and to implement two important ideas during the acceptance step: 1) To do line search for cases when the candidate point lies close to the trust region border, 2) Subject to available "idle" resources, to sample in the speculative trust region around the candidate point.
 
-For noisy optimization problems, has significantly lower computational cost compared to existing alternatives, by means of adaptive sampling. In particular, in each iteration, our algorithm determines the number of function evaluations at each sample point based on a simulation method, wherein we treat the surrogate model as the true objective and obtain
+For noisy optimization problems, we implement adaptive  In particular, in each iteration, our algorithm determines the number of function evaluations at each sample point based on a simulation method, wherein we treat the surrogate model as the true objective and obtain
 %     \item Adaptive noise handling
 %         \begin{itemize}
 %             \item use the surrogate model and the variance estimate to simulate a noisy sample

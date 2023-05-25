@@ -16,6 +16,7 @@ OPTIONS = (
 )
 
 
+@pytask.mark.task
 @pytask.mark.latex(
     script="tranquilo.tex",
     document=AUX_PAPER / "tranquilo.pdf",
