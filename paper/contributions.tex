@@ -5,22 +5,17 @@
 \textit{History Search:} We implement variable trust-region sampling, and thus save function evaluations, by retaining the entire history of sampled points and searching for candidate points in the pool of existing sample points.
 
 
-\textit{Parallelization:} Our algorithm allows for concurrent evaluations of the criterion functions. We make use of parallelization to obtain the initial sample and to implement two important ideas during the acceptance step: 1\) Parallel line search for cases when the candidate point lies close to the trust region border, 2\) Subject to the availability "idle" resources, sampling in the speculative trus region around the candidate point.
-    \item Adaptive noise handling
-        \begin{itemize}
-            \item use the surrogate model and the variance estimate to simulate a noisy sample
-            \item fit a sub-model to the simluated sample and optimize it to get a candidate point
-            \item calculate the ration of improvement in the surogate model over the the improvement of sub-model as improvement for a problem with only noise but no approximation error
-            \item increase sample size if most simulated $\rho$-s are low
-        \end{itemize}
-    \item Parallelization
-        \begin{itemize}
-            \item implement parallel evaluations of the criterion function by combining two ideas
-            \item line search in the direction of the candidate point with up to three function evaluations
-            \item if there are idle core left, do speculative sampling with the candidate point as the speculative trust region center
-            \item select a new candidate point if any of the above points yields an improvement.
-        \end{itemize}
-    \item we retain entire history.
-    \item we save function evaluations with adaptive noise handling and avoid having idle cores with parallelization
-    \item Software engineering
-\end{itemize}
+\textit{Parallelization:} Our algorithm allows for concurrent evaluations of the criterion functions. We make use of parallelization to obtain the initial sample and to implement two important ideas during the acceptance step: 1) To do line search for cases when the candidate point lies close to the trust region border, 2) Subject to available "idle" resources, to sample in the speculative trust region around the candidate point.
+
+For noisy optimization problems, has significantly lower computational cost compared to existing alternatives, by means of adaptive sampling. In particular, in each iteration, our algorithm determines the number of function evaluations at each sample point based on a simulation method, wherein we treat the surrogate model as the true objective and obtain
+%     \item Adaptive noise handling
+%         \begin{itemize}
+%             \item use the surrogate model and the variance estimate to simulate a noisy sample
+%             \item fit a sub-model to the simluated sample and optimize it to get a candidate point
+%             \item calculate the ration of improvement in the surogate model over the the improvement of sub-model as improvement for a problem with only noise but no approximation error
+%             \item increase sample size if most simulated $\rho$-s are low
+%         \end{itemize}
+
+%     \item we retain entire history.
+%     \item we save function evaluations with adaptive noise handling and avoid having idle cores with parallelization
+%     \item Software engineering
