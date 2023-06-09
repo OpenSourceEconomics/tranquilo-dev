@@ -1,7 +1,6 @@
 import shutil
 
 import pytask
-from pytask_latex import compilation_steps as cs
 from tranquilo_dev.config import AUX_PAPER
 from tranquilo_dev.config import BLD_PAPER
 
@@ -20,7 +19,6 @@ OPTIONS = (
 @pytask.mark.latex(
     script="tranquilo.tex",
     document=AUX_PAPER / "tranquilo.pdf",
-    compilation_steps=cs.latexmk(options=OPTIONS),
 )
 def task_compile_paper():
     pass

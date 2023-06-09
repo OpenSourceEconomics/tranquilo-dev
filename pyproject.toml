@@ -6,7 +6,6 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.0"]
 write_to = "src/tranquilo_dev/_version.py"
 
 [tool.pytask.ini_options]
-paths = ["./src/tranquilo_dev","./paper"]
 infer_latex_dependencies = true
 
 [tool.interrogate]

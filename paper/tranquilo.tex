@@ -13,8 +13,10 @@
 
 \documentclass[a4paper, 10pt]{article}
 
+
 \newcommand{\papertitle}{Tranquilo}
 \newcommand*\mean[1]{\bar{#1}}
+\newcommand{\Hquad}{\hspace{0.2em}}
 
 % To ``accept'' all changes in the document:
 % \PassOptionsToPackage{final}{changes}
@@ -30,12 +32,8 @@
 	\subimport{preamble/}{Preamble_BibLaTeX_AER}
 	\subimport{preamble/}{Preamble_Commenting_and_highlighting}
 	\subimport{preamble/}{Preamble_Miscellaneous}
-
 	\hyphenation{inter-tem-po-ral}
-
 \bibliography{refs.bib}
-
-
 
 %%%%%%%%%%%%%%%%%%%%%
 %%  DOCUMENT BODY  %%
@@ -47,17 +45,25 @@
 \selectlanguage{USenglish} \frenchspacing
 
 \input{titlepage/titlepage}
+\input{./equations.tex}
+\input{./paper_plan.tex}
+% \input{introduction}
 
-\input{introduction}
-\input{contributions}
 
 \clearpage
 
+
 \begin{appendices}
+
+
 
 \end{appendices}
 
+
+
 \newpage
+
+
 
 \phantomsection % Needed for the bibliography bookmark to point to the correct page
 
