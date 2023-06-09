@@ -1,0 +1,180 @@
+\section{Contributions}
+\paragraph{Algorithmic}
+\begin{itemize}
+    \item adaptive noise handling
+    \item parallelization
+    \item scanning the history??
+\end{itemize}
+\paragraph{Software architecture}
+\begin{itemize}
+    \item modularity: making each of the components (fitters, filters, etc) easily changeable
+    \item ability to have scalar and least-squares optimizers in one code base.
+\end{itemize}
+\paragraph{Open source}
+\begin{itemize}
+    \item we make the algorithm available in estimagic.
+    \item fast python implementations of sub-solvers (bntr and gqtpar)
+    \item python implementations of the  more-wild and cartis-roberts benchmark problems
+\end{itemize}
+
+\section{Motivation}
+
+\begin{itemize}
+    \item the four problems from slides
+    \item properties of residuals: continuously differnetiable but Jacobian not available
+    \item examples
+        \begin{itemize}
+            \item check for examples of pure least-squares problem application
+            \item MSM and GMM and cholesky trick
+            \item calibration of engineering problems (Janos)
+            \item the covid model
+        \end{itemize}
+\end{itemize}
+
+\section{Literature review}
+\begin{itemize}
+    \item BOBYQA
+        \begin{itemize}
+            \item parts of BOBYQA that explain how other optimizers came around
+            \item quadratic models
+            \item under-determined fitting (with 2n+1 points) with penalty on hessian change
+        \end{itemize}
+        \item POUNDERS
+            \begin{itemize}
+                \item literal translation of bobyqa to least-squares.
+                \item same number of points and same quadratic model used for fitting each residual and aggregation to the scalar model.
+            \end{itemize}
+        \item DFOLS
+            \begin{itemize}
+                \item linear residual models aggregated into quadratic scalar model
+                \item noise handling via user-specified sequences
+            \end{itemize}
+    \item ASTRO-DF (JANOS)
+            \begin{itemize}
+                \item scalar optimizer
+                \item adaptive noise handling
+            \end{itemize}
+    \item Parallel Neldermead
+            \begin{itemize}
+                \item using parallelism even though the objective function is not parallelized
+            \end{itemize}
+    \item refer to wild paper
+\end{itemize}
+
+
+
+
+\section{Tranquilo core algorithm}
+
+
+\subsection{The main loop}
+%%TODO
+% 1. define notation for the building blocks write equations for the interface and data flow
+% 2. write down algorithm listing
+\begin{itemize}
+    \item In each iteration $k$, given current candidate point $x_k$ and search radius $\Delta_k$, we begin by screening the hisotry of criterion evaluations to retrieve all points that lie within the neighbourhood $\Delta_k$ of $x_k$:
+            \begin{align}
+                \mathbb{S}_k\equiv\{x\in\mathcal{H}|\Hquad\lVert x_k-x\rVert\leq\Delta_k\}
+                \label{eq:hist-search}
+            \end{align}
+        \item We filter points to potentially improve the quality of the sample points:
+            \begin{align}
+                \mathbb{S}'_k\equiv\mathfrak{F}(\mathbb{S}_k) = \{\mathfrak{F}(x)|\Hquad x\in \mathbb{S}_k\}
+                \label{eq:filtering}
+            \end{align}
+        \item If the size of the filtered sample is smaller than the target sample size ($n+1$, usually), we sample new points and evaluate the criterion at the new points.
+    \item We then fit linear models for each residual $f_i(x)$:\comment[]{MP: Need to discuss indexing}
+            \begin{align}
+                f_i(x)\approx m_{ik}(x) \equiv a_{ik}+b_{ik}^Tx
+                \label{eq:model-linear}
+            \end{align}
+    by solving the following least-squares problem for each residual:
+            \begin{align}
+                \min\limits_{a_{ik},b_{ik}}\sum\limits_{t=1}^{|\mathbb{S}'_k|}\big(f_i(x_t)-(a_{ik}+b_{ik}^Tx_t)\big)^2
+                \label{eq:fit-linear}
+            \end{align}
+
+    The approximation to the full objective $F$ can then be constructed as the inner product of the linear models \ref{eq:model-linear}:
+    \begin{align}
+        F(x)\approx M_k(x)\equiv\sum\limits_im_{ik}(x)^2 &= \sum\limits_i a_{ik}^2 + \sum\limits_i 2a_{ik} b_{ik}^T x + \sum_i x^T b_{ik}b_{ik}^T x\nonumber\\
+        &\equiv \alpha + g_k^T x + \frac{1}{2} x^T H_k x
+        \label{eq:model-full}
+    \end{align}
+    To find a candidate step $s_k$, we solve for the optimum of the aggregate model:\comment[]{equation 2.10 in DFOLS paper imposes condition on the step side to }
+    \begin{align}
+        s_k = arg\,\min\limits_sM_k(x_k+s)
+        \label{eq:cand-step}
+    \end{align}
+    As a safety measure, to prevent stagnation, we impose a lower threshold on the candidate step size $\lVert s_k\rVert$. To this end, we itertively improve sample quality, fit the model and solve for the step size until we obtain large enough candidate step.
+
+    We evaluate the full criterion function $F$ at the new candidate point $x_k+s_k$. Subject to suffieciently large decrease in the function value, relative to the decrease predicted by the model $M_k$:
+    \begin{align}
+        \rho_k=\frac{f(x_k)-f(x_k+s_k)}{M(x_k)-M(x_k+s_k)}\geq\rho_{min}
+        \label{eq:rho}
+    \end{align}
+    we accept the new candidate point by setting $x_{k+1}=x_k+s_k$ and increase the trustregion radius in the next iteration, $\delta_{k+1}$. If we don't observe a sufficient improvement in the function value, we reject the step (setting $x_{k+1}=x_k$) and shrink the trustregion radius.
+
+\end{itemize}
+
+\subsection{Implementation and benchmarking}
+
+\paragraph{Implementation details} Describe the specifics of the following in the baseline:
+\begin{itemize}
+    \item filters: we keep all
+    \item fitting: we use ols
+    \item subsolvers: we use bntr for cube sampling (bounded problems) and gqtpar for sphere sampling
+\end{itemize}
+\paragraph{Benchmark plots}
+\begin{itemize}
+    \item describe the more-wild benchmark set ???
+    \item describe the plot axes:
+        \begin{itemize}
+            \item x: number of function evaluations normalized by the best result
+            \item y: share of the problems solved
+        \end{itemize}
+    \item show profile plot (only ls optimizers???)
+    \item idea: show all optimizers to show scalar optimizers are not fit for the ls problems?
+\end{itemize}
+
+
+\section{Parallelization}
+\subsection{Implementation}
+\begin{itemize}
+\item describe the implementation details
+\begin{itemize}
+    \item if batch size is 1 (no parallelization): do classic acceptance based on rhos
+    \item else, check if the candidate point is at the tr border
+    \item if yes, get number of line search points (at most 3, at least batch size-1) and define the grid on the line
+    \item calculate number of unallocated function evals based on the number of points on the line search and batch size ($batch_size-1-n_evals_line_search$) WHY $batch_size-1$ ?????
+    \item if the previous number is non-zero, do speculative sampling around the candidate point using search radius
+    \item add the line search and speculative points, if any, to the history
+    \item check if criterion is smaller at any of the new points (spec+line search)
+    \item if so, update candidate fval and x
+\end{itemize}
+\item discuss optimizers that implement parallel evaluations: dfols since it is the only ls optimizer??
+\end{itemize}
+
+\subsection{Benchmarking}
+\begin{itemize}
+    \item discuss the cost model
+    \item motivate the cost model
+    \item show profile plot
+    \item discuss profile plot
+\end{itemize}
+
+\section{Noisy optimization}
+
+\subsection{Implementation}
+pretty much follow the slides
+\begin{itemize}
+    \item estimation of the variance
+    \item calculation of rho noise with formula -> number of function evals at each sample point
+    \item power analysis step with formula -> number of function evaluations at candidate point and trsutregion center for acceptance decision
+\end{itemize}
+\subsection{Benchmarking}
+\begin{itemize}
+    \item discuss the specific noise-related parameters in tranquilo
+    \item discuss specific noise-related parameters in df-ols (number of function evals)
+\end{itemize}
+
+\section{conclusion}

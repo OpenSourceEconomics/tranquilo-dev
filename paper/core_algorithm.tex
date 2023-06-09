@@ -1,0 +1,18 @@
+\section{Tranquilo algorithm}
+\label{sec:algo-framework}
+\subsection{The trustregion framework}
+\label{subsec:tr-framework}
+\begin{itemize}
+    \item write equation of the leas-squares problem as in slides
+    \item as in dfols/dfgn, state properties of the residuals, that is they are continuous and differnetiable but their jacobians are not attainable.
+    \item describe our framework following the structure of tranquilo main loop?
+    \item mention we fit linear model to each residual
+    \item write the equation of linear models, borrowing from slide "Least squares structure" of the workshop slides.
+    \item write the equation of the aggreagted model as approximation of the scalar objective function
+    \item begin description of the main loop:
+        \begin{enumerate}
+            \item in a given iteration k, we define trust region based on the radius and the candidate point which is the trust region center
+            \item to sample interpolation points, we define a search region based on search radius factor, which is larger than one and allows us to sample outside the trust region. We then retrieve all the points from the history of function evaluations that lie within the search region
+            \item we search in the history of the
+        \end{enumerate}
+\end{itemize}

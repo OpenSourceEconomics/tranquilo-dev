@@ -1,0 +1,38 @@
+\subsection{Motivation}
+\label{subsec:intro-motiv}
+
+
+Least-squares estimators have a wide range of applications in industrial and scientific settings. Apart from problems that have obvious least-squares structure, many problems can obtain a least-squares representation through some transformations. In particular, consider the following objective function:
+\begin{align}
+    Q(\theta) = G(\theta)^TWG(\theta)
+    \label{eq:vec-gmm-msm}
+\end{align}
+Where $m\in\mathbb{R}^L$ is a vector valued function of the parameter of interest $\theta$, and $W$ is a $L\times L$ weighting matrix. In case of the gerneralized method of moments estimator, $G$ is the sample average of a vector valued function $g$:
+\begin{align}
+    G(\theta) = \frac{1}{N}\sum\limits_{i=1}^Ng(x_i,\theta)
+    \label{eq:m-gmm}
+\end{align}
+Whereas in the case of method of simulated moments estimator, $m$ is the difference between simulated and observed moments:
+\begin{align}
+    G(\theta) = (m(X)-\hat{m(X|\theta)})
+\end{align}
+
+Through a Cholesky decomposition of the weighting matrix $W = U^TU$, we can rewrite the objective of the problem \ref{eq:vec-gmm-msm} in the following least-squares form:
+\begin{align}
+    Q(\theta)=G(\theta)^TU^TUG(\theta)=(UG(\theta))^T(UG(\theta))=\sum\limits_{i=1}^L\Big(\sum\limits_{j=i}^LU_{ji}G_j(\theta)\Big)^2\equiv\sum\limits_{i=1}^{L}f_i(\theta)^2
+\end{align}
+
+motivating noise handling:
+\begin{itemize}
+    \item write that least-squares optimization problems can have noisy residuals
+    \item bring one example: look into wild/stochastic objectives/structured objectives and dfols
+    \item write equation least-square noisy from the slides
+    \item bring examples of existing approaches (dfols and two more from wild (astrodf?))
+    \item say that picking sequences are hard to get right for domain-experts since there would need to know the algorithm in-detail to be able to pick parameters efficiently
+    \item say that's why our approach determines the number of function evaluations internally, based on the progress of the optimizer and the complexity is completely hidden away from the user.
+\end{itemize}
+
+motivating cost model
+\begin{itemize}
+    \item
+\end{itemize}
