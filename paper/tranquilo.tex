@@ -12,11 +12,15 @@
 %%%%%%%%%%%%%%%%
 
 \documentclass[a4paper, 10pt]{article}
-
+\usepackage{algpseudocode}
+\usepackage[linesnumbered,ruled,noline]{algorithm2e}
 
 \newcommand{\papertitle}{Tranquilo}
 \newcommand*\mean[1]{\bar{#1}}
 \newcommand{\Hquad}{\hspace{0.2em}}
+\let\oldnl\nl% Store \nl in \oldnl
+\newcommand{\nonl}{\renewcommand{\nl}{\let\nl\oldnl}}% Remove line number for one line
+
 
 % To ``accept'' all changes in the document:
 % \PassOptionsToPackage{final}{changes}
@@ -45,7 +49,7 @@
 \selectlanguage{USenglish} \frenchspacing
 
 \subimport{titlepage/}{titlepage}
-\subimport{./}{equations.tex}
+\subimport{./}{notations.tex}
 \subimport{./}{paper_plan}
 % \input{introduction}
 

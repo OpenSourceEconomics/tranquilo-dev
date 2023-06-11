@@ -3,7 +3,6 @@
 \begin{itemize}
     \item adaptive noise handling
     \item parallelization
-    \item scanning the history??
 \end{itemize}
 \paragraph{Software architecture}
 \begin{itemize}
@@ -72,54 +71,121 @@
 %%TODO
 % 1. define notation for the building blocks write equations for the interface and data flow
 % 2. write down algorithm listing
-\begin{itemize}
-    \item In each iteration $k$, given current candidate point $x_k$ and search radius $\Delta_k$, we begin by screening the hisotry of criterion evaluations to retrieve all points that lie within the neighbourhood $\Delta_k$ of $x_k$:
-            \begin{align}
-                \mathbb{S}_k\equiv\{x\in\mathcal{H}|\Hquad\lVert x_k-x\rVert\leq\Delta_k\}
-                \label{eq:hist-search}
-            \end{align}
-        \item We filter points to potentially improve the quality of the sample points:
-            \begin{align}
-                \mathbb{S}'_k\equiv\mathfrak{F}(\mathbb{S}_k) = \{\mathfrak{F}(x)|\Hquad x\in \mathbb{S}_k\}
-                \label{eq:filtering}
-            \end{align}
-        \item If the size of the filtered sample is smaller than the target sample size ($n+1$, usually), we sample new points and evaluate the criterion at the new points.
-    \item We then fit linear models for each residual $f_i(x)$:\comment[]{MP: Need to discuss indexing}
-            \begin{align}
-                f_i(x)\approx m_{ik}(x) \equiv a_{ik}+b_{ik}^Tx
-                \label{eq:model-linear}
-            \end{align}
-    by solving the following least-squares problem for each residual:
-            \begin{align}
-                \min\limits_{a_{ik},b_{ik}}\sum\limits_{t=1}^{|\mathbb{S}'_k|}\big(f_i(x_t)-(a_{ik}+b_{ik}^Tx_t)\big)^2
-                \label{eq:fit-linear}
-            \end{align}
+In each iteration $t$, given current candidate point $x^*_t$ and search radius $\Delta^{search}_t$, we begin by screening the hisotry of criterion evaluations to retrieve all points that lie within the neighbourhood $\Delta^{search}_t=\gamma^{search}\Delta_t^{tr}$ of $x_t$:
+\begin{align}
+    \mathcal{E}_t\equiv\{x\in\mathcal{H}|\Hquad\lVert x^*_t-x\rVert\leq\Delta^{search}_t\}
+    \label{eq:hist-search}
+\end{align}
+We filter points to potentially improve the quality of the sample points:
+\begin{align}
+    \mathcal{E}'_t\equiv Filter (\mathcal{E}_t) = \{ Filter (x)|\Hquad x\in \mathcal{E}_t\}
+    \label{eq:filtering}
+\end{align}
+If the size of the filtered sample is smaller than the target sample size ($p+1$, usually), we sample new points in the current trust region:
 
-    The approximation to the full objective $F$ can then be constructed as the inner product of the linear models \ref{eq:model-linear}:
-    \begin{align}
-        F(x)\approx M_k(x)\equiv\sum\limits_im_{ik}(x)^2 &= \sum\limits_i a_{ik}^2 + \sum\limits_i 2a_{ik} b_{ik}^T x + \sum_i x^T b_{ik}b_{ik}^T x\nonumber\\
-        &\equiv \alpha + g_k^T x + \frac{1}{2} x^T H_k x
-        \label{eq:model-full}
-    \end{align}
-    To find a candidate step $s_k$, we solve for the optimum of the aggregate model:\comment[]{equation 2.10 in DFOLS paper imposes condition on the step side to }
-    \begin{align}
-        s_k = arg\,\min\limits_sM_k(x_k+s)
-        \label{eq:cand-step}
-    \end{align}
-    As a safety measure, to prevent stagnation, we impose a lower threshold on the candidate step size $\lVert s_k\rVert$. To this end, we itertively improve sample quality, fit the model and solve for the step size until we obtain large enough candidate step.
+\begin{align}
+    \mathcal{N}\equiv\mathbb{B}(\mathcal{E}_t^{'},R_t,n^{target})
+\end{align}
+where $\mathbb{B}$ is a sampling function\comment[]{MP:should talk about bounds and optimal sampling, etc here?}
 
-    We evaluate the full criterion function $F$ at the new candidate point $x_k+s_k$. Subject to suffieciently large decrease in the function value, relative to the decrease predicted by the model $M_k$:
-    \begin{align}
-        \rho_k=\frac{f(x_k)-f(x_k+s_k)}{M(x_k)-M(x_k+s_k)}\geq\rho_{min}
-        \label{eq:rho}
-    \end{align}
-    we accept the new candidate point by setting $x_{k+1}=x_k+s_k$ and increase the trustregion radius in the next iteration, $\delta_{k+1}$. If we don't observe a sufficient improvement in the function value, we reject the step (setting $x_{k+1}=x_k$) and shrink the trustregion radius.
+We approximate the vector function $\mathbf{f}$ by fitting a vector model to sample points $x_t\in\mathcal{S}_t\equiv\mathcal{E}^{'}_t\cup\mathcal{N}_t$ and either the corresponding vector-function evaluations $y_t=\mathbf{f}(x_t)$, or, to introduce momentum, the residuals of the model from the previous iteration, $\tilde{y}_t =y_t-M_{t-1}^v(x_t)$:
+\begin{align}
+    \mathbf{f}\approx M_t^v\equiv Fitter(x_t,y_t;R_t,M_{t-1}^v)
+\end{align}
+where the fitter function is constructed such that it's applicable for both regression ($|\mathcal{N}_t|\geq p$) and interpolation ($|\mathcal{N}_t|\leq p$) problems. Additional dependency on the trust region $R_t$ is necessary to scale the model to a unit circle to facilitate solving for the scalar model's,$M_t^s = \lVert M_t^v\rVert$, optimum.
 
-\end{itemize}
+To find a candidate step $s_t$, we solve for the optimum of the aggregate model:\comment[]{equation 2.10 in DFOLS paper imposes condition on the step side to }
+\begin{align}
+    s_t\approx arg\,\min\limits_sM_t^v(x_t+s)
+    \label{eq:cand-step}
+\end{align}
+
+
+As a safety measure, to avoid stagnation, we impose a lower threshold on the candidate step size $\lVert s_t\rVert$. To this end, we iteratively improve sample quality, fit the model and solve for the step size until we obtain a large enough candidate step.
+
+We evaluate the full criterion function $F$ at the new candidate point $x_t+s_t$. We accept the candidate step and expand the trust region radius $\Delta_t^{tr}$ if we observe a large enough decrease in the function value, relative to the decrease predicted by model $M_t^s$:
+\begin{align}
+    \rho_t\equiv\frac{F(x_t)-F(x_t+s_t)}{M^s(x_t)-M^s(x_t+s_t)}\geq\rho_{min}
+    \label{eq:rho}
+\end{align}
+If we don't observe a sufficient improvement in the function value, we reject the step (setting $x^{*}_{t+1}=x_t^{*}$) and shrink the trust region radius. The algorithm terminates either when a given convergence criterion (successful termination) or the maximum number of iterations is achieved.
+
+We summarize the Tranquilo core algorithm in Algorithm \ref{algo:core}:
+
+\begin{algorithm}[H]
+    \caption{Tranquilo main loop}\label{algo:core}
+    \KwIn{
+    Starting point $x^*_0\in\mathbb{R}^p$, initial trust region radius $\Delta^{tr}_0$, and target sample size $n^{target}$.
+
+    Initial sample $\mathcal{S}_0\subset R(x_0,\Delta_0^{tr})$ with $|\mathcal{S}_0|=n^{target}$
+
+    Other parameters: Search factor $\gamma^{search}$, minimum step size $s^{min}$, minimum relative improvement $\rho^{min}$, trust region expansion and shrinking factors $0<\gamma^{dec}<1<\gamma^{inc}$, and maximum number of iterations $t^{max}$
+
+
+    }
+    \For{t=0,1,2,...}{
+        Given $x_t^*$ and $\Delta_t^{search}=\gamma^{search}\Delta^{tr}_{t}$, scan history for points in the search region: $\mathcal{E}_t = \{x\in\mathcal{H}|\Hquad\lVert x^*_t-x\rVert\leq\Delta^{search}_t\}$\\
+        Filter existing points: $\mathcal{E}'_t\equiv Filter (\mathcal{E}_t) = \{ Filter (x)|\Hquad x\in \mathcal{E}_t\}$\\
+        \If{$|E_t^{'}|<n^{target}$}{
+            Sample new points in the trust region: $\mathcal{N}_t\equiv\mathbb{B}(\mathcal{E}_t^{'},R_t,n^{target})$
+        }
+        Given $x_t^*$ and $\mathcal{S}_t\equiv\mathcal{E}^{'}_t\cup\mathcal{N}_t$, build the vector model $M_t^v\equiv Fitter(x_t,y_t;R_t,M_{t-1}^v)$\label{algo-core-line:fit}\\
+        Solve for the optimum of the scalar model $M_t^s$: $s_t\approx arg\,\min\limits_sM_t^s(x_t+s)$\label{algo-core-line:solve}\\
+        \If{$|\mathcal{S}_t|>n^{target}$}{
+            \While{$s_t\leq s^{min}$}{
+                Drop sample points\\
+                Build the vector model (step \ref{algo-core-line:fit})\\
+            Solve for the optimum of scalar model (step \ref{algo-core-line:solve})
+            }
+        }
+
+        \While{$\lVert s_t\rVert\leq s^{min}$}{
+            Drop points and resample\\
+            Build the vector model (step \ref{algo-core-line:fit})\\
+            Solve for the optimum of scalar model (step \ref{algo-core-line:solve})
+        }
+        \nonl Acceptance decision:\\
+         Calculate $\rho_t=\frac{F(x^{*}_t)-F(x_t^{*}+s_t)}{M^s_t(x^{*}_t)-M^s_t(x_t^{*}+s_t)}$\\
+         \eIf{$\rho\geq\rho^{min}$}{
+         Set $x_{t+1}^{*} = x_t^{*} + s_t$ and increase trust region radius $\Delta^{tr}_{t+1}=\gamma^{inc}\Delta^{tr}_t$
+
+        }{
+            Set $x_{t+1}^{*}=x_{t}^*$ and shrink trust region radius $\Delta^{tr}_{t+1}=\gamma^{dec}\Delta^{tr}_t$
+
+        }
+    \If{$t>t^{max}$ or $converged$}{break}
+
+
+    }
+    \end{algorithm}
 
 \subsection{Implementation and benchmarking}
 
 \paragraph{Implementation details} Describe the specifics of the following in the baseline:
+
+
+
+We then fit linear models for each residual $f_i(x)$:\comment[]{MP: Need to discuss indexing}
+\begin{align}
+    f_i(x)\approx m_{ik}(x) \equiv a_{ik}+b_{ik}^Tx
+    \label{eq:model-linear}
+\end{align}
+by solving the following least-squares problem for each residual:
+\begin{align}
+    \min\limits_{a_{ik},b_{ik}}\sum\limits_{t=1}^{|\mathbb{S}'_t|}\big(f_i(x_t)-(a_{ik}+b_{ik}^Tx_t)\big)^2
+    \label{eq:fit-linear}
+\end{align}
+
+
+
+
+The approximation to the full objective $F$ can then be constructed as the inner product of the linear models \ref{eq:model-linear}:
+\begin{align}
+    F(x)\approx M_t(x)\equiv\sum\limits_im_{ik}(x)^2 &= \sum\limits_i a_{ik}^2 + \sum\limits_i 2a_{ik} b_{ik}^T x + \sum_i x^T b_{ik}b_{ik}^T x\nonumber\\
+    &\equiv \alpha + g_t^T x + \frac{1}{2} x^T H_t x
+    \label{eq:model-full}
+\end{align}
+
 \begin{itemize}
     \item filters: we keep all
     \item fitting: we use ols

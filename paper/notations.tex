@@ -1,0 +1,41 @@
+Notation:
+\begin{itemize}
+    \item candididate point: $x^*_t$
+    \item search radius: $\Delta_t^{search}$
+    \item trustregion radius: $\Delta_t^{tr}$
+    \item history: $\mathcal{H}$
+    \item sample points, not including the candidate: $\{x_1, x_2,...,x_{n_t}\}$ where typically $p=n$
+\end{itemize}
+
+\begin{itemize}
+    \item sets
+        \begin{itemize}
+            \item history: $\mathcal{H}$
+            \item existing points: $\mathcal{E}_t\subset\mathbb{R}^{p}$
+            \item filtered existing points: $\mathcal{E}^{'}_t\subset\mathbb{R}^{p}$
+            \item new points: $\mathcal{N}_t$
+            \item model points: $\mathcal{S}_t\equiv\mathcal{N}_t\cup\mathcal{S}^{'}_t$
+            \item scalar model set: $\mathcal{M}= \mathbb{R}\times\mathbb{R}^p\times\mathbb{R}^{p\times p}$
+            \item vector model set: $\mathcal{M}^k$
+            \item trustregion: $R_t$
+
+        \end{itemize}
+    \item mappings
+        \begin{itemize}
+            \item fitter: $Fitter(x_t,y_t;M^v_{t-1},R_t)=M_{t}^v$
+
+                    $Fitter:\mathbb{R}^{n_t\times p}\times\mathbb{R}^{n_t\times k}\times\mathcal{R}\times\mathcal{M}^k\rightarrow\mathcal{M}^k$
+            \item subsolver: $\mathbb{S}(x^*_t,M^s_t)=s_t$
+
+                    $\mathbb{S}:\mathbb{R}^{p}\times\mathcal{M}\rightarrow\mathbb{R}^p$
+            \item filter: $\mathbb{P}(\mathcal{S}_t)=\mathcal{S}_t^{'}$
+
+                        $\mathbb{P}: \mathbb{R}^{n_t\times p}\rightarrow\mathbb{R}^{n{'}_t\times p}$
+            \item sampler: $\mathbb{B}(\mathcal{E}_t^{'},R_t,n^{target})=\mathcal{N}_t$
+        \end{itemize}
+
+
+
+
+
+\end{itemize}
