@@ -1,0 +1,31 @@
+
+
+\subsection{Implementation of the components}
+
+
+\begin{itemize}
+    \item sampling: optimal hull sampling.
+        \begin{itemize}
+            \item describe using the docstring
+            \item ...
+        \end{itemize}
+    \item filtering: keep all
+    \item Vector Model:  linear models for the vector of residuals $\mathbf{f}(x)$:\comment[id=MP]{Need to discuss indexing}
+    \begin{align}
+        \mathbf{f}(x)\approx M^v_{t}(x) \equiv a_t+b_t^Tx
+        \label{eq:model-linear}
+    \end{align}
+    \item Fitting: least-squares problem for each residual:
+    \begin{align}
+        \min\limits_{a_{t},b_{t}}\sum\limits_{t=1}^{|\mathbb{S}_t|}\lVert\mathbf{f}(s_t)-M_t^v(x_t+s_t)\rVert^2
+        \label{eq:fit-linear}
+    \end{align}
+    where $s_t\equiv\lVert x_t-x_t^*\rVert$
+    \item solver:
+        \begin{itemize}
+            \item for bounded problems: bntr
+            \item for unbounded problems gqtpar
+            \item describe using the docstrings
+        \end{itemize}
+    \item  dropping points: describe drop worst points mostly using the docstring
+\end{itemize}

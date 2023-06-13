@@ -1,0 +1,31 @@
+
+
+\section{Literature review}
+\begin{itemize}
+    \item BOBYQA
+        \begin{itemize}
+            \item parts of BOBYQA that explain how other optimizers came around
+            \item quadratic models
+            \item under-determined fitting (with 2n+1 points) with penalty on hessian change
+        \end{itemize}
+        \item POUNDERS
+            \begin{itemize}
+                \item literal translation of bobyqa to least-squares.
+                \item same number of points and same quadratic model used for fitting each residual and aggregation to the scalar model.
+            \end{itemize}
+        \item DFOLS
+            \begin{itemize}
+                \item linear residual models aggregated into quadratic scalar model
+                \item noise handling via user-specified sequences
+            \end{itemize}
+    \item ASTRO-DF (JANOS)
+            \begin{itemize}
+                \item scalar optimizer
+                \item adaptive noise handling
+            \end{itemize}
+    \item Parallel Neldermead
+            \begin{itemize}
+                \item using parallelism even though the objective function is not parallelized
+            \end{itemize}
+    \item refer to wild paper
+\end{itemize}
