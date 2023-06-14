@@ -2,8 +2,6 @@ from copy import deepcopy
 
 import estimagic as em
 import pytask
-from tranquilo import tranquilo
-from tranquilo import tranquilo_ls
 from tranquilo_dev.benchmarks.compat_mode import filter_tranquilo_benchmark
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import COMPAT_MODE
@@ -16,19 +14,12 @@ from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
 from tranquilo_dev.config import TRANQUILO_CASES
 
 
-ALGORITHMS = {
-    "tranquilo": tranquilo,
-    "tranquilo_ls": tranquilo_ls,
-}
-
-
 OUT = BLD / "benchmarks"
 
 for functype in ["scalar", "ls"]:
     for problem_name, problem_kwargs in PROBLEM_SETS.items():
-        algorithm_name = get_tranquilo_version(functype)
-        algorithm = ALGORITHMS[algorithm_name]
-        scenario_name = f"{algorithm_name}_experimental"
+        algorithm = get_tranquilo_version(functype)
+        scenario_name = f"{algorithm}_experimental"
         noisy = "noisy" in problem_name
         max_iterations = get_max_iterations(noisy=noisy, functype=functype)
         max_evals = get_max_criterion_evaluations(noisy=noisy)
