@@ -1,10 +1,9 @@
 from copy import deepcopy
-from functools import partial
 
 import estimagic as em
 import pytask
-from estimagic.decorators import mark_minimizer
-from tranquilo.tranquilo import _tranquilo
+from tranquilo import tranquilo
+from tranquilo import tranquilo_ls
 from tranquilo_dev.benchmarks.compat_mode import filter_tranquilo_benchmark
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import COMPAT_MODE
@@ -16,25 +15,6 @@ from tranquilo_dev.config import PROBLEM_SETS
 from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
 from tranquilo_dev.config import TRANQUILO_CASES
 
-
-tranquilo = mark_minimizer(
-    func=partial(_tranquilo, functype="scalar"),
-    name="tranquilo",
-    primary_criterion_entry="value",
-    needs_scaling=True,
-    is_available=True,
-    is_global=False,
-)
-
-
-tranquilo_ls = mark_minimizer(
-    func=partial(_tranquilo, functype="least_squares"),
-    primary_criterion_entry="root_contributions",
-    name="tranquilo_ls",
-    needs_scaling=True,
-    is_available=True,
-    is_global=False,
-)
 
 ALGORITHMS = {
     "tranquilo": tranquilo,
