@@ -14,12 +14,6 @@ from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
 from tranquilo_dev.config import TRANQUILO_CASES
 
 
-ALGORITHMS = {
-    "tranquilo": "tranquilo",
-    "tranquilo_ls": "tranquilo_ls",
-}
-
-
 OUT = BLD / "benchmarks"
 
 for batch_size in [2, 4, 8]:
@@ -27,9 +21,8 @@ for batch_size in [2, 4, 8]:
     for functype in ["scalar", "ls"]:
 
         for problem_name, problem_kwargs in PROBLEM_SETS.items():
-            algorithm_name = get_tranquilo_version(functype)
-            algorithm = ALGORITHMS[algorithm_name]
-            scenario_name = f"{algorithm_name}_parallel_{batch_size}"
+            algorithm = get_tranquilo_version(functype)
+            scenario_name = f"{algorithm}_parallel_{batch_size}"
             max_iterations = get_max_iterations(noisy=False, functype=functype)
             max_evals = get_max_criterion_evaluations(noisy=False)
 
