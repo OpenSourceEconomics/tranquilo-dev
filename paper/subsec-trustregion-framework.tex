@@ -4,46 +4,85 @@
 %%TODO
 % 1. define notation for the building blocks write equations for the interface and data flow
 % 2. write down algorithm listing
-In each iteration $t$, given current candidate point $x^*_t$ and search radius $\Delta^{search}_t$, we begin by screening the history of criterion evaluations to retrieve all points that lie within the neighborhood $\Delta^{search}_t=\gamma^{search}\Delta_t^{tr}$ of $x_t$:
+In each iteration $t$, given current candidate point $x^*_t$ and search radius $\Delta^{search}_t=\gamma^{search}\Delta_t^{region}$, we begin by screening the history of criterion evaluations to retrieve all points that lie within the neighborhood $\Delta^{search}_t$ of $x_t$:
 \begin{align}
-    \mathcal{E}_t\equiv\{x\in\mathcal{H}|\Hquad\lVert x^*_t-x\rVert\leq\Delta^{search}_t\}
+    \mathcal{S}^{existing}_t\equiv\{x\in\mathcal{H}|\Hquad\lVert x^*_t-x\rVert\leq\Delta^{search}_t\}
     \label{eq:hist-search}
 \end{align}
-We filter points to potentially improve the quality of the sample points:
+We then apply a filter function to the set of existing points points:
 \begin{align}
-    \mathcal{E}'_t\equiv Filter (\mathcal{E}_t) = \{ Filter (x)|\Hquad x\in \mathcal{E}_t\}
+    \mathcal{S}^{filtered}_t\equiv Filter (\mathcal{S}^{existing}_t) = \{ Filter (x)|\Hquad x\in \mathcal{S}^{existing}_t\}
     \label{eq:filtering}
 \end{align}
-If the size of the filtered sample is smaller than the target sample size ($p+1$, usually), we sample new points in the current trust region:
+Specific implementations of function $Filter$ can, for example be applied to  improve the quality of the sample geometry, reduce clustering, or effectively switch of filtering by keeping all existing points. \comment[id=MP]{TODO Mariam: add examples from /refer to wild paper}
+
+If the size of the filtered sample is smaller than the target sample size, we sample new points in the current trust region:
 
 \begin{align}
-    \mathcal{N}\equiv\mathbb{B}(\mathcal{E}_t^{'},R_t,n^{target})
+    \mathcal{S}^{new}_{t}\equiv Sample(\mathcal{S}_t^{filtered},B_t,n^{target})
+    \label{eq:sample-points}
 \end{align}
-where $\mathbb{B}$ is a sampling function\comment[id=MP]{should talk about bounds and optimal sampling, etc here?}
 
-We approximate the vector function $\mathbf{f}$ by fitting a vector model to sample points $x_t\in\mathcal{S}_t\equiv\mathcal{E}^{'}_t\cup\mathcal{N}_t$ and either the corresponding vector-function evaluations $y_t=\mathbf{f}(x_t)$, or, to introduce momentum, the residuals of the model from the previous iteration, $\tilde{y}_t =y_t-M_{t-1}^v(x_t)$:
+We approximate the residual vector $r$ by fitting a vector model to sample points $x_t\in\mathcal{S}_t^{model}\equiv\mathcal{S}^{filtered}_t\cup\mathcal{S}^{new}_t$ and the corresponding residual evaluations $y_t=r(x_t)$:
 \begin{align}
-    \mathbf{f}\approx M_t^v\equiv Fitter(x_t,y_t;R_t,M_{t-1}^v)
+    r\approx M_t^v\equiv Fit(x_t;r,B_t)
 \end{align}
-where the fitter function is constructed such that it's applicable for both regression ($|\mathcal{N}_t|\geq p$) and interpolation ($|\mathcal{N}_t|\leq p$) problems. Additional dependency on the trust region $R_t$ is necessary to scale the model to a unit circle to facilitate solving for the scalar model's,$M_t^s = \lVert M_t^v\rVert$, optimum.
-
-To find a candidate step $s^{*}_t$, we solve for the optimum of the aggregate model:\comment[id=MP]{equation 2.10 in DFOLS paper imposes condition on the step side to }
+where the fitter function is constructed such that it's applicable for both regression ($|\mathcal{S}^{model}_t|\geq p$) and interpolation ($|\mathcal{S}^{model}_t|\leq p$) problems. Additional dependency on the trust region $B_t$ is necessary to scale the model to a unit circle to facilitate solving for the minimum of the scalar model. We obtain the scalar model by aggregating the vector model:
 \begin{align}
-    s^*_t\approx arg\,\min\limits_sM_t^v(x_t+s)
+    M_t^s = Aggregate(M_t^v)
+    \label{eq:aggregate-model}
+\end{align}
+where the $Aggregate$ function allows for a number of aggregation strategies, discussed in section \ref{subsubsec:aggregation}
+
+
+To find a candidate step $s_t$, we approximately solve for the optimum of the aggregate model:\comment[id=MP]{equation 2.10 in DFOLS paper imposes condition on the step size to }
+\begin{align}
+    s_t\approx arg\,\min\limits_sM_t^s(x_t+s)
     \label{eq:cand-step}
 \end{align}
 
+Following \cite{PowellBobyqa}, we impose a lower threshold on the step size $\lVert s_t\rVert$ to accept a candidate step. To this end, we iteratively improve sample quality, fit the model and solve \ref{eq:cand-step} until we obtain a large enough candidate step.
 
-As a safety measure, to avoid stagnation, we impose a lower threshold on the candidate step size $\lVert s_t\rVert$. To this end, we iteratively improve sample quality, fit the model and solve for the step size until we obtain a large enough candidate step.
-
-We evaluate the full criterion function $F$ at the new candidate point $x^{*}_t+s^{*}_t$. We accept the candidate step and expand the trust region radius $\Delta_t^{tr}$ if we observe a large enough decrease in the function value, relative to the decrease predicted by model $M_t^s$:
+We evaluate the aggregate criterion $f$ at the new candidate point $x^{*}_t+s_t$, and compute the decrease in the objective produced by the candidate step:
 \begin{align}
-    \rho_t\equiv\frac{F(x^*_t)-F(x^{*}_t+s^{*}_t)}{M^s_t(x^{*}_t)-M^s_t(x^{*}_t+s^{*}_t)}\geq\rho_{min}
-    \label{eq:rho}
+    \Delta f_t\equiv f(x_t^*) - f(x_t^*+s_t)
+    \label{eq:actual-improvement}
 \end{align}
-If we don't observe a sufficient improvement in the function value, we reject the step (setting $x^{*}_{t+1}=x_t^{*}$) and shrink the trust region radius. The algorithm terminates either when a given convergence criterion (successful termination) or the maximum number of iterations is achieved.
+
+Similarly, we compute the expected improvement predicted my the aggregate model:
+\begin{align}
+    \Delta M^{s}_t\equiv M_t^s(x_t^*) - M_t^s(x_t^*+s_t)
+    \label{eq:expected-improvement}
+\end{align}
+
+In a comprehensive acceptance step, details of which we will discuss in sections \ref{subsubsec:acceptance} (\textcolor{red}{add references to acceptance details in noisy and parallel cases}), we take into the actual and expected improvements $\Delta f_t$ and $\Delta M_t^s$, to obtain the candidate point for the next iteration $x_{t+1}^*$ and the relative improvement $\rho_t\equiv \Delta f_t/ \Delta M^s_t$:
+
+\begin{align}
+    Accept(s_t,x_t^{*},\Delta f_t,\Delta M_t^s;\Hquad\cdot\Hquad)=(Decision_t,x_{t+1}^{*},\rho_t;\Hquad\cdot\Hquad)
+    \label{eq:acceptance-core}
+\end{align}
+The classical trust region acceptance decision:
+\begin{align}
+    x_{t+1}^*=\begin{cases}
+        x_t^*+s_t,\quad&\rho_t\geq\rho^{min}\\
+        x_t^*,\quad&\rho_t<\rho^{min}
+    \end{cases}
+    \label{eq:accept-classic}
+\end{align}
+is encompassed in our acceptance step as a special case.
+
+Having obtained the acceptance results, we expand the trust region radius by a factor $\gamma^{inc}>1$ if both the ratio $\rho_t$ and the step size $\lVert s_t\rVert$ are sufficiently large:
+ \begin{align}
+    \Delta_{t+1}^{region} = \gamma^{inc}\Delta_t^{region}
+ \end{align}
+
+We shrink the trust region radius for low values of $\rho_t$:
+\begin{align}
+    \Delta_{t+1}^{region} = \gamma^{dec}\Delta_t^{region}
+ \end{align}
 
 We summarize the Tranquilo core algorithm in Algorithm \ref{algo:core}.
+\newpage
 
 \begin{algorithm}[H]
     \caption{Tranquilo main loop}\label{algo:core}
@@ -63,24 +102,24 @@ We summarize the Tranquilo core algorithm in Algorithm \ref{algo:core}.
             Sample new points in the trust region: $\mathcal{N}_t\equiv\mathbb{B}(\mathcal{E}_t^{'},R_t,n^{target})$
         }
         Given $x_t^*$ and $\mathcal{S}_t\equiv\mathcal{E}^{'}_t\cup\mathcal{N}_t$, build the vector model $M_t^v\equiv Fitter(x_t,y_t;R_t,M_{t-1}^v)$\label{algo-core-line:fit}\\
-        Solve for the optimum of the scalar model $M_t^s$: $s^{*}_t\approx arg\,\min\limits_sM_t^s(x_t+s)$\label{algo-core-line:solve}\\
+        Solve for the optimum of the scalar model $M_t^s$: $s_t\approx arg\,\min\limits_sM_t^s(x_t+s)$\label{algo-core-line:solve}\\
         \If{$|\mathcal{S}_t|>n^{target}$}{
-            \While{$s^{*}_t\leq s^{min}$}{
+            \While{$s_t\leq s^{min}$}{
                 Drop sample points\\
                 Build the vector model (step \ref{algo-core-line:fit})\\
             Solve for the optimum of scalar model (step \ref{algo-core-line:solve})
             }
         }
 
-        \While{$\lVert s^{*}_t\rVert\leq s^{min}$}{
+        \While{$\lVert s_t\rVert\leq s^{min}$}{
             Drop points and resample\\
             Build the vector model (step \ref{algo-core-line:fit})\\
             Solve for the optimum of scalar model (step \ref{algo-core-line:solve})
         }
         \nonl Acceptance decision:\\
-         Calculate $\rho_t=\frac{F(x^{*}_t)-F(x_t^{*}+s^{*}_t)}{M^s_t(x^{*}_t)-M^s_t(x_t^{*}+s^{*}_t)}$\\
+         Calculate $\rho_t=\frac{F(x^{*}_t)-F(x_t^{*}+s_t)}{M^s_t(x^{*}_t)-M^s_t(x_t^{*}+s_t)}$\\
          \eIf{$\rho\geq\rho^{min}$}{
-         Set $x_{t+1}^{*} = x_t^{*} + s^{*}_t$ and increase trust region radius $\Delta^{tr}_{t+1}=\gamma^{inc}\Delta^{tr}_t$
+         Set $x_{t+1}^{*} = x_t^{*} + s_t$ and increase trust region radius $\Delta^{tr}_{t+1}=\gamma^{inc}\Delta^{tr}_t$
 
         }{
             Set $x_{t+1}^{*}=x_{t}^*$ and shrink trust region radius $\Delta^{tr}_{t+1}=\gamma^{dec}\Delta^{tr}_t$
