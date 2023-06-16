@@ -55,7 +55,7 @@ Similarly, we compute the expected improvement predicted my the aggregate model:
     \label{eq:expected-improvement}
 \end{align}
 
-In a comprehensive acceptance step, details of which we will discuss in sections \ref{subsubsec:acceptance} (\textcolor{red}{add references to acceptance details in noisy and parallel cases}), we take into the actual and expected improvements $\Delta f_t$ and $\Delta M_t^s$, to obtain the candidate point for the next iteration $x_{t+1}^*$ and the relative improvement $\rho_t\equiv \Delta f_t/ \Delta M^s_t$:
+In a comprehensive acceptance step, details of which we will discuss in sections \ref{subsubsec:acceptance} (\textcolor{red}{add references to acceptance details in noisy and parallel cases}), we take into account the actual and expected improvements $\Delta f_t$ and $\Delta M_t^s$, to obtain the candidate point for the next iteration $x_{t+1}^*$ and the relative improvement $\rho_t\equiv \Delta f_t/ \Delta M^s_t$:
 
 \begin{align}
     Accept(s_t,x_t^{*},\Delta f_t,\Delta M_t^s;\Hquad\cdot\Hquad)=(Decision_t,x_{t+1}^{*},\rho_t;\Hquad\cdot\Hquad)
@@ -69,7 +69,7 @@ The classical trust region acceptance decision:
     \end{cases}
     \label{eq:accept-classic}
 \end{align}
-is encompassed in our acceptance step as a special case.
+is nested in our acceptance step as a special case.
 
 Having obtained the acceptance results, we expand the trust region radius by a factor $\gamma^{inc}>1$ if both the ratio $\rho_t$ and the step size $\lVert s_t\rVert$ are sufficiently large:
  \begin{align}
