@@ -1,7 +1,7 @@
 \section{Tranquilo core algorithm}
 \label{sec:tranquilo-core}
-We design the Tranquilo algorithm to locally solve the nonlinear least-squares problems \ref{eq:problem-ls-det} and \ref{eq:problem-ls-noise} by employing a trust region framework. In contrast to general \textit{black box} optimization, however we take advantage of the least-squares structure by building approximation models for each residual $r_i$, as opposed to the full objective $f$.
 
+We design the Tranquilo algorithm to locally solve the nonlinear least-squares problems \ref{eq:problem-ls-det} and \ref{eq:problem-ls-noise} by employing a trust region framework. In contrast to general \textit{black box} optimization, however we take advantage of the least-squares structure by building approximation models for each residual $r_i$, as opposed to the full objective $f$.
 \subimport{./}{subsec-trustregion-framework.tex}
 \subimport{./}{subsec-component-implementation.tex}
 \subimport{./}{subsec-benchmark-core-algo.tex}

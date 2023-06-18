@@ -26,7 +26,7 @@
             \min\limits_{l\leq x\leq u}f(x)=\min\limits_{l\leq x\leq u}\lVert r(x)\rVert^2=\min\limits_{l\leq x\leq u}\sum\limits_{i=1}^kr_i(x)^2
             \label{eq:problem-ls-det}
         \end{align}
-    where the residual function $r(x)\equiv[r_1(x),\dots,r_k(x)]^T:\mathbb{R}^p\rightarrow\mathbb{R}^k$ is assumed to be a continuously differentiable function with unknown Jacobian matrix $J$.
+    where $\lVert\cdot\rVert$ is the 2-norm of a vector. The residual vector $r(x)\equiv[r_1(x),\dots,r_k(x)]^T:\mathbb{R}^p\rightarrow\mathbb{R}^k$ is assumed to be a continuously differentiable function with unknown Jacobian matrix $\nabla_xr$.
     \item Stochastic least-squares problems assume that we observe only noisy evaluations of the true residuals and thus solve for the optimum of the expected value of the aggregate function:
         \begin{align}
             \min\limits_{l\leq x\leq u}\mathbb{E}f(x,\xi)=\min\limits_{l\leq x\leq u}\mathbb{E}\lVert r(x,\xi)\rVert^2=\min\limits_{l\leq x\leq u}\mathbb{E}\sum\limits_{i=1}^kr_i(x, \xi_i)^2

@@ -1,2 +1,49 @@
 \subsubsection{Fitting}
 \label{subsubsec:fitting}
+\begin{itemize}
+    \item fit\_ols (for linear residual models and when sample size<param length+1)
+    \item fit\_minimal\_frobenius\_norm\_of\_hessian for underdetermined quadratic models. (refer to pounders and wild2008)
+    \item standard ols
+    \item what others do to resolve degrees of freedom
+    \item pounders, bobyqa,
+    \item we nest all of them
+    \item we do tranquilo fitting to combine the two in a smooth way
+
+    \item Ridge regression
+    \item Median regression
+\end{itemize}
+
+
+In most of the existing model-based trust region algorithms, fitting the vector model is equivalent to solving some variant of an ordinary least squares problem
+
+To obtain a fully determined system of least equations in the case of quadratic residual models, one needs to evaluate the objective function at $(p+1)(p+2)/2$ interpolation points. With expensive objective functions, the entailed computational cost can be prohibitively expensive.
+
+To overcome this burden, a number of algorithms have developed methods to build the approximation models with fewer points than  $(p+1)(p+2)/2$, resolving the uncovered degrees of freedom by minimizing various criteria.
+
+A popular approach employed in BOBYQA\footnote{Originally developed in NEWUOA} is to find a solution of the interpolation problem that minimizes the Frobenius norm of the difference between quadratic terms of the current model and the model from the prior iteration:
+\begin{align}
+    \min\lVert H-H_{t-1}\rVert_F = \min\sqrt{\min\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}(h^{ij}(x)-h^{ij}_{t-1}(x))^2}
+    \label{eq:min-frob-diff}
+\end{align}
+where $h_{ij}$ is the element in the $i$th row and $j$th column of the square matrix $H$.
+
+Another approach, employed by POUNDERS, is to penalize the quadratic terms themselves, again using the Frobenius norm:
+
+\begin{align}
+\min\lVert H(x)\rVert =\min\sqrt{\min\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}h_{ij}^2(x)}
+\label{eq:min-frob}
+\end{align}
+
+Detailed in \cite{Wild2008}, this approach is motivated by theoretical results that guarantee an approximation quality of the quadratic model.
+
+\begin{itemize}
+    \item our fitting nests both approaches
+    \item don't we do pounders fitting under powell???
+    \item we also have the following implementations:
+     \begin{itemize}
+        \item ridge- parsimonious model
+        \item tranquilo ??
+        \item quantile (median) - for noisy optimization
+        \item
+     \end{itemize}
+\end{itemize}
