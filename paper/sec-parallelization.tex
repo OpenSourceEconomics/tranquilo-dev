@@ -1,29 +1,56 @@
+\section{Parallelization}\label{sec:parallelization}
 
-
-\section{Parallelization}
-\subsection{Implementation}
-\label{subsec:algo-impl-parallel}
+Section introduction:
 \begin{itemize}
-\item describe the implementation details
+    \item State our three parallelization categories
+        \begin{enumerate}
+            \item At start
+            \item During sampling
+            \item During acceptance step
+        \end{enumerate}
+    \item List other algorithms that parallelize and how they compare to the three categories
+        (DFOLS, Parallel-Neldermead)
+    \item Describe the batch size argument and the next multiple function
+\end{itemize}
+
+\subsection{Implementation}\label{subsec:parallelization::implementation}
+
+\subsubsection{At Start}
+
+\begin{itemize}
+    \item Only in noisy case
+    \item Evaluates next multiple of requested evaluations at start
+\end{itemize}
+
+\subsubsection{Sampling}
+
+\begin{itemize}
+    \item At each point of algorithm (refer to listing)
+    \item Instead of sampling requested number of samples, sample next multiple
+\end{itemize}
+
+
+\subsubsection{Acceptance Step}
+
 \begin{itemize}
     \item if batch size is 1 (no parallelization): do classic acceptance based on rhos
     \item else, check if the candidate point is at the tr border
-    \item if yes, get number of line search points (at most 3, at least batch size-1) and define the grid on the line
-    \item calculate number of unallocated function evals based on the number of points on the line search and batch size ($batch\_size-1-n_evals_line_search$) \comment[id=MP]{WHY $batch\_size-1$ ?}
-    \item if the previous number is non-zero, do speculative sampling around the candidate point using search radius
+    \item if yes, get number of line search points (at most 3, at least batch size-1) and define the
+        grid on the line
+    \item calculate number of unallocated function evals based on the number of points on the line
+        search and batch size ($batch\_size-1-n_evals_line_search$) \comment[id=MP]{WHY
+        $batch\_size-1$ ?}
+    \item if the previous number is non-zero, do speculative sampling around the candidate point
+        using search radius
     \item add the line search and speculative points, if any, to the history
     \item check if criterion is smaller at any of the new points (spec+line search)
     \item if so, update candidate fval and x
     \item insert algorithm listing at the end
 \end{itemize}
-\item discuss optimizers that implement parallel evaluations: dfols since it is the only ls optimizer.
-\end{itemize}
 
-\subsection{Benchmarking}
-\label{subsec:benchmark-parallel}
+\subsection{Benchmarking}\label{subsec:parallelization::benchmarking}
+
 \begin{itemize}
-    \item discuss the cost model
-    \item motivate the cost model
-    \item show plot parallelization\_ls
-    \item discuss plot
+    \item discuss and motivate the cost model
+    \item show and discuss parallelization\_ls plot
 \end{itemize}
