@@ -1,2 +1,204 @@
 \subsubsection{Subsolver}
 \label{subsubsec:subsolver}
+\hfill\\
+
+\noindent Recall that in each iteration $t$, we approximately solve for the minimizer of the aggregate model
+$M_{t}^{s} (x_t + s)$ in $B(x_t, \Delta_t^{region})$ to obtain a new candidate step $s_t$ (see \ref{eq:cand-step}).
+We distinguish between two cases: (i) the unconstrained case, where the trust region is the entire space $\mathbb{R}^n$,
+and (ii) the constrained case, where the trust region is a bounded subset of $\mathbb{R}^n$.
+If (i) there are no bounds on the parameter space, the subsolver GQTPAR is used; if (ii) there
+are bounds on the parameter space, we employ the Bounded Newton Trust Region (BNTR) algorithm.
+In both cases, the subsolver returns the candidate step $s_t$ that minimizes the quadratic model $M_{t}^{s} (x_t + s)$
+within the current trust region:
+
+\begin{align}
+    M_{t}^{s} (x_t + s) = f_t + g_t^T s + \frac{1}{2} s^T H_t s \quad \text{s.t.} \ \lVert s \rVert \leq \Delta^{region}_{t}
+    \label{eq:quad-subproblem}
+\end{align}
+
+where $g_t$ is the gradient of the aggregate model at the current iterate $x_t$, $H_t$ is the 
+Hessian of the aggregate model at $x_t$, and $\lVert\cdot\rVert$ is the 2-norm of a vector. 
+Note that \ref{eq:quad-subproblem} nests the linear model by setting $H_t=0$. 
+In the subsequent discussion, we leave the dependence on the current iterate $x_t$ implicit
+and drop the subscript $t$ for brevity. %i.e. we write $M^{s} (s)$ instead of $M_{t}^{s} (x_t + s)$.
+% Model $M_t$ is based on the Taylor-series expansion of $f$ around $x_t$ 
+
+
+
+
+\paragraph{GQTPAR}
+
+In the unconstrained case, i.e. there are no bounds on the parameter space, GQTPAR solves the trustregion
+subproblem in \ref{eq:quad-subproblem} almost exactly. It is almost exact since the algorithm does not iterate until a high-accuracy solution is found, but terminates after a few iterations until a fairly loose approximation to the true solution is obtained.
+
+
+% A number of things are immediately apparent about (7.2.1). The solution we are
+% seeking lies either interior to the trust region, that is ||s||2 < A, or on the boundary,
+% ||s||2 = A. If the solution is interior, the trust-region bound may as well not have
+% been there, and therefore SM is the unconstrained minimizer of q(s). But this can only
+% happen if q(s) is convex, that is, if the Hessian H is positive semidefinite—we could be
+% more precise here, but the details will shortly emerge. At once we see that a minimizer
+% of a convex model problem may have a different character from that of a nonconvex
+% one. In the nonconvex case, a solution must lie on the boundary of the trust region,
+% while in the convex case a solution may or may not do so.
+
+\noindent \cite{More1983} show that the exact solution $s^*$ of \ref{eq:quad-subproblem} satisfies
+
+\begin{align}
+    ( H + \lambda I ) \ s^* = - g
+    \label{eq:exact-solution}
+\end{align}
+
+\noindent for some $\lambda \geq 0$, with the matrix $( H + \lambda I )$ being positive semidefinite and 
+$\lambda (\Delta^{region}_{t}  - \lVert s^* \rVert) = 0$. The latter is a complementary slackness condition
+which states that at least one of the quantities $\lambda$ and $(\Delta^{region}  - \lVert s^* \rVert)$
+must be zero at the optimum.
+When the solution $s^*$ is interior to the trust region, i.e. $\lVert s^* \rVert < \Delta^{region}$,
+then $\lambda^*= 0$ and the algorithm can be terminated immediately.
+Otherwise, when $s^*$ lies on the boundary of the trust region, i.e. $\lVert s^* \rVert = \Delta^{region}$,
+$\lambda > 0$ and Newton's method is applied to find the value of $\lambda$ such that 
+$\lVert s^* \rVert = \Delta^{region}$ is satisfied.
+The unique solution is then defined by 
+
+\begin{align}
+    s (\lambda) = -(H + \lambda I)^{-1} \ g
+    \label{eq:boundary-solution}
+\end{align}
+
+\noindent for $\lambda> 0$ sufficiently large so that $H + \lambda I$ is positive definite and 
+$ \lVert s (\lambda) \rVert = \Delta^{region}  $. More precisely, Newton's method root finding method is applied to \footnote{Note that Newton's method is not applied to 
+
+\begin{align}
+    \phi_0 (\lambda) = \lVert s (\lambda) \rVert - \Delta^{region}
+    \label{eq:root-finding}
+\end{align}
+
+\noindent directly, because $\phi_0$ may be non-linear around $\lambda^*$. For details, see \cite{More1983} or \cite{Nocedal2006}.}
+
+\begin{align}
+    \phi(\lambda)=\frac{1}{\Delta^{region}}-\frac{1}{\|s(\lambda)\|}
+\end{align}
+
+\noindent which is almost linear around $\lambda^*$.
+
+
+\begin{algorithm}
+    \caption{GQTPAR algorithm} - The "easy case" \label{algo:gqtpar}
+    \KwIn{Initial guess $s_0$, $\lambda^{(0)}$,  $\lambda^{(0)}_L$, $\lambda^{(0)}_U$}
+    \For{$\ell$=0,1,2,...}{
+            
+        Safeguard $\lambda^{(l)}$ to obtain $\lambda^{(\ell)}_S$ \\
+        \If{$H + \lambda^{(\ell)} I$ is positive definite}{
+            Factor $H + \lambda^{(l)} I = R^T \ R$ \\
+            % Solve $R^T \ R \ s_\ell = - g $
+            Solve $s_\ell = - (R^T R)^{-1} g $ \\
+            % \If{$\lVert s_\ell \rVert < \Delta^{region}$}{
+                %     Compute $\tau$ and $\hat{z}$
+                % }
+                }
+                Update $\lambda^{(\ell)}_L$, $\lambda^{(\ell)}_U$, $\lambda^{(\ell)}_S$ \\
+                Check convergence criteria \\
+                \uIf{$H + \lambda^{(l)} I$ is positive definite and $g \neq 0$ }{
+                    Solve $q_\ell = (R^T)^{-1} s_\ell $ \\
+                    Set $\lambda^{(\ell+1)}=\lambda^{(\ell)}+\left(\frac{\left\|s_{\ell}\right\|}{\left\|q_{\ell}\right\|}\right)^2\left(\frac{\left\|s_{\ell}\right\|-\Delta^{region}_{t}}{\Delta^{region}_{t}}\right)$
+                    }   
+                    \uElse{
+                        Set $\lambda^{(\ell + 1)} = \lambda^{(\ell)}_S$ 
+                        }
+                        }
+                    \end{algorithm}
+                    
+\noindent The candidate $s_\ell$ is obtained by factorizing the Hessian matrix via Cholesky factorization and solving the resulting linear system (see lines 5 and 6 of Algorithm \ref{algo:gqtpar}). Note that in line 4, we safeguarding $\lambda^{(\ell)}$. This is necessary to ensure that $H + \lambda^{(\ell)} I$ is positive definite and the Cholesky factorization exists. For details on the safeguarding procedure, see \cite{More1983} or \cite{Nocedal2006}.
+
+
+\noindent There may situations, however, where $H + \lambda^{(\ell)} I$ is positive definite, but no solution to $ \lVert s (\lambda)  \rVert = \Delta^{region} $ exist. This is what \cite{More1983} call the "hard case", which is not described in Algorithm \ref{algo:gqtpar}. We refer the interested reader to \cite{More1983} and \cite{Conn2000} for details on the hard case. In short, the solution is to find an eigenvector $z$ of $H$ corresponding to the eigenvalue $\lambda_1$. Then
+
+\begin{align}
+    \left(H-\lambda_1 I\right)(s+\tau z)=-g
+    \label{eq:hard-case}
+\end{align}
+
+and $ \lVert s +\tau z \ (\lambda) \rVert  = \Delta^{region}  $ for some $\tau$.
+
+
+% $\lambda^{*} = ( -\lambda_1, \infty \)$
+% $ \lVert s^* \rVert = \delta$
+% $ \lVert p \( \lambda \) \rVert  - \Delta = 0 $
+% $  \frac{1}{\lVert p \( \lambda \) \rVert}  - \frac{1}{\Delta} = 0 $
+
+
+
+\paragraph{Bounded Newton Trust Region (BNTR)}
+
+% BNTR was developed for the Toolkit of Advanced Optimization (TAO) {tao-user-ref} and 
+% originally written in C. Tranquilo uses a fast, CPU-accelerated pure-python implementation.
+BNTR is a trust region method for bound-constrained optimization of quadratic functions.\footnote{By enforcing box constraints on the parameter space, the spherical trust region constraint \\
+$\lVert s \rVert \leq \Delta^{region}_{t}$ in the 2-norm changes to a cubic constraint in an infinity-norm sense.}
+These bound, or box, constraints are of the form 
+$$\exists i \text{ such that } l_i \leq s_i \leq u_i$$
+where $l_i$ and $u_i$ are the lower and upper bounds on the $i$th parameter, respectively. 
+Note that not all $s_i$ must, but may, be bounded. For any unbounded parameters, the corresponding inactive lower and upper bounds are set to $-\infty$ and $\infty$, respectively. 
+
+% Internally, BNTR employs two types of projection methods to ensure that the search direction is feasible (cite taoref): (i) gradient projection
+% $$
+% \mathfrak{P}(g)= \begin{cases}0 & \text { if }\left(s \leq l_i \wedge g_i>0\right) \vee\left(s \geq u_i \wedge g_i<0\right) \\ g_i & \text { otherwise }\end{cases}
+% $$
+% and (ii) bound projection
+% $$
+% \mathfrak{B}(s)= \begin{cases}l_i & \text { if } s_i<l_i \\ u_i & \text { if } s_i>u_i \\ s_i & \text { otherwise }\end{cases}
+% $$
+
+% BNTR belongs to the class of bounded Newton-Krylov algorithms. 
+\noindent At its core, BNTR employs a trust region framework combined with an active set approach (\cite{TAO21}) to solve \ref{eq:quad-subproblem}. BNTR uses a conjugate gradient method to solve for the minimizer $r$ of the reduced quadratic model (see line 5 of Algorithm \ref{algo:bntr}). \footnote{The available methods are Conjugate Gradient, Steihaug-Toint, and TRSBOX.}
+The reduced model is constructed using the reduced model gradient $g^r$ and the reduced model hessian $H^r$ based on the inactive set $\mathcal{I}(x)$. The active and inactive sets are defined as follows (\cite{Bertsekas1982}):
+\begin{align*}
+\text{lower bounded: } \mathcal{L}(s) & = \{i: s_i \leq l_i + \epsilon \wedge g(s)_i > 0\}, \\
+\text{upper bounded: } \mathcal{U}(s) & = \{i: s_i \geq u_i + \epsilon \wedge g(s)_i < 0\}, \\
+\text{fixed: } \mathcal{F}(s) & = \{i: l_i = u_i\}, \\
+\text{active-set: } \mathcal{A}(s) & = \{\mathcal{L}(s) \cup \mathcal{U}(s) \cup \mathcal{F}(s)\}, \\
+\text{inactive-set: } \mathcal{I}(s) & = \{1,2,\ldots,n\} \setminus \mathcal{A}(s).
+\end{align*}
+
+\noindent Consider further the bound projection on $s$:
+
+$$
+\mathfrak{B}(s)= \begin{cases}l_i & \text { if } s_i<l_i \\ u_i & \text { if } s_i>u_i \\ s_i & \text { otherwise }\end{cases}
+$$
+
+\noindent With the reduced conjugate gradient step $r$ in hand, the active parameters in $\mathfrak{B}(s)$ are then set to their respective lower, upper, or fixed bounds, which yields the candidate step $s$ (line 6 of Algorithm \ref{algo:bntr}). The process is repeated until convergence criteria are met.
+
+\begin{algorithm} %[H]
+    \caption{BNTR algorithm}\label{algo:bntr}
+    \KwIn{Initial guess $s_0$, $\Delta^{sub}_0 > 0$}
+    
+    Take a finite number of gradient descent steps and update $s_0$, $\Delta^{sub}_0$\\
+    \For{$\ell$=0,1,2,...}{
+
+        Create active set of bounds \\
+        Construct reduced gradient and reduced model hessian \\
+        Solve for the optimum of the reduced model $M^r_\ell$: 
+        $r_{\ell}\approx arg\,\min\limits_rM_{\ell}^r(x + r) \quad \text{s.t.} \ \lVert r \rVert \leq \Delta^{sub}_{\ell}$\\
+        Set active dimensions of $r_\ell$ to their respective lower and upper bounds \\
+        
+        Calculate $\kappa_\ell = \frac{M_{\ell}^r(r_{\ell - 1}) - M_{\ell}^r(r_\ell)}{M_{\ell}^s(r_{\ell - 1}) - M_{\ell}^s(r_\ell)}$, 
+        the ratio of predicted over actual reduction 
+        
+        \uIf{$\kappa_\ell$ is larger than a threshold}{
+        Accept step $s_{\ell + 1} = s_\ell + r_\ell$ \\
+        Expand trust region radius: $\Delta^{sub}_{\ell+1}=\alpha^{inc}\Delta^{sub}_t$
+        }
+        
+        \uElse{
+        Reject step $s_{\ell + 1} = s_\ell$ \\
+        Shrink trust region radius $\Delta^{sub}_{\ell+1}=\alpha^{dec}\Delta^{sub}_t$
+        }
+        Check convergence criteria \\
+        }
+\end{algorithm}
+
+\begin{itemize}
+    \item What do we want to call $x$? Parameters or variables?
+    \item Mention that trust region centered at zero vector and radius normalized to 1?
+    \item Mention that BNTR was originally developed for the Toolkit of Advanced Optimization (TAO) and
+    written in C. Tranquilo uses a fast, CPU-accelerated pure-python implementation.
+\end{itemize}
