@@ -24,7 +24,7 @@ In this section we review the general trust region framework and the main compon
         Given $x_t^*$ and $\Delta_t^{search}=\gamma^{search}\Delta^{tr}_{t}$, scan history for points in the search region: $\mathcal{S}^{existing}_t = \{x\in\mathcal{H}|\Hquad\lVert x^*_t-x\rVert\leq\Delta^{search}_t\}$\\
         Filter existing points: $\mathcal{S}^{filtered}_t\equiv Filter (\mathcal{S}^{existing}_t) = \{ Filter (x)|\Hquad x\in \mathcal{E}_t\}$\\
         \If{$|S_t^{filtered}|<n^{target}$}{
-            Sample new points in the trust region: $\mathcal{S}^{new}_t\equiv Sample(\mathcal{S}_t^{filtered},B_t,n^{target})$
+            Sample new points in the trust region: $\mathcal{S}^{new}_t\equiv Sample(\mathcal{S}_t^{filtered},B_t,n^{target})$ \label{algo:core::sampling}
         }
         Given $\mathcal{S}^{model}_t\equiv\mathcal{S}^{filtered}_t\cup\mathcal{S}^{new}_t$, build the vector model $M_t^v\equiv Fit(x_t;r,B_t)$\label{algo-core-line:fit}\\
         Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\label{algo-core-aggregate}\\

@@ -14,33 +14,38 @@ acceptance step, where we can utitilize unused resources during the acceptance p
 \textcolor{red}{List other algorithms that parallelize and how they compare to the three categories
 (DFOLS, Parallel-Neldermead)}
 
-Tranquilo offers the possibility to set the number of threads for the parallelization
-(\texttt{n\_cores}), and the size of an evaluation batch (\texttt{batch\_size}). By default, the
-\texttt{batch\_size} is equal to \texttt{n\_cores}, but it can also be set to any larger value. The
-following parallelization strategies are motivated by the assumption, that one evaluation is as
-time-consuming as performing \texttt{batch\_size} many.\footnote{Using different arguments for the
-number of threads and the batch size allows us to use a single-core machine to test the algorithm's
-behavior on a machine with many cores, by setting the batch size to the number of available cores on
-the many-cores machine.} It is therefore always preferred to evaluate a number of points that is
-divisible by the \texttt{batch\_size}. For a given number we define the smallest multiple of the
-\texttt{batch\_size} that is larger or equal to the number in question as the \emph{next multiple}
-of that number. As an example, the next multiple of $\texttt{batch\_size} + 1$, is $2 \times
-\texttt{batch\_size}$.
+Tranquilo offers the possibility to set the number of threads for the parallelization $n_c$, and the
+size of an evaluation batch $n_b$.
+
+The Tranquilo algorithm offers two options to govern the parallelization behavior. The first option,
+number of cores $n_c$, determines the number of threads that are used for parallelization. The
+second option, batch size $n_b$, determines the number of criterion evaluations we try to perform
+simultaneously. In most cases, $n_b = n_c$ is a good choice, but we allow for the
+possibility to set $n_b$ to a larger value.\footnote{Using different options for the number of
+threads and the batch size allows us to use a single-core machine to test the algorithm's behavior
+on a machine with many cores, by setting the batch size to the number of available cores on the
+many-cores machine.} The following parallelization strategies are motivated by the assumption, that
+one criterion evaluation is as time-consuming as performing $n_b$ many. It is therefore always
+preferred to evaluate a number of points that is divisible by $n_b$. For any integer we define
+the smallest multiple of $n_b$ that is larger or equal to that number in question as the \emph{next
+multiple} of that number with basis $n_b$. Since we only consider the case where $n_b$ is the basis,
+we will refrain from writing this explicit. As an example, the next multiple of $n_b + 1$, is $2
+\times n_b$.
 
 \subsection{Implementation}\label{subsec:parallelization::implementation}
 
 \subsubsection{At Start}
 
-Parallelization at the start of the algorithm occurs only for noisy problems. In this noisy case,
-the argument \texttt{n\_evals\_at\_start} describes the number of evaluations that are performed at
-the starting values to average out the noise. In the parallel case this number is replaced by its
-next multiple.
+Parallelization at the start of the algorithm occurs only for noisy problems. In the noisy case, the
+option $n_{\text{evals at start}} \in \mathbb{N}$ describes the number of evaluations that are
+performed at the starting value to average out noise. In the parallel case this number is replaced
+by its next multiple.
 
 \subsubsection{Sampling}
 
-In line 5 \textcolor{red}{(this is hardcoded atm)} of Listing \ref{algo:core} new points are
-sampled. When parallelization is enabled, instead of sampling the requested number of points, we
-sample the next multiple of it.
+In line \ref{algo:core::sampling} of Listing \ref{algo:core} (\textcolor{red}{This will refer to the
+new listing posted here}) new points are sampled. When parallelization is enabled, instead of
+sampling the requested number of points, we sample the next multiple of it.
 
 \subsubsection{Acceptance Step}
 
@@ -68,10 +73,17 @@ The benchmark plots look have to be adjusted for the parallel case, as the numbe
 evaluations does not provide a good measure of runtime anymore. Instead, we use the number of batch
 evaluations as a proxy for runtime, in line with our parallel cost model. This reflects our
 assumption that in the parallel case the evaluation of a batch takes as much time as the evaluation
-at a single point.
+of a single point.
+
+\textcolor{red}{
+\begin{enumerate}
+    \item Fix figure
+    \item Describe figure
+\end{enumerate}
+}
 
 
-\begin{figure}\label{fig:benchmark_parallel}
-    % \includesvg{bld/figures/profile_plots/parallelization_ls}
-    \caption{Comparison of parallel optimizers.}
+\begin{figure}[ht]\label{fig:parallelization::benchmark}
+    \includegraphics[scale=0.9]{../bld/figures/profile_plots/parallelization_ls}
+    \caption{Benchmark plots for the parallel cost model.}
 \end{figure}
