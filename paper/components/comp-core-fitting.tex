@@ -20,22 +20,23 @@ To obtain a fully determined system of least equations in the case of quadratic 
 
 To overcome this burden, a number of algorithms have developed methods to build the approximation models with fewer points than  $(p+1)(p+2)/2$, resolving the uncovered degrees of freedom by minimizing various criteria.
 
-A popular approach employed in BOBYQA\footnote{Originally developed in NEWUOA} is to find a solution of the interpolation problem that minimizes the Frobenius norm of the difference between quadratic terms of the current model and the model from the prior iteration:
+A popular approach employed in BOBYQA is to take up the unresolved degrees of freedom by minimizing the Frobenius norm of the change in the square terms of the model \citet{Powell2003}:
 \begin{align}
-    \min\lVert H-H_{t-1}\rVert_F = \min\sqrt{\min\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}(h^{ij}(x)-h^{ij}_{t-1}(x))^2}
+    \min\lVert H-H_{t-1}\rVert_F = \min\sqrt{\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}(h^{ij}(x)-h^{ij}_{t-1}(x))^2}
     \label{eq:min-frob-diff}
 \end{align}
-where $h_{ij}$ is the element in the $i$th row and $j$th column of the square matrix $H$.
+where $h_{ij}$ is the element in the $i$th row and $j$th column of the square matrix $H$. \cite{Zhang2010} leverages this approach in a least-squares optimization problem, to obtain quadratic approximations of the residual functions with $2p+1$ points.
 
 Another approach, employed by POUNDERS, is to penalize the quadratic terms themselves, again using the Frobenius norm:
-
 \begin{align}
-\min\lVert H(x)\rVert =\min\sqrt{\min\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}h_{ij}^2(x)}
+\min\lVert H(x)\rVert =\min\sqrt{\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}(h^{ij}(x))^2}
 \label{eq:min-frob}
 \end{align}
-
 Detailed in \cite{Wild2008}, this approach is motivated by theoretical results that guarantee an approximation quality of the quadratic model.
 
+Other algorithms tackling underdetermined quadratic models are discussed in \cite{Larson2019}. Among these, \cite{Custdio2009} incorporates minimization of the Frobenius norm of the model Hessian in a direct-search optimization framework. \cite{Powell2012} extends the method of minimizing the Frobenius norm of the difference between the square terms by considering a technique that combines the linear terms with changes in the square terms.
+
+In Tranquilo, we nest all the fitting approaches discussed above. In particular, we implement an ordinary least squares fitting for identified problems
 \begin{itemize}
     \item our fitting nests both approaches
     \item don't we do pounders fitting under powell???
