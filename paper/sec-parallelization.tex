@@ -1,36 +1,50 @@
 \section{Parallelization}\label{sec:parallelization}
 
-Section introduction:
-\begin{itemize}
-    \item State our three parallelization categories
-        \begin{enumerate}
-            \item At start
-            \item During sampling
-            \item During acceptance step
-        \end{enumerate}
-    \item List other algorithms that parallelize and how they compare to the three categories
-        (DFOLS, Parallel-Neldermead)
-    \item Describe the batch size argument and the next multiple function
-\end{itemize}
+In this section we describe what parallelization features our algorithm offers and how they are
+implemented. We also discuss the cost model that is used when comparing the performance of our
+parallelized algorithm to serial algorithms. We refrain from an analysis of a parallelized objective
+function and consider the case where the parallelization solely takes place at the optimization
+algorithm level.
+
+We parallelize at three places in the algorithm. (1) At the beginning of the optimization, where we
+are able to parallelize the repeated evaluation of the starting point. (2) During the sampling,
+where we are able to parallelize the evaluations at different sampling points. And, (3) during the
+acceptance step, where we can utitilize unused resources during the acceptance point evaluation.
+
+\textcolor{red}{List other algorithms that parallelize and how they compare to the three categories
+(DFOLS, Parallel-Neldermead)}
+
+Tranquilo offers the possibility to set the number of threads for the parallelization
+(\texttt{n\_cores}), and the size of an evaluation batch (\texttt{batch\_size}). By default, the
+\texttt{batch\_size} is equal to \texttt{n\_cores}, but it can also be set to any larger value. The
+following parallelization strategies are motivated by the assumption, that one evaluation is as
+time-consuming as performing \texttt{batch\_size} many.\footnote{Using different arguments for the
+number of threads and the batch size allows us to use a single-core machine to test the algorithm's
+behavior on a machine with many cores, by setting the batch size to the number of available cores on
+the many-cores machine.} It is therefore always preferred to evaluate a number of points that is
+divisible by the \texttt{batch\_size}. For a given number we define the smallest multiple of the
+\texttt{batch\_size} that is larger or equal to the number in question as the \emph{next multiple}
+of that number. As an example, the next multiple of $\texttt{batch\_size} + 1$, is $2 \times
+\texttt{batch\_size}$.
 
 \subsection{Implementation}\label{subsec:parallelization::implementation}
 
 \subsubsection{At Start}
 
-\begin{itemize}
-    \item Only in noisy case
-    \item Evaluates next multiple of requested evaluations at start
-\end{itemize}
+Parallelization at the start of the algorithm occurs only for noisy problems. In this noisy case,
+the argument \texttt{n\_evals\_at\_start} describes the number of evaluations that are performed at
+the starting values to average out the noise. In the parallel case this number is replaced by its
+next multiple.
 
 \subsubsection{Sampling}
 
-\begin{itemize}
-    \item At each point of algorithm (refer to listing)
-    \item Instead of sampling requested number of samples, sample next multiple
-\end{itemize}
-
+In line 5 \textcolor{red}{(this is hardcoded atm)} of Listing \ref{algo:core} new points are
+sampled. When parallelization is enabled, instead of sampling the requested number of points, we
+sample the next multiple of it.
 
 \subsubsection{Acceptance Step}
+
+\textcolor{red}{This will be updated once the acceptance step section is written.}
 
 \begin{itemize}
     \item if batch size is 1 (no parallelization): do classic acceptance based on rhos
@@ -50,7 +64,14 @@ Section introduction:
 
 \subsection{Benchmarking}\label{subsec:parallelization::benchmarking}
 
-\begin{itemize}
-    \item discuss and motivate the cost model
-    \item show and discuss parallelization\_ls plot
-\end{itemize}
+The benchmark plots look have to be adjusted for the parallel case, as the number of criterion
+evaluations does not provide a good measure of runtime anymore. Instead, we use the number of batch
+evaluations as a proxy for runtime, in line with our parallel cost model. This reflects our
+assumption that in the parallel case the evaluation of a batch takes as much time as the evaluation
+at a single point.
+
+
+\begin{figure}\label{fig:benchmark_parallel}
+    % \includesvg{bld/figures/profile_plots/parallelization_ls}
+    \caption{Comparison of parallel optimizers.}
+\end{figure}
