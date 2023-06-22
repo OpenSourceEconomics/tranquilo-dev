@@ -3,13 +3,15 @@
 \hfill\\
 
 \noindent Recall that in each iteration $t$, we approximately solve for the minimizer of the aggregate model
-$M_{t}^{s} (x_t + s)$ in $B(x_t, \Delta_t^{region})$ to obtain a new candidate step $s_t$ (see \ref{eq:cand-step}).
-We distinguish between two cases: (i) the unconstrained case, where the trust region is the entire space $\mathbb{R}^n$,
-and (ii) the constrained case, where the trust region is a bounded subset of $\mathbb{R}^n$.
+$M_{t}^{s} (x_t + s)$ in $B(x_t, \Delta_t^{region})$ to obtain a new candidate step $s_t$ (see \ref{eq:cand-step}). Before solving the subproblem, we center the trust region at the current iterate $x_t$, such that the trust region center is $0$ and the radius $\Delta^{region}_{t}$ is normalized to $1$.
+We distinguish between two cases: (i) the unconstrained case, where the trust region is the entire $B(0, 1)$, and (ii) the constrained case, where the trust region is a bounded subspace of $B(0, 1)$.
 If (i) there are no bounds on the parameter space, the subsolver GQTPAR is used; if (ii) there
 are bounds on the parameter space, we employ the Bounded Newton Trust Region (BNTR) algorithm.
 In both cases, the subsolver returns the candidate step $s_t$ that minimizes the quadratic model $M_{t}^{s} (x_t + s)$
 within the current trust region:
+
+
+% interval $\left[ -1, 1 \right]^n$ $\text{s.t.} \ \lVert s \rVert \leq \Delta^{region}_{t}$
 
 \begin{align}
     M_{t}^{s} (x_t + s) = f_t + g_t^T s + \frac{1}{2} s^T H_t s \quad \text{s.t.} \ \lVert s \rVert \leq \Delta^{region}_{t}
@@ -19,18 +21,13 @@ within the current trust region:
 where $g_t$ is the gradient of the aggregate model at the current iterate $x_t$, $H_t$ is the 
 Hessian of the aggregate model at $x_t$, and $\lVert\cdot\rVert$ is the 2-norm of a vector. 
 Note that \ref{eq:quad-subproblem} nests the linear model by setting $H_t=0$. 
-In the subsequent discussion, we leave the dependence on the current iterate $x_t$ implicit
-and drop the subscript $t$ for brevity. %i.e. we write $M^{s} (s)$ instead of $M_{t}^{s} (x_t + s)$.
+In the subsequent discussion, we leave the dependence on $x_t$ implicit and drop the subscript $t$ for brevity. %i.e. we write $M^{s} (s)$ instead of $M_{t}^{s} (x_t + s)$.
 % Model $M_t$ is based on the Taylor-series expansion of $f$ around $x_t$ 
-
-
-
 
 \paragraph{GQTPAR}
 
-In the unconstrained case, i.e. there are no bounds on the parameter space, GQTPAR solves the trustregion
-subproblem in \ref{eq:quad-subproblem} almost exactly. It is almost exact since the algorithm does not iterate until a high-accuracy solution is found, but terminates after a few iterations until a fairly loose approximation to the true solution is obtained.
-
+In the unconstrained case, i.e. there are no bounds on the parameter space, GQTPAR solves the trust region
+subproblem in \ref{eq:quad-subproblem} almost exactly. It is almost exact since the algorithm does not iterate until a high-accuracy solution is found, but terminates after a few iterations until a fairly loose approximation to the true solution is obtained.\cite{More1983} show that the exact solution $s^*$ of \ref{eq:quad-subproblem} satisfies
 
 % A number of things are immediately apparent about (7.2.1). The solution we are
 % seeking lies either interior to the trust region, that is ||s||2 < A, or on the boundary,
@@ -42,7 +39,6 @@ subproblem in \ref{eq:quad-subproblem} almost exactly. It is almost exact since 
 % one. In the nonconvex case, a solution must lie on the boundary of the trust region,
 % while in the convex case a solution may or may not do so.
 
-\noindent \cite{More1983} show that the exact solution $s^*$ of \ref{eq:quad-subproblem} satisfies
 
 \begin{align}
     ( H + \lambda I ) \ s^* = - g
@@ -137,7 +133,7 @@ $\lVert s \rVert \leq \Delta^{region}_{t}$ in the 2-norm changes to a cubic cons
 These bound, or box, constraints are of the form 
 $$\exists i \text{ such that } l_i \leq s_i \leq u_i$$
 where $l_i$ and $u_i$ are the lower and upper bounds on the $i$th parameter, respectively. 
-Note that not all $s_i$ must, but may, be bounded. For any unbounded parameters, the corresponding inactive lower and upper bounds are set to $-\infty$ and $\infty$, respectively. 
+Note that not all $s_i$ must, but may, be bounded. For any unbounded parameters, the corresponding inactive lower and upper bounds are set to $-1$ and $1$, the bounds of the cubic trust region, respectively. 
 
 % Internally, BNTR employs two types of projection methods to ensure that the search direction is feasible (cite taoref): (i) gradient projection
 % $$
@@ -149,7 +145,7 @@ Note that not all $s_i$ must, but may, be bounded. For any unbounded parameters,
 % $$
 
 % BNTR belongs to the class of bounded Newton-Krylov algorithms. 
-\noindent At its core, BNTR employs a trust region framework combined with an active set approach (\cite{TAO21}) to solve \ref{eq:quad-subproblem}. BNTR uses a conjugate gradient method to solve for the minimizer $r$ of the reduced quadratic model (see line 5 of Algorithm \ref{algo:bntr}). \footnote{The available methods are Conjugate Gradient, Steihaug-Toint, and TRSBOX.}
+\noindent BNTR employs a trust region framework combined with an active set approach (\cite{TAO21}) to solve \ref{eq:quad-subproblem}. To ensure that the search direction is feasible, BNTR uses a conjugate gradient method to solve for the minimizer $r$ of the reduced quadratic model (see line 5 of Algorithm \ref{algo:bntr}). \footnote{The available methods are Conjugate Gradient, Steihaug-Toint, and TRSBOX.}
 The reduced model is constructed using the reduced model gradient $g^r$ and the reduced model hessian $H^r$ based on the inactive set $\mathcal{I}(x)$. The active and inactive sets are defined as follows (\cite{Bertsekas1982}):
 \begin{align*}
 \text{lower bounded: } \mathcal{L}(s) & = \{i: s_i \leq l_i + \epsilon \wedge g(s)_i > 0\}, \\
@@ -177,7 +173,7 @@ $$
         Create active set of bounds \\
         Construct reduced gradient and reduced model hessian \\
         Solve for the optimum of the reduced model $M^r_\ell$: 
-        $r_{\ell}\approx arg\,\min\limits_rM_{\ell}^r(x + r) \quad \text{s.t.} \ \lVert r \rVert \leq \Delta^{sub}_{\ell}$\\
+        $r_{\ell}\approx arg\,\min\limits_rM_{\ell}^r(r) \quad \text{s.t.} \ \lVert r \rVert \leq \Delta^{sub}_{\ell}$\\
         Set active dimensions of $r_\ell$ to their respective lower and upper bounds \\
         
         Calculate $\kappa_\ell = \frac{M_{\ell}^r(r_{\ell - 1}) - M_{\ell}^r(r_\ell)}{M_{\ell}^s(r_{\ell - 1}) - M_{\ell}^s(r_\ell)}$, 
