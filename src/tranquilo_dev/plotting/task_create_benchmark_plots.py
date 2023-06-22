@@ -78,7 +78,7 @@ for name, info in PLOT_CONFIG.items():
         OUT = BLD / "figures" / f"{plot_type}_plots"
 
         @pytask.mark.depends_on(DEPS)
-        @pytask.mark.produces(OUT / f"{name}.svg")
+        @pytask.mark.produces(OUT / f"{name}.eps")
         @pytask.mark.task(id=f"{plot_type}_plot_{name}")
         def task_create_benchmark_plots(
             depends_on, produces, info=info, plot_type=plot_type, name=name
