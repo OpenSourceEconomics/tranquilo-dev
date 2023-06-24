@@ -1,24 +1,28 @@
 Notation:
 \begin{itemize}
+
     \item candidate point: $x^*_t\in\mathbb{R}^p$
     \item search radius: $\Delta_t^{search}=\gamma^{search}\Delta^{search}$
     \item trust region radius: $\Delta_t^{region}$
     \item history: $\mathcal{H}$
     \item sample points: $\{x_1, x_2,...,x_{n_t}\}$
     \item target sample size: $n^{target}$. Usually, $n^{target}=p+1$
+    \item $\Chi$, $\mathcal{X}$, $\chi$
 \end{itemize}
 
 \begin{itemize}
     \item sets
         \begin{itemize}
             \item history: $\mathcal{H}$
-            \item existing points: $\mathcal{S}^{existing}_t\subset\mathbb{R}^{p}$
-            \item filtered existing points: $\mathcal{S}^{filtered}_t\subset\mathbb{R}^{p}$
-            \item new points: $\mathcal{S}^{new}_t$
-            \item model points: $\mathcal{S}^{model}_t\equiv\mathcal{S}^{new}_t\cup\mathcal{S}^{filtered}_t$
+            \item existing points: $\mathcal{X}^{existing}_t\subset\mathbb{R}^{p}$
+            \item filtered existing points: $\mathcal{X}^{filtered}_t\subset\mathbb{R}^{p}$
+            \item new points: $\mathcal{X}^{new}_t$
+
+            \item model points: $\mathcal{X}^{model}_t\equiv\mathcal{X}^{new}_t\cup\mathcal{X}^{filtered}_t$
             \item scalar model space: $\mathcal{M}= \mathbb{R}\times\mathbb{R}^p\times\mathbb{R}^{p\times p}$
             \item vector model space: $\mathcal{M}^k$
             \item trust region: $B_t$
+            \item
 
         \end{itemize}
     \item Components
@@ -34,13 +38,13 @@ Notation:
             \item filter:
 
             \begin{align}
-                Filter(\mathcal{S}_t^{existing})=\mathcal{S}_t^{filtered}
+                Filter(\mathcal{X}_t^{existing})=\mathcal{X}_t^{filtered}
             \end{align}
                         $Filter: \mathbb{R}^{n_t\times p}\rightarrow\mathbb{R}^{n{'}_t\times p}$
             \item sampler:
 
             \begin{align}
-                Sample(\mathcal{S}_t^{filtered},B_t,n^{target})=\mathcal{S}_t^{new}
+                Sample(\mathcal{X}_t^{filtered},B_t,n^{target})=\mathcal{X}_t^{new}
             \end{align}
             \item aggregator:
                 \begin{align}

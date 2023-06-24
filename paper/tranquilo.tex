@@ -14,13 +14,24 @@
 \documentclass[a4paper, 10pt]{article}
 \usepackage{algpseudocode}
 \usepackage[linesnumbered,ruled,noline]{algorithm2e}
-
+\usepackage{amssymb}
+\usepackage[mathscr]{euscript}
 \newcommand{\papertitle}{Tranquilo}
 \newcommand*\mean[1]{\bar{#1}}
 \newcommand{\Hquad}{\hspace{0.2em}}
+
 \let\oldnl\nl% Store \nl in \oldnl
 \newcommand{\nonl}{\renewcommand{\nl}{\let\nl\oldnl}}% Remove line number for one line
-
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{#1}%
+\setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}%
+}%
+\item[]}{\end{list}}
 % To ``accept'' all changes in the document:
 % \PassOptionsToPackage{final}{changes}
 \input{preamble/Preamble_Fundamental_packages}
@@ -43,7 +54,9 @@
 %%%%%%%%%%%%%%%%%%%%%
 
 
+
 \begin{document}
+
 \numberwithin{equation}{section}
 
 

@@ -1,20 +1,13 @@
 \subsubsection{Fitting}
 \label{subsubsec:fitting}
-\begin{itemize}
-    \item fit\_ols (for linear residual models and when sample size<param length+1)
-    \item fit\_minimal\_frobenius\_norm\_of\_hessian for underdetermined quadratic models. (refer to pounders and wild2008)
-    \item standard ols
-    \item what others do to resolve degrees of freedom
-    \item pounders, bobyqa,
-    \item we nest all of them
-    \item we do tranquilo fitting to combine the two in a smooth way
-
-    \item Ridge regression
-    \item Median regression
-\end{itemize}
+\hfill\\
 
 
-In most of the existing model-based trust region algorithms, fitting the vector model is equivalent to solving some variant of an ordinary least squares problem
+\noindent In most of the existing model-based trust region algorithms, fitting the vector model is equivalent to solving some variant of an ordinary least squares problem:
+\begin{align}
+    \min\limits_{\theta}\sum\limits_{i=1}^{n_t}\lVert M_t^v(x_i-x_t^*;\theta)-r(x_i)\rVert^2
+\end{align}
+where we use the convention $x_0=x_t^*$, and $\theta$ represents the vector of model parameters, which includes the intercept, the linear terms, and in case of quadratic models, the second order terms.
 
 To obtain a fully determined system of least equations in the case of quadratic residual models, one needs to evaluate the objective function at $(p+1)(p+2)/2$ interpolation points. With expensive objective functions, the entailed computational cost can be prohibitively expensive.
 
@@ -25,26 +18,33 @@ A popular approach employed in BOBYQA is to take up the unresolved degrees of fr
     \min\lVert H-H_{t-1}\rVert_F = \min\sqrt{\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}(h^{ij}(x)-h^{ij}_{t-1}(x))^2}
     \label{eq:min-frob-diff}
 \end{align}
-where $h_{ij}$ is the element in the $i$th row and $j$th column of the square matrix $H$. \cite{Zhang2010} leverages this approach in a least-squares optimization problem, to obtain quadratic approximations of the residual functions with $2p+1$ points.
+where $h_{ij}$ is the element in the $i$th row and $j$th column of the square matrix $H$. \cite{Zhang2010} uses this approach in a least-squares optimization problem, to obtain quadratic approximations of the residual functions with $2p+1$ points.
 
 Another approach, employed by POUNDERS, is to penalize the quadratic terms themselves, again using the Frobenius norm:
 \begin{align}
-\min\lVert H(x)\rVert =\min\sqrt{\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}(h^{ij}(x))^2}
+\min\lVert H(x)\rVert_F =\min\sqrt{\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}(h^{ij}(x))^2}
 \label{eq:min-frob}
 \end{align}
 Detailed in \cite{Wild2008}, this approach is motivated by theoretical results that guarantee an approximation quality of the quadratic model.
 
-Other algorithms tackling underdetermined quadratic models are discussed in \cite{Larson2019}. Among these, \cite{Custdio2009} incorporates minimization of the Frobenius norm of the model Hessian in a direct-search optimization framework. \cite{Powell2012} extends the method of minimizing the Frobenius norm of the difference between the square terms by considering a technique that combines the linear terms with changes in the square terms.
+Other algorithms tackling underdetermined quadratic models are discussed in \cite{Larson2019}. Among these, \cite{Powell2012} minimizes a semi norm combining the Frobenius norm of the second order and the square norm of the linear terms of the surrogate model.
 
-In Tranquilo, we nest all the fitting approaches discussed above. In particular, we implement an ordinary least squares fitting for identified problems
-\begin{itemize}
-    \item our fitting nests both approaches
-    \item don't we do pounders fitting under powell???
-    \item we also have the following implementations:
-     \begin{itemize}
-        \item ridge- parsimonious model
-        \item tranquilo ??
-        \item quantile (median) - for noisy optimization
-        \item
-     \end{itemize}
-\end{itemize}
+In Tranquilo, use ordinary least squares fitting for just- and overidentified problems ($|\mathcal{X}_t^{model}|\geq DoF(M_t^{i}))$. We also nest the two approaches given by equations \ref{eq:min-frob-diff} and \ref{eq:min-frob}. Specifically, we minimize the Frobenius norm of second order terms of a vector model which, if specified so, can be residualized using the model from the prior iteration, thus resulting in \ref{eq:min-frob-diff}.
+
+Motivated by the comparable success of the ordinary least squares and the penalization of second order terms\textcolor{red}{need concrete examples here.}, in Tranquilo we implement a fitting method that combines the two approaches in a smooth way by a least squares problem that penalizes the linear terms less strongly. In practice, we apply a weighting matrix to the observations of the OLS problem that augments values in the first $p+1$ columns and shrinks the values in the last $p(p+1)/2-p-1$ columns.
+
+In addition to the fitting methods discussed above, we make available two approaches that are particularly fit for noisy optimization problems: 1) Ridge regression and 2) Qauntile (median) regression. Ridge regression performs a square norm regularization by solving the following problem:
+\begin{align}
+    \min\limits_{\theta}\sum\limits_{i=1}^{n}(M^v(x_i;\theta)-r(x_i))^2+\lambda\sum\limits_{i=1}^{p}\theta_i^2
+    \label{eq:fit-ridge}
+\end{align}
+where $\theta$ is the parameter vector and the constant $\lambda$ is a penalty coefficient that controls the parsimony of the resulting model. The regularization offered by Ridge regression is relevant when we do not want to give equal weights to all the function evaluations since they may have high levels of noise and be representative of true function values.
+
+Median regression, or least absolute deviations estimator:
+\begin{align}
+    \min\limits_{\theta}\sum\limits_{i=1}^{n}|M^v(x_i;\theta)-r(x_i)|
+    \label{eq:fit-lad}
+\end{align}
+on the other hand, offers robustness to outliers which can arise in noisy function evaluations.
+
+In our main results discussed further in the paper have been obtained with ordinary least squares and POUNDERS/BOBYQA fitting. To judge the competitiveness of our algorithm with the novel (in trust region literature) fitting methods will require fine tuning of hyper-parameters which we leave for future work.

@@ -1,2 +1,17 @@
 \subsubsection{Filtering}
 \label{subsubsec:filtering}
+As mentioned in section \ref{subsec:tr-framework}, in Tranquilo we perform a geometry improving step by applying filters to the set of existing points that lie in the current search region, $\mathcal{X}^{existing}_t = \{x\in\mathcal{H}|\Hquad\lVert x^*_t-x\rVert\leq\Delta^{search}_t\}$.
+
+
+% DO WE REALLY DO GEOMETRY IMPROVEMENT IN FILTERING STEP OR ONLY WHEN WE DROP THE DROP WORST POINTS???????
+\begin{itemize}
+    \item how geometry is assessed in the literature: from wild and cunn
+    \item what dfols does
+    \item what we do for filtering and why:
+    \begin{itemize}
+        \item discard all to drastically change the sample and gain large improvement?
+        \item drop excess: drop worst points if we have more than enough. discuss what our drop worst function does
+        \item keep cluster centers: ??
+        \item keep all: do nothing ??
+    \end{itemize}
+\end{itemize}
