@@ -25,6 +25,7 @@ dependencies:
   - cloudpickle
   - fuzzywuzzy
   - pybaum
+  - poppler
 
   # Misc Start
   - setuptools_scm
