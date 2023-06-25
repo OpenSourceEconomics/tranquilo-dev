@@ -30,7 +30,7 @@ for output_format in ["pdf", "html"]:
         "produces": PUBLIC.joinpath(f"slides.{output_format}"),
     }
 
-    @pytask.mark.skip
+    # @pytask.mark.skip
     @pytask.mark.task(id=f"slides-{output_format}", kwargs=kwargs)
     def task_render_presentation(depends_on, produces):
 
