@@ -4,9 +4,162 @@
     \item describe the more-wild benchmark set
     \item show plot competition\_ls
     \item describe the plot axes:
-        \begin{itemize}
+    \begin{itemize}
             \item x: number of function evaluations normalized by the best result
             \item y: share of the problems solved
         \end{itemize}
-    \item show plot scalar\_and\_ls to highlight that scalar optimizers are not well fit for ls problems
-\end{itemize}
+        \item show plot scalar\_and\_ls to highlight that scalar optimizers are not well fit for ls problems
+    \end{itemize}
+
+% Benchmarking Derivative-Free Optimization Solvers
+
+
+\noindent A benchmark is defined in terms of (i) a set of problems, (ii) a set of solvers, and
+(iii) a convergence test \cite{Dolan2002}. We focus on the class of least squares problems, where there is a limit on the user's computational budget, the criterion function is expensive to evaluate and derivates are not readily available.
+Thus we follow the benchmarking procedure of \cite{MoreWild2009} for benchmarking derivative-free optimization algorithms. They provide (i) a set of 53 smooth non-linear least squares problems and (iii) a convergence test suitable for situations where the criterion function is expensive to evaluate and derivates may not be attainable.
+Moreover, they introduce profile plots as a visualization tool to compare the performance of solvers across the benchmark set.
+Profile plots - referred to as \textit{data profiles} in \cite{MoreWild2009} - show the percentage of problems solved by each algorithm within a given computational budget, represented by a quantifiable runtime measure such as the total number of function evaluations.
+% Derivate-free optimization, expensive function evaluations, and derivatives are not readily available.
+% Hence, MW propose a convergence test that measures the decrease in the criterion function :
+The Moré and Wild (MW) benchmark set contains 53 test cases for non-linear least squares solvers.
+These test cases are constructed based on 22 functions, originally derived from the CUTEr
+Problems (\cite{Gould2003}). The MW benchmark set has been used to benchmark all modern model-based non-linear derivative-free least squares solvers, such as POUNDERS (\cite{Wild2015}), DFOGN (\cite{Cartis2017}), and DFOLS (\cite{Cartis2019}).
+% Their benchmark set contains 53 smooth problems.
+% and are based on 22 nonlinear least squares functions, which were defined in {gould2015cuter}.
+% The problems are taken from the CUTEr collection {gould2015cuter} and
+% the MINPACK-1 collection {more1980user}. The Mw benchmark set is available in the \texttt{R} package
+% \texttt{minqa} {wild2016minqa}.
+% comprises 22 nonlinear least squares functions defined in the
+% CUTEr [9] collection.
+
+
+\noindent The 53 test cases are defined by a twice continuously differentiable function of the form described in \ref{eq:problem-ls-det}. The parameter dimensions are quite small, varying between 2 and 12,
+where the median dimension is 7. The dimension of the least squares residuals $r_i(x)$ is between 2 and 65.
+% No problem is overrepresented in the sense that no function $k_p$ appears more than six times.
+% Moreover, no pair ($k_p$, $n_p$) appears more than twice.
+
+% $$ f(x) = \sum_{i=1}^{m} r_i(x)^2 $$
+
+% where $r_i(x)$ are the residuals of the least squares problem.
+% Only three of the 53 problems have local minimizers that are not global minimizers.
+% These are based on two functions: (i) the Freudenstein and Roth function and (ii) the Brown almost-linear function.
+% The remaining 50 problems have a unique global minimizer. in estimagic,
+% linear rank one 4 problems based on linear_rank_one and linear_rank_one_zero_columns_rows
+
+\noindent As mentioned above, we are interested in applications where the criterion function is expensive and derivatives are not readily available. Hence, an appropriate convergence test should measure the decrease in the criterion function rather than the gradient.
+Moreover, \cite{MoreWild2009} argue that when the evaluation of $f$ is costly it is sensible to scale the runtime of each algorithm by the time the fastest algorithm needed to solve the problem. So we adopt the following convergence test:
+
+% If True the runtime each algorithm needed for each problem is scaled by the time the fastest algorithm needed
+
+\begin{align}
+        f(x_0) - f(x) \geq (1 - \tau)(f(x_0) - f_L)
+        \label{eq:benchmarking-convergence-test}
+\end{align}
+where $\tau$ is a tolerance level, $x_0$ is the vector of start parameters, and $f_L$ is the lowest criterion function value obtained by any solver within a given runtime budget $\mu$, e.g. the number of function evaluations.
+
+\noindent \ref{eq:benchmarking-convergence-test} measures the reduction in the criterion function $f(x_0) - f(x)$ achieved by the solution $x^*$, i.e. the difference in $f$ between start and solution, relative to the reduction in $f$ compared to best possible reduction $f(x_0) - f_L$.
+\footnote{Note that the convergence test in \ref{eq:benchmarking-convergence-test} is invariant to the affine transformation $f \rightarrow \alpha f + \beta$ with the scalars $\alpha > 0$ and $\beta$.}
+
+
+% [that any optimizer in the benchmarking competition achieved.
+
+
+\noindent MW argue that when the evaluation of $f$ is expensive it is not appropriate to set $f_L$
+to an accurate estimate of $f$ at a local minimizer, e.g.obtained by a derivative-based solver.
+Since no solver may be able to achieve this value within the user's computational budget.
+Thus, MW recommend setting $f_L$ to the best function value obtained by any solver.
+
+% Setting fL to an accurate estimate of f at a minimizer is
+% not appropriate when the evaluation of f is expensive because no solver may be able to
+% satisfy (2.2) within the user's computational budget.
+
+\noindent In practical situations, when
+the evaluation of $f$ is expensive, a low-accuracy solution is all that can be obtained within
+the user's computational budget.
+% Moreover, in these situations, the accuracy of the data may warrant only a low-accuracy solution.
+Furthermore, MW point out that for situations where $f$ is cheap, a derivative-free solver is not likely to achieve the precision a derivative-based solver may be able to achieve.
+When $f_L$ is the smallest value of $f$ obtained by any solver, then at least one solver will satisfy \ref{eq:benchmarking-convergence-test} for any $\tau \geq 0$.
+
+% An advantage of (2.2) is that it is invariant to the affine transformation f 7→ αf + β
+% where α > 0. Hence, we can assume, for example, that fL = 0 and f (x0 ) = 1. There is
+% no loss in generality in this assumption because derivative-free algorithms are invariant to
+% the affine transformation f 7→ αf + β. Indeed, algorithms for gradient-based optimization
+% (unconstrained and constrained) problems are also invariant to this affine transformation.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Why data profiles over performance profiles?
+% 2.2 Data Profiles
+% Performance profiles provide an accurate view of the relative performance
+% of solvers within a given number µf of function evaluations. Performance profiles do not,
+% however, provide sufficient information for a user with an expensive optimization problem.
+
+% Number of function evaluations are costly and. Users for which this
+% limit exceeds their computational budget.
+\noindent Users with expensive optimization problems are often interested in the performance of solvers as a function of the number of a given runtime measure. In other words, these users are interested in the percentage of problems that can be solved (for a given tolerance $\tau$) within a computational budget $\mu$, e.g. the number of function evaluations.
+MW introduce data profiles as a tool for evaluating the performance of derivative-free optimization solvers when computational resources are limited.
+These plots answer the question: What percentage of problems can each algorithm
+solve within a certain runtime budget? The runtime budget is plotted on the $x$ axis and the share of problems solved by each solver on the $y$ axis.
+As outlined above, the runtime of each algorithm needed for each problem is scaled by the time the fastest algorithm needed to solve the problem.
+Note that when an optimizer fails to satisfy \ref{eq:benchmarking-convergence-test} within the given computational budget, it is scored as needing infinite runtime.
+% converge according to a stopping criterion
+% failing to converege according to the given stopping criterion and preciions is scored as needing an infinite computational budget.
+% Convention = infinity when solver s fails to satisfy the convergence test on problem p
+% (within a given limit? only for performance profile).
+
+\noindent Data profile plots are akin to cumulative distribution functions. Algorithms that perform well on some
+problems but are not able to solve others, will have steep increases in the beginning and then flat lines.
+On the other hand, algorithms that are robust but slow will have low shares in the beginning but may reach a percentage close to 100\% in the end. I.e. making use of the entire computational budget they can solve a large share of problems.
+
+
+
+% For details, see the description of performance and data profiles by
+% Moré and Wild (2009).
+
+
+
+% Args:
+%     problems (dict): estimagic benchmarking problems dictionary. Keys are the
+%         problem names. Values contain information on the problem, including the
+%         solution value.
+%     results (dict): estimagic benchmarking results dictionary. Keys are
+%         tuples of the form (problem, algorithm), values are dictionaries of the
+%         collected information on the benchmark run, including 'criterion_history'
+%         and 'time_history'.
+%     runtime_measure (str): "n_evaluations", "n_batches" or "walltime".
+%         This is the runtime until the desired convergence was reached by an
+%         algorithm. This is called performance measure by Moré and Wild (2009).
+%     normalize_runtime (bool): If True the runtime each algorithm needed for each
+%         problem is scaled by the time the fastest algorithm needed. If True, the
+%         resulting plot is what Moré and Wild (2009) called data profiles.
+%     stopping_criterion (str): one of "x_and_y", "x_or_y", "x", "y". Determines
+%         how convergence is determined from the two precisions.
+%     x_precision (float or None): how close an algorithm must have gotten to the
+%         true parameter values (as percent of the Euclidean distance between start
+%         and solution parameters) before the criterion for clipping and convergence
+%         is fulfilled.
+%     y_precision (float or None): how close an algorithm must have gotten to the
+%         true criterion values (as percent of the distance between start
+%         and solution criterion value) before the criterion for clipping and
+%         convergence is fulfilled.
+
+
+
+
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{figures/competition_ls.pdf}
+%     \caption{Benchmarking results for the more-wild benchmark set. The x-axis shows the number of function evaluations
+%     normalized by the best result. The y-axis shows the share of problems solved.}
+%     \label{fig:competition_ls}
+% \end{figure}
+
+
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{figures/scalar_and_ls.pdf}
+%     \caption{Benchmarking results for the more-wild benchmark set. The x-axis shows the number of function evaluations
+%     normalized by the best result. The y-axis shows the share of problems solved.}
+%     \label{fig:scalar_and_ls}
+% \end{figure}
