@@ -2,50 +2,54 @@
 
 In this section we describe what parallelization features our algorithm offers and how they are
 implemented. We also discuss the cost model that is used when comparing the performance of our
-parallelized algorithm to serial algorithms. We refrain from an analysis of a parallelized objective
+parallelized algorithm to serial versions. We refrain from an analysis of a parallelized objective
 function and consider the case where the parallelization solely takes place at the optimization
 algorithm level.
 
-We parallelize at three places in the algorithm. (1) At the beginning of the optimization, where we
-are able to parallelize the repeated evaluation of the starting point. (2) During the sampling,
-where we are able to parallelize the evaluations at different sampling points. And, (3) during the
-acceptance step, where we can utitilize unused resources during the acceptance point evaluation.
+Parallelization occurs at three places in the algorithm. (1) At the beginning of the optimization,
+where we parallelize the repeated evaluation of the starting point. (2) During the sampling, where
+we evaluate the objective function in parallel at different sampling points. And, (3) during the
+acceptance step, where we utilize unused resources during the acceptance point evaluation to
+accelerate the next periods sampling or to improve upon the current candidate point.
 
 \textcolor{red}{List other algorithms that parallelize and how they compare to the three categories
 (DFOLS, Parallel-Neldermead)}
 
-Tranquilo offers the possibility to set the number of threads for the parallelization $n_c$, and the
-size of an evaluation batch $n_b$.
+Tranquilo offers two parameters (\textcolor{red}{TODO: parameters, options, or arguments}) to govern
+the parallelization behavior. The first, number of cores
+$n^{cores}$, determines the number of threads that are used for parallelization. The second, batch
+size $n^{batch}$, determines the number of objective evaluations we perform simultaneously. In most
+cases, $n^{cores} = n^{batch}$ is a good choice, but we allow for the possibility to set $n^{batch}$
+to a larger value.\footnote{Using different values for the number of cores and the batch size
+allows, for instance, to use a single-core machine to test the algorithm's behavior on a machine
+with many cores, by setting the batch size to the number of available cores on the many-cores
+machine.} Note that the algorithms behavior is not affected by the number of cores, but only by the
+batch size.
 
-The Tranquilo algorithm offers two options to govern the parallelization behavior. The first option,
-number of cores $n_c$, determines the number of threads that are used for parallelization. The
-second option, batch size $n_b$, determines the number of criterion evaluations we try to perform
-simultaneously. In most cases, $n_b = n_c$ is a good choice, but we allow for the
-possibility to set $n_b$ to a larger value.\footnote{Using different options for the number of
-threads and the batch size allows us to use a single-core machine to test the algorithm's behavior
-on a machine with many cores, by setting the batch size to the number of available cores on the
-many-cores machine.} The following parallelization strategies are motivated by the assumption, that
-one criterion evaluation is as time-consuming as performing $n_b$ many. It is therefore always
-preferred to evaluate a number of points that is divisible by $n_b$. For any integer we define
-the smallest multiple of $n_b$ that is larger or equal to that number in question as the \emph{next
-multiple} of that number with basis $n_b$. Since we only consider the case where $n_b$ is the basis,
-we will refrain from writing this explicit. As an example, the next multiple of $n_b + 1$, is $2
-\times n_b$.
+The following parallelization strategies are motivated by the assumption, that one
+objective evaluation is as time-consuming as performing $n^{batch}$ many. For any integer $m \in
+\mathbb{N}$ we define the smallest multiple of $n^{batch}$ that is larger or equal to $m$ as the
+\emph{next multiple} of that number with basis $n^{batch}$.\footnote{Formally, the next
+multiple of $m$ is given by $\lceil m / n^{batch}\rceil \times n^{batch}$.} Since we only consider
+the case where $n^{batch}$ is the basis, we will suppress its explicit mention hereafter. As an
+example, the next multiple of $n^{batch} + 1$, is $2 \times n^{batch}$.
 
 \subsection{Implementation}\label{subsec:parallelization::implementation}
 
 \subsubsection{At Start}
 
 Parallelization at the start of the algorithm occurs only for noisy problems. In the noisy case, the
-option $n_{\text{evals at start}} \in \mathbb{N}$ describes the number of evaluations that are
-performed at the starting value to average out noise. In the parallel case this number is replaced
-by its next multiple.
+option $n^{start} \in \mathbb{N}$ describes the number of evaluations that are performed at the
+starting value to average out noise. In the parallel case this number is replaced by its next
+multiple. See Line \ref{algo:parallel::start} of Listing \ref{algo:parallel} for the implementation.
 
 \subsubsection{Sampling}
 
-In line \ref{algo:core::sampling} of Listing \ref{algo:core} (\textcolor{red}{This will refer to the
-new listing posted here}) new points are sampled. When parallelization is enabled, instead of
-sampling the requested number of points, we sample the next multiple of it.
+When parallelization is enabled, the sampling step is performed in parallel. Moreover, instead of
+sampling the requested number of points, we sample the next multiple of it. See Line
+\ref{algo:parallel:sampling} of Listing \ref{algo:parallel} for the
+implementation.(\textcolor{red}{TODO: (1) This does not really show an implementation of the
+component. (2) Should I talk about the $Sample$ component with the new variable $n^{batch}$?})
 
 \subsubsection{Acceptance Step}
 
@@ -62,14 +66,113 @@ sampling the requested number of points, we sample the next multiple of it.
     \item if the previous number is non-zero, do speculative sampling around the candidate point
         using search radius
     \item add the line search and speculative points, if any, to the history
-    \item check if criterion is smaller at any of the new points (spec+line search)
+    \item check if objective is smaller at any of the new points (spec+line search)
     \item if so, update candidate fval and x
     \item insert algorithm listing at the end
 \end{itemize}
 
+\newgeometry{left=15mm,right=15mm, bottom=1cm, top=3cm}
+\begin{algorithm}[H]
+    \caption{Parallel Tranquilo algorithm}\label{algo:parallel}
+    \KwIn{
+    Starting point $x^*_0\in\mathbb{R}^p$, initial trust region radius $\Delta^{region}_0$, and
+    target sample size $n^{target}$, starting point evaluations $n^{start}$, batch size $n^{batch}$,
+    number of cores $n^{cores}$.
+
+    \emph{Other constants:} Search factor $\gamma^{search}$, minimum step size $s^{min}$, relative
+    improvement cut-offs $0<\rho^{1}<\rho^2$, trust region expansion and shrinking factors
+    $0<\gamma^{dec}<1<\gamma^{inc}$, sample increment $n^{drop}$, and maximum number of iterations
+    $t^{max}$
+
+    A convergence objective.
+    }
+    \If{$n^{start}>1$}{
+        $n^{start} \leftarrow$ next multiple of $n^{start}$
+    }
+    Initialize history with $\mathcal{H}_0=\{(x^*_0,r(x_0^*)): i = 1, \dots, n^{start}\}$\label{algo:parallel::start}\\
+    \For{t=0,1,2,...}{
+        Given $x_t^*$ and $\Delta_t^{search}=\gamma^{search}\Delta^{region}_{t}$, scan history for
+        points in the search region: $\mathcal{X}^{existing}_t = \{x\in\mathcal{H}|\Hquad\lVert
+        x^*_t-x\rVert\leq\Delta^{search}_t\}$\\
+
+        Filter existing points: $\mathcal{X}^{filtered}_t\equiv Filter(\mathcal{X}^{existing}_t) =
+        \{Filter(x)|\Hquad x\in \mathcal{X}^{existing}_t\}$\\
+
+        \If{$|\mathcal{X}_t^{filtered}|<n^{target}$}{
+            Sample new points in the trust region: $\mathcal{X}^{new}_t\equiv
+            Sample(\mathcal{X}_t^{filtered},B_t,n^{target}, n^{batch})$\label{algo:parallel:sampling}
+        }
+
+        Build a vector model $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,B_t)$ on
+        $\mathcal{X}^{model}_t\equiv\mathcal{X}^{filtered}_t\cup\mathcal{X}^{new}_t$\label{algo-core-line:fit}\\
+
+        Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\label{algo-core-aggregate}\\
+
+        Solve the surrogate problem: $s_t\approx\underset{{\Hquad\lVert
+        s\rVert\leq\Delta_t^{region}}}{\argmin}M_t^s(s)$\label{algo-core-line:solve}\\
+
+        \If{$|\mathcal{X}^{model}_t|>n^{target}$}{
+            \While{$\lVert s_t\rVert\leq s^{min}$}{
+                Improve sample geometry:
+                $\mathcal{X}_t^{improved}=ImproveGeometry(\mathcal{X}_t^{model},
+                n^{drop},\Delta_t^{region})$ and set
+                $\mathcal{X}_t^{model}=\mathcal{X}_t^{improved}$\label{algo-core-listing-improve-geo}\\
+
+                Build a vector model: $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,B_t)$\\
+
+                Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\\
+
+                Solve the surrogate problem: $M_t^s$: $s_t\approx\underset{{\Hquad\lVert
+                s\rVert\leq\Delta_t^{region}}}{\argmin}M_t^s(s)$\\
+                }
+        }
+
+
+        \While{$\lVert s_t\rVert\leq s^{min}$}{
+
+            Improve sample geometry:
+            $\mathcal{X}_t^{improved}=ImproveGeometry(\mathcal{X}_t^{model},
+            n^{drop},\Delta_t^{region})$\label{algo-core-listing-improve-geo}\\
+
+            Sample new points: $\mathcal{X}_t^{new} =
+            Sample(\mathcal{X}_t^{improved},B_t,n^{drop})$\\
+
+            Build a vector model: $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,B_t)$ on
+            $\mathcal{X}_t^{model}=\mathcal{X}_t^{improved}\cup\mathcal{X}_t^{new}$\\
+
+            Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\\
+
+            Solve the surrogate problem: $s_t\approx\underset{{\Hquad\lVert
+            s\rVert\leq\Delta_t^{region}}}{\argmin}M_t^s(s)$\\
+        }
+         Calculate $\Delta f_t\equiv f(x_t^*) - f(x_t^*+s_t)$ and $\Delta M^{s}_t\equiv M_t^s(x_t^*)
+         - M_t^s(x_t^*+s_t)$\\
+
+         \nonl \textbf{Acceptance decision}:\\
+
+         $(Decision_t,x_{t+1}^*,\rho_t;\Hquad\cdot\Hquad) =  Accept(s_t,x_t^{*},\Delta f_t,\Delta
+         M_t^s;\Hquad\cdot\Hquad)$\\
+
+         \uIf{$\rho_t\geq\rho^{2}$ and  $s_t$ is large}{
+         Expand trust region radius: $\Delta^{region}_{t+1}=\gamma^{inc}\Delta^{region}_t$
+
+        }
+        \uElseIf{$\rho_t>\rho^1$}{
+        Leave the radius unchanged: $\Delta_{t+1}^{region}=\Delta_t^{region}$
+        }
+        \uElse{
+        Shrink trust region radius $\Delta^{region}_{t+1}=\gamma^{dec}\Delta^{region}_t$
+        }
+    \If{$t>t^{max}$ or $converged$}{\textbf{break}}
+    }
+
+    \end{algorithm}
+\newpage
+\restoregeometry
+
 \subsection{Benchmarking}\label{subsec:parallelization::benchmarking}
 
-The benchmark plots look have to be adjusted for the parallel case, as the number of criterion
+The benchmark plots look have to be adjusted for the parallel case, as the number of objective
 evaluations does not provide a good measure of runtime anymore. Instead, we use the number of batch
 evaluations as a proxy for runtime, in line with our parallel cost model. This reflects our
 assumption that in the parallel case the evaluation of a batch takes as much time as the evaluation
