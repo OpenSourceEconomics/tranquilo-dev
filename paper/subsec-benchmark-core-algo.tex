@@ -15,12 +15,12 @@
 
 
 \noindent A benchmark is defined in terms of (i) a set of problems, (ii) a set of solvers, and
-(iii) a convergence test \cite{Dolan2002}. We focus on the class of least squares problems, where there is a limit on the user's computational budget, the criterion function is expensive to evaluate and derivates are not readily available.
-Thus we follow the benchmarking procedure of \cite{MoreWild2009} for benchmarking derivative-free optimization algorithms. They provide (i) a set of 53 smooth non-linear least squares problems and (iii) a convergence test suitable for situations where the criterion function is expensive to evaluate and derivates may not be attainable.
+(iii) a convergence test \cite{Dolan2002}. We focus on the class of least squares problems, where there is a limit on the user's computational budget, the objective function is expensive to evaluate and derivates are not readily available.
+Thus we follow the benchmarking procedure of \cite{MoreWild2009} for benchmarking derivative-free optimization algorithms. They provide (i) a set of 53 smooth non-linear least squares problems and (iii) a convergence test suitable for situations where the objective function is expensive to evaluate and derivates may not be attainable.
 Moreover, they introduce profile plots as a visualization tool to compare the performance of solvers across the benchmark set.
 Profile plots - referred to as \textit{data profiles} in \cite{MoreWild2009} - show the percentage of problems solved by each algorithm within a given computational budget, represented by a quantifiable runtime measure such as the total number of function evaluations.
 % Derivate-free optimization, expensive function evaluations, and derivatives are not readily available.
-% Hence, MW propose a convergence test that measures the decrease in the criterion function :
+% Hence, MW propose a convergence test that measures the decrease in the objective function :
 The Moré and Wild (MW) benchmark set contains 53 test cases for non-linear least squares solvers.
 These test cases are constructed based on 22 functions, originally derived from the CUTEr
 Problems (\cite{Gould2003}). The MW benchmark set has been used to benchmark all modern model-based non-linear derivative-free least squares solvers, such as POUNDERS (\cite{Wild2015}), DFOGN (\cite{Cartis2017}), and DFOLS (\cite{Cartis2019}).
@@ -46,7 +46,7 @@ where the median dimension is 7. The dimension of the least squares residuals $r
 % The remaining 50 problems have a unique global minimizer. in estimagic,
 % linear rank one 4 problems based on linear_rank_one and linear_rank_one_zero_columns_rows
 
-\noindent As mentioned above, we are interested in applications where the criterion function is expensive and derivatives are not readily available. Hence, an appropriate convergence test should measure the decrease in the criterion function rather than the gradient.
+\noindent As mentioned above, we are interested in applications where the objective function is expensive and derivatives are not readily available. Hence, an appropriate convergence test should measure the decrease in the objective function rather than the gradient.
 Moreover, \cite{MoreWild2009} argue that when the evaluation of $f$ is costly it is sensible to scale the runtime of each algorithm by the time the fastest algorithm needed to solve the problem. So we adopt the following convergence test:
 
 % If True the runtime each algorithm needed for each problem is scaled by the time the fastest algorithm needed
@@ -55,9 +55,9 @@ Moreover, \cite{MoreWild2009} argue that when the evaluation of $f$ is costly it
         f(x_0) - f(x) \geq (1 - \tau)(f(x_0) - f_L)
         \label{eq:benchmarking-convergence-test}
 \end{align}
-where $\tau$ is a tolerance level, $x_0$ is the vector of start parameters, and $f_L$ is the lowest criterion function value obtained by any solver within a given runtime budget $\mu$, e.g. the number of function evaluations.
+where $\tau$ is a tolerance level, $x_0$ is the vector of start parameters, and $f_L$ is the lowest objective function value obtained by any solver within a given runtime budget $\mu$, e.g. the number of function evaluations.
 
-\noindent \ref{eq:benchmarking-convergence-test} measures the reduction in the criterion function $f(x_0) - f(x)$ achieved by the solution $x^*$, i.e. the difference in $f$ between start and solution, relative to the reduction in $f$ compared to best possible reduction $f(x_0) - f_L$.
+\noindent \ref{eq:benchmarking-convergence-test} measures the reduction in the objective function $f(x_0) - f(x)$ achieved by the solution $x^*$, i.e. the difference in $f$ between start and solution, relative to the reduction in $f$ compared to best possible reduction $f(x_0) - f_L$.
 \footnote{Note that the convergence test in \ref{eq:benchmarking-convergence-test} is invariant to the affine transformation $f \rightarrow \alpha f + \beta$ with the scalars $\alpha > 0$ and $\beta$.}
 
 
@@ -104,7 +104,7 @@ solve within a certain runtime budget? The runtime budget is plotted on the $x$ 
 As outlined above, the runtime of each algorithm needed for each problem is scaled by the time the fastest algorithm needed to solve the problem.
 Note that when an optimizer fails to satisfy \ref{eq:benchmarking-convergence-test} within the given computational budget, it is scored as needing infinite runtime.
 % converge according to a stopping criterion
-% failing to converege according to the given stopping criterion and preciions is scored as needing an infinite computational budget.
+% failing to converege according to the given stopping criterion and prediction is scored as needing an infinite computational budget.
 % Convention = infinity when solver s fails to satisfy the convergence test on problem p
 % (within a given limit? only for performance profile).
 
