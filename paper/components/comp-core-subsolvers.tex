@@ -2,37 +2,30 @@
 \label{subsubsec:subsolver}
 \hfill\\
 
-\noindent Recall that in each iteration $t$, we solve for the minimizer of the aggregate model $M_{t}^{s} (x_t + s)$ in $B(x_t, \Delta_t^{region})$, the subproblem, to obtain a new candidate step $s_t$ (see \ref{eq:cand-step}).
-Before solving the surrogate problem, we center the trust region at the current iterate $x_t$, such that the trust region center is $0$ and the radius $\Delta^{region}_{t}$ is normalized to $1$.
-We distinguish between two cases: (i) the unconstrained case, when there are no bounds on the parameter space, and (ii) the constrained case, when there are bounds on some or all parameters.
-Depending on the case, the metric of the trust region differs. In the unconstrained case, we use a spherical ball with the 2-norm, and in the constrained case, we use a cubic ball with the $\infty$-norm:
-%The two definitions are summarized in \ref{eq:ball-metric}
+\noindent Recall that in each iteration $t$, we solve for the minimizer of the aggregate model $M_{t}^{s} (x_t + s)$ in $B(x_t, \Delta_t^{region})$, the subproblem, to obtain a new candidate step $s_t$ (see line 9 of Algorithm \ref{algo:core}).
+% Before solving the surrogate problem, we center the trust region at the current iterate $x_t$, such that the trust region center is $0$ and the radius $\Delta^{region}_{t}$ is normalized to $1$.
+Given how we fit the vector model in line 7 of Algorithm \ref{algo:core} (see \ref{subsubsec:fitting}), the optimization problem faced by the subsolver is either defined on (i) a sphere or (ii) a cube:
 
 
 \begin{align}
-    B(x_t, \Delta_t^{\text{region}}) = \begin{cases}
-    \{ x \in \mathbb{R}^p \, | \, \lVert x - x_t \rVert \leq \Delta_t^{\text{region}} \}
-    \\
-    \{ x \in \mathbb{R}^p \, | \, \max_{i} |x - x_{t}| \leq \Delta_t^{\text{region}} \}
+    B := \begin{cases}
+    \begin{aligned}
+        & \{x \in \mathbb{R}^p \, : \, \lVert x \rVert_2 \leq 1 \} & , \ & \text{if sphere} \\
+        & [-1, 1]^p & , \ & \text{if cube}
+    \end{aligned}
     \end{cases}
     \label{eq:ball-metric}
 \end{align}
 
-\noindent where $\lVert\cdot\rVert$ is the 2-norm of a vector and $|\cdot|$ denotes the absolute distance. Put differently, in (i) the trust region is a spherical ball defined via a radius constraint, and in (ii) the trust region is an $n$-dimensional hypercube defined on the interval $[-1, 1]^n$. In (ii), we additionally impose the box constraints $l \leq s \leq u$.
-\footnote{Note that the mapping of the parameter space onto the trust region ball is already done in the fitting step; see line 7 of \ref{algo:core}.}
+\noindent where $\lVert\cdot\rVert_2$ is the Euclidean norm of a vector.
+% Put differently, in (i) the trust region is a spherical ball defined via a radius constraint, and in (ii) the trust region is an $n$-dimensional hypercube defined on the interval $[-1, 1]^n$. In (ii), we additionally impose the box constraints $l \leq s \leq u$.
+Note that the mapping of the parameter space onto the trust region ball is already done in the fitting step; see line 7 of Algorithm \ref{algo:core}.
 The surrogate, or sub-, problem is defined by the quadratic model:
-% interval $\left[ -1, 1 \right]^n$ $\text{s.t.} \ \lVert s \rVert \leq \Delta^{region}_{t}$
-
-% \begin{align}
-%     M_{t}^{s} (x_t + s) = f_t + g_t^T s + \frac{1}{2} s^T H_t s \quad \text{s.t.} \ \lVert s \rVert \leq \Delta^{region}_{t}
-%     \label{eq:quad-subproblem}
-% \end{align}
 
 \begin{align}
-    M_{t}^{s} (x_t + s) &= f_t + g_t^T s + \frac{1}{2} s^T H_t s \\
+    M_{t}^{s} (s) &= f_t + g_t^T s + \frac{1}{2} s^T H_t s \\
     &\text{s.t.} \quad \begin{aligned}[t]
-        &\lVert s \rVert \leq \Delta^{region}_{t} \\
-        & l \leq s \leq u
+        & s \in B
     \end{aligned}
     \label{eq:quad-subproblem}
 \end{align}
@@ -40,17 +33,21 @@ The surrogate, or sub-, problem is defined by the quadratic model:
 
 \noindent where $g_t$ is the gradient of the aggregate model at the current iterate $x_t$ and $H_t$ is the Hessian of the aggregate model at $x_t$.
 Note that \ref{eq:quad-subproblem} nests the linear model by setting $H_t=0$.
-The norm $\lVert\cdot\rVert$ denotes, depending on whether we are in the unconstrained or constrained case, the 2-norm or the $\infty$-norm, respectively. In the unconstrained case, since we normalize the trust region to have a center of 0 and a radius of 1, the box constraint simplifies to $-1 \leq s \leq 1$.
+% The norm $\lVert\cdot\rVert$ denotes, depending on whether we are in the unconstrained or constrained case, the 2-norm or the $\infty$-norm, respectively. In the unconstrained case, since we normalize the trust region to have a center of 0 and a radius of 1, the box constraint simplifies to $-1 \leq s \leq 1$.
 %In the constrained case, on the other hand, the bounds $ -1 < s < 1$  are active.
-To deal with both cases adequately, we use two established trust region subsolvers that determine a precise solution to \ref{eq:quad-subproblem}: (i) GQTPAR for the unconstrained case and (ii) BNTR for the constrained case. For instance, GQTPAR is also employed by POUNDERS (\cite{Wild2015}) and DFOLS (\cite{dfols2019}). BNTR, on the other hand, was specifically developed for bound-constraint trust region optimizers by \cite{TAO21} and is used in POUNDERS.
-\noindent In both cases, the sub solver returns the candidate step $s_t$ that minimizes the quadratic model \ref{eq:quad-subproblem} subject to the trust region constraint $\lVert s \rVert \leq \Delta^{region}_{t}$ and the bound constraint $l \leq s \leq u$.
-In the subsequent discussion, we leave the dependence on the trust region center $x_t$ implicit and drop the subscript $t$ for brevity. %i.e. we write $M^{s} (s)$ instead of $M_{t}^{s} (x_t + s)$.  Model $M_t$ is based on the Taylor-series expansion of $f$ around $x_t$
-By providing fast, numba-accelerated reimplementations of both algorithms, we can afford the extra iterations to obtain a precise solution, as the solution time is negligible. The solution time of the surrogate problem typically poses a computational bottleneck in derivative-free optimization.
+To deal with both cases adequately, we use two quadratic subsolvers that determine an almost exact solution to \ref{eq:quad-subproblem}: (i) GQTPAR in the sphere case and (ii) BNTR in the cube case.
+Both solvers return the candidate step $s_t$ that minimizes the quadratic model \ref{eq:quad-subproblem}. In the subsequent discussion, we drop the subscript $t$ for brevity.
+% In the subsequent discussion, we leave the dependence on the trust region center $x_t$ implicit and drop the subscript $t$ for brevity.
+
+\noindent Among the host of modern trust region optimizers, POUNDERS (\cite{Wild2015}) is the only other algorithm that switches between the spherical and the cubic case. In fact, POUNDERS employs GQTPAR for (i) and BNTR for (ii), as we do. Other common trust region optimizers, however, only handle either (i), such as NEWUOA (\cite{newuoa2006}), or (ii), e.g. DFOLS (\cite{dfols2019}). NEWUOA utilizes the spherical subsolver TRSAPP and DFOLS employs the cubic TRSBOX. These subsolvers find approximate solutions to the subproblem in \ref{eq:quad-subproblem} via the conjugate gradient method.
+Note that the solution time of the surrogate problem typically poses a computational bottleneck in derivative-free optimization when the objective function is expensive to evaluate.
+We provide efficient, numba-accelerated reimplementations of both GQTPAR and BNTR, which yield almost exact solutions to \ref{eq:quad-subproblem}.
+
 
 
 \paragraph{GQTPAR}
 
-In the unconstrained case, i.e. there are no bounds on the parameter space, GQTPAR determines an exact solution to the trust region
+In the sphere case, GQTPAR determines an exact solution to the trust region
 subproblem in \ref{eq:quad-subproblem}. We do, however, not iterate until a high-accuracy solution is found. We rather terminate after a few iterations when a satisfactory approximation to the true solution is obtained.\cite{More1983} show that the exact solution $s^*$ of the surrogate problem \ref{eq:quad-subproblem} satisfies
 
 % A number of things are immediately apparent about (7.2.1). The solution we are
@@ -99,6 +96,9 @@ More precisely, we find the optimal $\lambda^*$ using Newton's root finding meth
 \end{align}
 
 \noindent directly, because $\phi_0$ may be non-linear around $\lambda^*$. For details, see \cite{More1983} or \cite{Nocedal2006}.}
+In order to apply Newton's method to \ref{eq:root-finding}, we need to evaluate both the function $\phi(\lambda)$ and its first derivative, $\phi'(\lambda)$. Both values are found by solving systems of linear equations.
+First, we need to solve for $s(\lambda)$ in \ref{eq:boundary-solution} (see line 5 of Algorithm \ref{algo:gqtpar}), which we then plug into \ref{eq:root-finding} to calculate $\phi(\lambda)$.
+In a second step, we solve for $q$ in line 10 of Algorithm \ref{algo:core}, which is required for deriving $\phi'(\lambda)$. The details are omitted here for brevity but are available in \cite{Conn2000}.
 
 
 \begin{algorithm}
@@ -153,10 +153,10 @@ More precisely, we find the optimal $\lambda^*$ using Newton's root finding meth
 % originally written in C. Tranquilo uses a fast, CPU-accelerated pure-python implementation.
 BNTR is a trust region method for bound-constrained optimization of quadratic functions.\footnote{By enforcing box constraints on the parameter space, the spherical trust region constraint \\
 $\lVert s \rVert \leq \Delta^{region}_{t}$ in the 2-norm changes to a cubic constraint in an $\infty$-norm sense.}
-These bound, or box, constraints are of the form
+% These bound, or box, constraints are of the form
 % $$\exists i \text{ such that } l_i \leq s_i \leq u_i$$
-$l_i \leq s_i \leq u_i$, where $l_i$ and $u_i$ are the lower and upper bounds on the $i$th parameter, respectively.
-Note that not all $s_i$ must, but may, be bounded. For any unbounded parameters, the corresponding inactive lower and upper bounds are set to $-1$ and $1$, the bounds of the cubic trust region, respectively.
+% $l_i \leq s_i \leq u_i$, where $l_i$ and $u_i$ are the lower and upper bounds on the $i$th parameter, respectively.
+% Note that not all $s_i$ must, but may, be bounded. For any unbounded parameters, the corresponding inactive lower and upper bounds are set to $-1$ and $1$, the bounds of the cubic trust region, respectively.
 
 % Internally, BNTR employs two types of projection methods to ensure that the search direction is feasible (cite taoref): (i) gradient projection
 % $$
@@ -216,10 +216,3 @@ $$
         Check convergence criteria \\
         }
 \end{algorithm}
-
-\begin{itemize}
-    \item What do we want to call $x$? Parameters or variables?
-    \item Mention that trust region centered at zero vector and radius normalized to 1?
-    \item Mention that BNTR was originally developed for the Toolkit of Advanced Optimization (TAO) and
-    written in C. Tranquilo uses a fast, CPU-accelerated pure-python implementation.
-\end{itemize}
