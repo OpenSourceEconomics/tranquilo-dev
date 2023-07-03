@@ -119,8 +119,9 @@ where the sampling function nests several strategies for sampling either in the 
 Having built the vector model $M_t^v$, we approximate the full criterion function $f$ by aggregating $M_t^v$ into a scalar model:
 \begin{align}
     M_t^s = Aggregate(M_t^v)
+    \label{eq:aggregate}
 \end{align}
-where the $Aggregate$ function allows for different aggregation strategies fit for different problems.
+where the $Aggregate$ function allows for different aggregation strategies fit for different problems and polynomial degrees of the residual models.
 
 To find a candidate step $s_t$, we approximately solve for the optimum of the aggregate model in the current trust region:
 \begin{align}
