@@ -29,29 +29,19 @@ With linear vector model $M_t^v$, we follow DF-OLS by building the scalar model 
 where:
 \begin{align}
     c_t^s &\equiv\sum\limits_{i=1}^k(M_t^i(x_t^*))^2 = \sum\limits_{i=1}^k(r^i(x_t^*))^2\label{eq:scalar-intercept}\\
-     g^s_t&\equiv2\sum\limits_{i=1}^k(g_t^i(x_t^*)M_t^i(x_t^*))=2\sum\limits_{i=1}^k(g_t^i(x_t^*)r^i(x_t^*))\label{eq:scalar-gradient}\\
-     H_t^s&\equiv2\sum\limits_{i=1}^kg_t^i(x_t^*)(g_t^i(x_t^*))^T+H_t^i(x_t^*)\label{eq:scalar-hessian}
+     g^s_t&\equiv2\sum\limits_{i=1}^k(g_t^i(x_t^*)M_t^i(x_t^*))=2\sum\limits_{i=1}^kg_t^i(x_t^*)r^i(x_t^*)\label{eq:scalar-gradient}\\
+     H_t^s&\equiv2\sum\limits_{i=1}^kg_t^i(x_t^*)(g_t^i(x_t^*))^T\label{eq:scalar-hessian}
 \end{align}
 In equations \ref{eq:scalar-intercept} and \ref{eq:scalar-hessian}, the substitution of $M_t^i(x_t^*)$ by $r^i(x_t^*)$ is done under the assumption that $x_t^*$ belongs to the set of model points and thus $M_t^i(x_t^*)=r^i(x_t^*)$.
 
-With quadratic residual models, POUNDERS obtains an aggregate model with quadratic residual models using a "full Newton" approach. The full Newton model an approximation to the following model is considered:
+With quadratic residual models, POUNDERS obtains an aggregate model using a "full Newton" approach. The full Newton model approximates the scalar model obtained by direct substitution of the residual function by a second order Taylor expansion around the current candidate point $x_t^*$:
 \begin{align}
-    M^s_t(x)\equiv\sum\limits_i^{k}(M^i_t(x))^2
-    \label{eq:aggregate-quadratic-simple}
-\end{align}
-where $M^s_t$ by obtained by directly substituting residual functions $r^i$ by residual models $M_t^i$.
-
-The approximation to \ref{eq:aggregate-quadratic-simple} is the obtained by a second order Taylor expansion around the current candidate point $x_t^*$:
-\begin{align}
-    M^s_t(x_t^*+\delta)\approx c_t^s+g^s_t\delta^T+\frac{1}{2}\delta^TH^s_t\delta
+    M^s_t(s)\equiv\sum\limits_{i=1}^k(M_t^i(s))^2\approx c_t^s+g^s_ts^T+\frac{1}{2}s^TH^s_ts
     \label{eq:taylor-exp}
 \end{align}
-where:
+where $c_t^s$ and $g_t^s$ are defined as in \ref{eq:scalar-intercept} and \ref{eq:scalar-gradient}, respectively, and:
 \begin{align}
-    c_t^s &\equiv\sum\limits_{i=1}^k(M_t^i(x_t^*))^2 = \sum\limits_{i=1}^k(r^i(x_t^*))^2\label{eq:scalar-intercept}\\
-     g^s_t&\equiv2\sum\limits_{i=1}^k(g_t^i(x_t^*)M_t^i(x_t^*))=2\sum\limits_{i=1}^k(g_t^i(x_t^*)r^i(x_t^*))\label{eq:scalar-gradient}\\
-     H_t^s&\equiv2\sum\limits_{i=1}^k(g_t^i(x_t^*)(g_t^i(x_t^*))^T+H_t^i(x_t^*)M_t^i(x_t^*))=2\sum\limits_{i=1}^k(g_t^i(x_t^*)(g_t^i(x_t^*))^T+H_t^i(x_t^*)r^i(x_t^*))\label{eq:scalar-hessian}
+     H_t^s&\equiv2\sum\limits_{i=1}^k(g_t^i(x_t^*)(g_t^i(x_t^*))^T+H_t^i(x_t^*)M_t^i(x_t^*))=2\sum\limits_{i=1}^k(g_t^i(x_t^*)(g_t^i(x_t^*))^T+H_t^i(x_t^*)r^i(x_t^*))\label{eq:scalar-hessian-quadratic}
 \end{align}
-In equations \ref{eq:scalar-intercept}-\ref{eq:scalar-hessian}, the substitution of $M_t^i(x_t^*)$ by $r^i(x_t^*)$ is done under the assumption that $x_t^*$ belongs to the set of model points and thus $M_t^i(x_t^*)=r^i(x_t^*)$.
 
-An alternative approach is implemented in DFBOLS \citep{Zhang2010}, where the second order term of the scalar model is regularized based on cut-offs on the intercept and the linear terms. The regularization is designed to provide fast local convergence for problems with sparse residuals \citep{Zhang2010}. In our applications, since we assume problems non-trivial residuals, we use the POUNDERS aggregation strategy.
+An alternative approach is implemented in DFBOLS \citep{Zhang2010}, where the second order term of the scalar model is regularized based on cut-offs on the intercept and the linear terms. The regularization is designed to provide fast local convergence for problems with sparse residuals \citep{Zhang2010}. In our applications, since we assume problems with non-trivial residuals, we use the POUNDERS aggregation strategy.
