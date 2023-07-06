@@ -11,29 +11,14 @@
         \item show plot scalar\_and\_ls to highlight that scalar optimizers are not well fit for ls problems
     \end{itemize}
 
-% Benchmarking Derivative-Free Optimization Solvers
-
-
 \noindent A benchmark is defined in terms of (i) a set of problems, (ii) a set of solvers, and
-(iii) a convergence test \cite{Dolan2002}. We focus on the class of least squares problems, where there is a limit on the user's computational budget, the objective function is expensive to evaluate and derivates are not readily available.
-Thus we follow the benchmarking procedure of \cite{MoreWild2009} for benchmarking derivative-free optimization algorithms. They provide (i) a set of 53 smooth non-linear least squares problems and (iii) a convergence test suitable for situations where the objective function is expensive to evaluate and derivates may not be attainable.
+(iii) a convergence test (\cite{Dolan2002}). We focus on the class of least squares problems, where the objective function is expensive to evaluate, derivates are not readily available, and there is a limit on the user's computational budget.
+We follow the benchmarking procedure of \cite{MoreWild2009} for benchmarking derivative-free optimization algorithms. They provide (i) a set of 53 smooth non-linear least squares problems and (iii) a convergence test suitable for situations where the objective function is expensive to evaluate and derivates may not be attainable.
 Moreover, they introduce profile plots as a visualization tool to compare the performance of solvers across the benchmark set.
 Profile plots - referred to as \textit{performance profiles} in \cite{MoreWild2009} - show the percentage of problems solved by each algorithm within a given computational budget, scaled by the time the fastest algorithm took to solve the problem. The computational budget of a user is represented by a quantifiable runtime measure, such as the total number of function evaluations.
-% Derivate-free optimization, expensive function evaluations, and derivatives are not readily available.
-% Hence, MW propose a convergence test that measures the decrease in the objective function :
 The Moré and Wild (MW) benchmark set contains 53 test cases for non-linear least squares solvers.
 These test cases are constructed based on 22 functions, originally derived from the CUTEr
-Problems (\cite{Gould2003}). The MW benchmark set has been used to benchmark all modern model-based non-linear derivative-free least squares solvers, such as POUNDERS (\cite{Wild2015}), DFOGN (\cite{Cartis2017}), and DFOLS (\cite{Cartis2019}).
-% Their benchmark set contains 53 smooth problems.
-% and are based on 22 nonlinear least squares functions, which were defined in {gould2015cuter}.
-% The problems are taken from the CUTEr collection {gould2015cuter} and
-% the MINPACK-1 collection {more1980user}. The Mw benchmark set is available in the \texttt{R} package
-% \texttt{minqa} {wild2016minqa}.
-% comprises 22 nonlinear least squares functions defined in the
-% CUTEr [9] collection.
-
-
-\noindent The 53 test cases are defined by a twice continuously differentiable function of the form described in \ref{eq:problem-ls-det}. The parameter dimensions are quite small, varying between 2 and 12, where the median dimension is 7.
+Problems (\cite{Gould2003}). The MW benchmark set has been used to benchmark all modern model-based non-linear derivative-free least squares solvers, including POUNDERS (\cite{Wild2015}), DFOGN (\cite{Cartis2017}), and DFOLS (\cite{Cartis2019}). The 53 test cases are defined by a twice continuously differentiable function of the least-squares form described in \ref{eq:problem-ls-det}. The parameter dimensions are quite small, varying between 2 and 12, where the median dimension is 7.
 The dimension of the least squares residuals $r_i(x)$ is between 2 and 65.
 % No problem is overrepresented in the sense that no function $k_p$ appears more than six times.
 % Moreover, no pair ($k_p$, $n_p$) appears more than twice.
@@ -57,20 +42,18 @@ Thus, we adopt the following convergence test from \cite{MoreWild2009}:
 \end{align}
 where $\tau$ is a tolerance level, $x_0$ is the vector of start parameters, and $f_L$ is the lowest objective function value obtained by any solver within a given runtime budget $\mu$, e.g. the number of function evaluations.
 
-\noindent \ref{eq:benchmarking-convergence-test} measures the reduction in the objective function $f(x_0) - f(x)$ achieved by the solution $x^*$, i.e. the difference in $f$ between start and solution, relative to the reduction in $f$ compared to best possible reduction $f(x_0) - f_L$.
+\noindent \ref{eq:benchmarking-convergence-test} measures the reduction in the objective function $f(x_0) - f(x)$ achieved by the solution $x^*$, i.e. the difference in the objective function $f$ between start and solution, relative to the reduction in $f$ compared to the best possible reduction $f(x_0) - f_L$.
 \footnote{Note that the convergence test in \ref{eq:benchmarking-convergence-test} is invariant to the affine transformation $f \rightarrow \alpha f + \beta$ with the scalars $\alpha > 0$ and $\beta$.}
-MW argue that when the evaluation of $f$ is expensive it is not appropriate to set $f_L$
-to an accurate estimate of $f$ at a local minimizer, e.g.obtained by a derivative-based solver.
-Since no solver may be able to achieve this value within the user's computational budget.
-Thus, MW recommend setting $f_L$ to the lowest objective function value obtained by any solver.
-In practical situations, when
-the evaluation of $f$ is expensive, a low-accuracy solution is all that can be obtained within
-the user's computational budget. Even when $f$ is cheap, a derivative-free solver is not likely to achieve the precision a derivative-based solver may be able to achieve.
-When $f_L$ is the smallest value of $f$ obtained by any solver, then at least one solver will satisfy \ref{eq:benchmarking-convergence-test} for any $\tau \geq 0$ (\cite{MoreWild2009}).\\
-\noindent Moreover, when the objective evaluation is expensive and takes a long time it is sensible to scale the runtime of each algorithm by the time the fastest algorithm needed to solve the problem (\cite{MoreWild2009}). This way, the relative performance of the optimizers is highlighted. The scaled runtime of each solver is thus the ratio of the runtime of the solver and the runtime of the fastest algorithm for a given problem. The best solver for a particular problem naturally attains a scaled runtime of $1$, the lower bound.
+MW argue that when the evaluation of $f$ is expensive it is not appropriate to set $f_L$ to an accurate estimate of $f$ at a local minimizer obtained by a derivative-based solver. There are two reasons.
+% First, the derivative-based solver may not have converged to a local minimizer. Second, even if the solver has converged to a local minimizer, the objective function value at this point may not be accurate.
+First, no derivatvie-free solver may be able to converge to this local minimizer within the user's runtime budget. Thus, MW recommend setting $f_L$ to the lowest objective function value obtained by any solver in the benchmarking competition.
+Second, a low-accuracy solution may be all that can be obtained for a limited $mu$. Even when the objective evaluation is cheap, a derivative-free optimizer is not likely to converge to a solution with the same precision a derivative-based optimizer may achieve.
+Thus, MW recommend setting $f_L$ to the lowest objective function value obtained by any solver in the benchmarking competition.
+Then at least one solver will satisfy \ref{eq:benchmarking-convergence-test} for any $\tau \geq 0$ (\cite{MoreWild2009}).\\
+\noindent Moreover, when the objective evaluation is expensive, i.e. the evaluation takes a long time, it is sensible to scale the runtime of each algorithm by the time the fastest algorithm needed to solve the problem (\cite{MoreWild2009}). This way, the relative performance of the optimizers is highlighted. The scaled runtime of each solver is thus the ratio of the runtime of the solver and the runtime of the fastest algorithm for a given problem. The best solver for a particular problem naturally attains a scaled runtime of $1$, the lower bound.
 %Any solver that fails to satisfy the convergence test on a given problem within the runtime budget is assigned an infinite runtime.
 
-\noindent As mentioned above, users with costly optimization problems are not only interested in the relative performance of the optimizers but also in the performance of solvers as a function of the number of a given runtime measure. In other words, these users are eager to know the percentage of problems that can be solved both for a given tolerance $\tau$ and within a given computational budget, bounded by $\mu$. Profile plots are a compelling tool to visualize both the relative performances of a set of optimizers and their performance in terms of a limited runtime budget. By convention, any optimizer that fails to satisfy the convergence test on a given problem within $\mu$ is assigned an infinite runtime.
+\noindent As mentioned above, users with costly optimization problems are not only interested in the relative performance of the optimizers but also in the performance of solvers as a function of the number of a given runtime measure. In other words, these users want to know the percentage of problems that can be solved both for a given tolerance $\tau$ and within a given computational budget, bounded by $\mu$. Profile plots are a compelling tool to visualize both the relative performances of a set of optimizers and their performance in terms of a limited runtime budget. By convention, any optimizer that fails to satisfy the convergence test on a given problem within $\mu$ is assigned an infinite runtime.
 Profile plots provide an accurate view of the relative performance of solvers for a given $\tau$ and $\mu$. They show on the x-axis the scaled runtime of each algorithm and on the y-axis the percentage of problems each algorithm solved within the given runtime budget. For a runtime of $1$, the y-intercept indicates the fraction of problems out of all problems in the benchmark set the given optimizer solved the fastest compared to the other solvers in the competition.
 E.g., an intercept of 0.5 indicates that the optimizer solved half of the problems the fastest within the user's runtime budget. For the maximum runtime of $\mu$, profile plots show the percentage of problems solved by each algorithm making use of the entire runtime budget.
 

@@ -19,7 +19,7 @@ Given how we fit the vector model in line 7 of Algorithm \ref{algo:core} (see \r
 
 \noindent where $\lVert\cdot\rVert_2$ is the Euclidean norm of a vector.
 % Put differently, in (i) the trust region is a spherical ball defined via a radius constraint, and in (ii) the trust region is an $n$-dimensional hypercube defined on the interval $[-1, 1]^n$. In (ii), we additionally impose the box constraints $l \leq s \leq u$.
-Note that the mapping of the parameter space onto the trust region ball is already done in the fitting step; see line 7 of Algorithm \ref{algo:core}.
+Note that the mapping of the parameter space onto the trust region space is already done in the fitting step; see line 7 of Algorithm \ref{algo:core}.
 The surrogate, or sub-, problem is defined by the quadratic model:
 
 \begin{align}
@@ -63,42 +63,42 @@ subproblem in \ref{eq:quad-subproblem}. We do, however, not iterate until a high
 
 \begin{align}
     ( H + \lambda I ) \ s^* = - g
-    \label{eq:exact-solution}
+    \label{eq:gqtpar-exact-solution}
 \end{align}
 
 \noindent for some $\lambda \geq 0$, with the matrix $( H + \lambda I )$ being positive semidefinite and
-$\lambda (\Delta^{region}_{t}  - \lVert s^* \rVert) = 0$. The latter is a complementary slackness condition
-which states that at least one of the quantities $\lambda$ and $(\Delta^{region}  - \lVert s^* \rVert)$
-must be zero at the optimum.
-When the solution $s^*$ is interior to the trust region, i.e. $\lVert s^* \rVert < \Delta^{region}$,
+$\lambda (1  - \lVert s^* \rVert) = 0$. The latter is a complementary slackness condition
+which states that at least one of the quantities $\lambda$ and $(1  - \lVert s^* \rVert)$
+must be zero at the optimum. Recall that in the sphere case, $B$ is a ball with a center of 0 and a radius of 1 (see \ref{eq:ball-metric}).
+When the solution $s^*$ is interior to $B$, i.e. $\lVert s^* \rVert < 1$,
 then $\lambda^*= 0$ and the algorithm can be terminated immediately.
-Otherwise, when $s^*$ lies on the boundary of the trust region, i.e. $\lVert s^* \rVert = \Delta^{region}$,
+Otherwise, when $s^*$ lies on the boundary of $B$, i.e. $\lVert s^* \rVert = 1$,
 $\lambda > 0$ and Newton's method is applied to find the value of $\lambda$ such that
-$\lVert s^* \rVert = \Delta^{region}$ is satisfied.
+$\lVert s^* \rVert = 1$ is satisfied.
 The unique solution is then defined by
 
 \begin{align}
     s (\lambda) = -(H + \lambda I)^{-1} \ g
-    \label{eq:boundary-solution}
+    \label{eq:gqtpar-boundary-solution}
 \end{align}
 
-\noindent for $\lambda> 0$ sufficiently large so that $H + \lambda I$ is positive definite and $ \lVert s (\lambda) \rVert = \Delta^{region}$.
+\noindent for $\lambda> 0$ sufficiently large so that $H + \lambda I$ is positive definite and $ \lVert s (\lambda) \rVert = 1$.
 More precisely, we find the optimal $\lambda^*$ using Newton's root finding method on the equation
 \begin{align}
-    \phi(\lambda)=\frac{1}{\Delta^{region}}-\frac{1}{\|s(\lambda)\|}
+    \phi(\lambda)=\frac{1}{\|s(\lambda)\| - 1}
+    \label{eq:root-finding}
 \end{align}
 
 \noindent which is almost linear around $\lambda^*$.\footnote{Note that Newton's method is not applied to
 
 \begin{align}
-    \phi_0 (\lambda) = \lVert s (\lambda) \rVert - \Delta^{region}
-    \label{eq:root-finding}
+    \phi_0 (\lambda) = \lVert s (\lambda) \rVert - 1
 \end{align}
 
 \noindent directly, because $\phi_0$ may be non-linear around $\lambda^*$. For details, see \cite{More1983} or \cite{Nocedal2006}.}
 In order to apply Newton's method to \ref{eq:root-finding}, we need to evaluate both the function $\phi(\lambda)$ and its first derivative, $\phi'(\lambda)$. Both values are found by solving systems of linear equations.
-First, we need to solve for $s(\lambda)$ in \ref{eq:boundary-solution} (see line 5 of Algorithm \ref{algo:gqtpar}), which we then plug into \ref{eq:root-finding} to calculate $\phi(\lambda)$.
-In a second step, we solve for $q$ in line 10 of Algorithm \ref{algo:core}, which is required for deriving $\phi'(\lambda)$. The details are omitted here for brevity but are available in \cite{Conn2000}.
+First, we need to solve for $s(\lambda)$ in equation \ref{eq:gqtpar-boundary-solution} (also consult lines 4 and 5 of Algorithm \ref{algo:gqtpar}). $s(\lambda)$ is then plugged into \ref{eq:root-finding} to calculate $\phi(\lambda)$.
+In a second step, we solve for $q$ in line 10 of Algorithm \ref{algo:core}, which is required for deriving $\phi'(\lambda)$. The details are omitted here for brevity but are available in \cite{Conn2000}. Consequently, we arrive at line 11 of Algorithm \ref{algo:gqtpar}, where the optimal lambda of the current iteration $l$ is denoted by $\lambda^* =\left(\frac{\left\|s_{\ell}\right\|}{\left\|q_{\ell}\right\|}\right)^2\left(\left\|s_{\ell}\right\|- 1 \right)$.
 
 
 \begin{algorithm}
@@ -119,32 +119,26 @@ In a second step, we solve for $q$ in line 10 of Algorithm \ref{algo:core}, whic
                 Check convergence criteria \\
                 \uIf{$H + \lambda^{(l)} I$ is positive definite and $g \neq 0$ }{
                     Solve $q_\ell = (R^T)^{-1} s_\ell $ \\
-                    Set $\lambda^{(\ell+1)}=\lambda^{(\ell)}+\left(\frac{\left\|s_{\ell}\right\|}{\left\|q_{\ell}\right\|}\right)^2\left(\frac{\left\|s_{\ell}\right\|-\Delta^{region}_{t}}{\Delta^{region}_{t}}\right)$
+                    Set $\lambda^{(\ell+1)}=\lambda^{(\ell)}+\left(\frac{\left\|s_{\ell}\right\|}{\left\|q_{\ell}\right\|}\right)^2\left(\left\|s_{\ell}\right\|- 1 \right)$
                     }
+                    % \Delta^{region}_{t}}{\Delta^{region}_{t}}
                     \uElse{
                         Set $\lambda^{(\ell + 1)} = \lambda^{(\ell)}_S$
                         }
                         }
                     \end{algorithm}
 
-\noindent Before solving for $\lambda^*$, we need an expression for $s(\lambda$) in \label{eq:boundary-solution}. We obtain the candidate $s_\ell$ by factorizing the model Hessian via Cholesky factorization and solving the resulting linear system (see lines 5 and 6 of Algorithm \ref{algo:gqtpar}). Note that in line 4, we safeguard $\lambda^{(\ell)}$. This is necessary to ensure that $H + \lambda^{(\ell)} I$ is positive definite and the Cholesky factorization exists. For details on the safeguarding procedure, see \cite{More1983} or \cite{Nocedal2006}.
+\noindent Before solving for $\lambda^*$, we need an expression for $s(\lambda$) according to \ref{eq:gqtpar-boundary-solution}. We obtain a candidate $s_\ell$ by factorizing the model Hessian via Cholesky factorization and solving the resulting linear system (see lines 4 and 5 of Algorithm \ref{algo:gqtpar}). Note that in line 2, we safeguard $\lambda^{(\ell)}$. This is necessary to ensure that $H + \lambda^{(\ell)} I$ is positive definite and the Cholesky factorization exists. For details on the safeguarding procedure, see \cite{More1983} or \cite{Nocedal2006}. With expressions for $\left\|s_{\ell}\right\|$ and $\left\|q_{\ell}\right\|$ in hand, we can finally update his concludes Algorithm \ref{algo:gqtpar} for the "easy case".
 
 
-\noindent There may situations, however, where $H + \lambda^{(\ell)} I$ is positive definite, but no solution to $ \lVert s (\lambda)  \rVert = \Delta^{region} $ exists. This is what \cite{More1983} call the "hard case", which is not described in Algorithm \ref{algo:gqtpar}. We refer the interested reader to \cite{More1983} and \cite{Conn2000} for details on the hard case. In short, the solution is to find an eigenvector $z$ of $H$ corresponding to the eigenvalue $\lambda_1$. Then
+\noindent There may be situations, however, where $H + \lambda^{(\ell)} I$ is positive definite, yet no solution to $ \lVert s (\lambda)  \rVert = 1 $ exists. This is what \cite{More1983} call the "hard case", which is not described in Algorithm \ref{algo:gqtpar}. We refer the interested reader to \cite{More1983} and \cite{Conn2000} for details on the hard case. In short, the solution is to find an eigenvector $z$ of $H$ corresponding to the first eigenvalue $\lambda_1$ of $H$. Equation \ref{eq:gqtpar-exact-solution} is then replaced by
 
 \begin{align}
     \left(H-\lambda_1 I\right)(s+\tau z)=-g
     \label{eq:hard-case}
 \end{align}
 
-\noindent and $ \lVert s +\tau z \ (\lambda) \rVert  = \Delta^{region}  $ for some $\tau$.
-
-
-% $\lambda^{*} = ( -\lambda_1, \infty \)$
-% $ \lVert s^* \rVert = \delta$
-% $ \lVert p \( \lambda \) \rVert  - \Delta = 0 $
-% $  \frac{1}{\lVert p \( \lambda \) \rVert}  - \frac{1}{\Delta} = 0 $
-
+\noindent where $ \lVert s +\tau z \ (\lambda) \rVert  = 1  $ for some $\tau$.
 
 
 \paragraph{Bounded Newton Trust Region (BNTR)}
@@ -164,7 +158,7 @@ In a second step, we solve for $q$ in line 10 of Algorithm \ref{algo:core}, whic
 BNTR employs a trust-region-like approach combined with an active set method (\cite{TAO21}) to solve \ref{eq:quad-subproblem}.
 Instead of fitting a full surrogate model, BNTR uses a simplified quadratic model in the surrogate step. I.e. it solves for the minimizer $r$ of the reduced quadratic model $M^{r}_{t}(r)$ for the unconstrained, i.e. inactive, search directions only (see line 5 of Algorithm \ref{algo:bntr}) via a conjugate gradient method. \footnote{The available methods are Conjugate Gradient, Steihaug-Toint, and TRSBOX.}
 The reduced model is constructed using the reduced model gradient $g^r$ and the reduced model hessian $H^r$ based on the inactive set $\mathcal{I}(x)$.
-In the vain of other trust region optimizers, acceptance of the candidate step $r_t$ is determined based on the ratio of the predicted and the actual reduction of the reduced model; see lines 7 and 8 of Algorithm \ref{algo:bntr}. If the ratio is larger than a threshold, the trust region radius is increased. Else, the trust region radius is reduced.
+In the vain of other trust region optimizers, acceptance of the candidate step $r_t$ is determined based on the ratio of the predicted and the actual reduction of the reduced model; see lines 7 and 8 of Algorithm \ref{algo:bntr}. If the ratio is larger than a threshold, the trust region radius is increased. Else, the trust region radius is decreased.
 The active and inactive sets are defined as follows (\cite{Bertsekas1982}):
 \begin{align*}
 \text{lower bounded: } \mathcal{L}(s) & = \{i: s_i \leq l_i \wedge g(s)_i > 0\}, \\
