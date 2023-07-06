@@ -10,21 +10,22 @@ Parallelization occurs at three places in the algorithm. (1) At the beginning of
 where we parallelize the repeated evaluation of the starting point. (2) During the sampling, where
 we evaluate the objective function in parallel at different sampling points. And, (3) during the
 acceptance step, where we utilize unused resources during the acceptance point evaluation to
-accelerate the next periods sampling or to improve upon the current candidate point.
+accelerate the next periods sampling or to improve upon the current candidate point. The parallel
+algorithm is given in Listing \ref{algo:parallel}, with deviations from the serial algorithm
+highlighted in blue\comment[id=TM]{Update this when we change the color}.
 
 \textcolor{red}{List other algorithms that parallelize and how they compare to the three categories
 (DFOLS, Parallel-Neldermead)}
 
-Tranquilo offers two parameters (\textcolor{red}{TODO: parameters, options, or arguments}) to govern
-the parallelization behavior. The first, number of cores
-$n^{cores}$, determines the number of threads that are used for parallelization. The second, batch
-size $n^{batch}$, determines the number of objective evaluations we perform simultaneously. In most
-cases, $n^{cores} = n^{batch}$ is a good choice, but we allow for the possibility to set $n^{batch}$
-to a larger value.\footnote{Using different values for the number of cores and the batch size
-allows, for instance, to use a single-core machine to test the algorithm's behavior on a machine
-with many cores, by setting the batch size to the number of available cores on the many-cores
-machine.} Note that the algorithms behavior is not affected by the number of cores, but only by the
-batch size.
+Tranquilo offers two parameters\comment[id=TM]{Call them parameters, options, or arguments?} to
+govern the parallelization behavior. The first, number of cores $n^{cores}$, determines the number
+of threads that are used for parallelization. The second, batch size $n^{batch}$, determines the
+number of objective evaluations we perform simultaneously. In most cases, $n^{cores} = n^{batch}$ is
+a good choice, but we allow for the possibility to set $n^{batch}$ to a larger value.\footnote{Using
+different values for the number of cores and the batch size allows, for instance, to use a
+single-core machine to test the algorithm's behavior on a machine with many cores, by setting the
+batch size to the number of available cores on the many-cores machine.} Note that the algorithms
+behavior is not affected by the number of cores, but only by the batch size.
 
 The following parallelization strategies are motivated by the assumption, that one
 objective evaluation is as time-consuming as performing $n^{batch}$ many. For any integer $m \in
@@ -41,19 +42,18 @@ example, the next multiple of $n^{batch} + 1$, is $2 \times n^{batch}$.
 Parallelization at the start of the algorithm occurs only for noisy problems. In the noisy case, the
 option $n^{start} \in \mathbb{N}$ describes the number of evaluations that are performed at the
 starting value to average out noise. In the parallel case this number is replaced by its next
-multiple. See Line \ref{algo:parallel::start} of Listing \ref{algo:parallel} for the implementation.
+multiple. See Lines \ref{algo:parallel::start-start} - \ref{algo:parallel::start-end} of Listing
+\ref{algo:parallel} for the implementation.
 
 \subsubsection{Sampling}
 
 When parallelization is enabled, the sampling step is performed in parallel. Moreover, instead of
 sampling the requested number of points, we sample the next multiple of it. See Line
 \ref{algo:parallel:sampling} of Listing \ref{algo:parallel} for the
-implementation.(\textcolor{red}{TODO: (1) This does not really show an implementation of the
-component. (2) Should I talk about the $Sample$ component with the new variable $n^{batch}$?})
+implementation.\comment[id=TM]{(1) This does not really show an implementation of the
+component. (2) Should I talk about the $Sample$ component with the new variable $n^{batch}$?}
 
-\subsubsection{Acceptance Step}
-
-\textcolor{red}{This will be updated once the acceptance step section is written.}
+\subsubsection{Acceptance Step}\comment[id=TM]{This will be updated once the acceptance step section is written.}
 
 \begin{itemize}
     \item if batch size is 1 (no parallelization): do classic acceptance based on rhos
@@ -76,8 +76,7 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
     \caption{Parallel Tranquilo algorithm}\label{algo:parallel}
     \KwIn{
     Starting point $x^*_0\in\mathbb{R}^p$, initial trust region radius $\Delta^{region}_0$, and
-    target sample size $n^{target}$, starting point evaluations $n^{start}$, batch size $n^{batch}$,
-    number of cores $n^{cores}$.
+    target sample size $n^{target}$, starting point evaluations $n^{start}$, batch size $n^{batch}$.
 
     \emph{Other constants:} Search factor $\gamma^{search}$, minimum step size $s^{min}$, relative
     improvement cut-offs $0<\rho^{1}<\rho^2$, trust region expansion and shrinking factors
@@ -86,10 +85,14 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
 
     A convergence objective.
     }
-    \If{$n^{start}>1$}{
+    \begingroup
+    \color{UBonnBlue}
+    \If{$n^{start}>1$}{\label{algo:parallel::start-start}
         $n^{start} \leftarrow$ next multiple of $n^{start}$
     }
-    Initialize history with $\mathcal{H}_0=\{(x^*_0,r(x_0^*)): i = 1, \dots, n^{start}\}$\label{algo:parallel::start}\\
+    Initialize history with $\mathcal{H}_0=\{(x^*_0,r(x_0^*)): i = 1, \dots,
+    n^{start}\}$\label{algo:parallel::start-end}\\
+    \endgroup
     \For{t=0,1,2,...}{
         Given $x_t^*$ and $\Delta_t^{search}=\gamma^{search}\Delta^{region}_{t}$, scan history for
         points in the search region: $\mathcal{X}^{existing}_t = \{x\in\mathcal{H}|\Hquad\lVert
@@ -99,8 +102,11 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
         \{Filter(x)|\Hquad x\in \mathcal{X}^{existing}_t\}$\\
 
         \If{$|\mathcal{X}_t^{filtered}|<n^{target}$}{
+            \begingroup
+            \color{UBonnBlue}
             Sample new points in the trust region: $\mathcal{X}^{new}_t\equiv
             Sample(\mathcal{X}_t^{filtered},B_t,n^{target}, n^{batch})$\label{algo:parallel:sampling}
+            \endgroup
         }
 
         Build a vector model $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,B_t)$ on
@@ -108,8 +114,8 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
 
         Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\label{algo-core-aggregate}\\
 
-        Solve the surrogate problem: $s_t\approx\underset{{\Hquad\lVert
-        s\rVert\leq\Delta_t^{region}}}{\argmin}M_t^s(s)$\label{algo-core-line:solve}\\
+        Solve the surrogate problem: $s_t\approx \argmin \{M_t^s(s): \Hquad\lVert
+        s\rVert\leq\Delta_t^{region} \}$\label{algo-core-line:solve}\\
 
         \If{$|\mathcal{X}^{model}_t|>n^{target}$}{
             \While{$\lVert s_t\rVert\leq s^{min}$}{
@@ -122,8 +128,8 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
 
                 Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\\
 
-                Solve the surrogate problem: $M_t^s$: $s_t\approx\underset{{\Hquad\lVert
-                s\rVert\leq\Delta_t^{region}}}{\argmin}M_t^s(s)$\\
+                Solve the surrogate problem: $M_t^s$: $s_t \approx \argmin\{M_t^s(s):\Hquad\lVert
+                s\rVert\leq\Delta_t^{region} \}$\\
                 }
         }
 
@@ -142,19 +148,22 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
 
             Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\\
 
-            Solve the surrogate problem: $s_t\approx\underset{{\Hquad\lVert
-            s\rVert\leq\Delta_t^{region}}}{\argmin}M_t^s(s)$\\
+            Solve the surrogate problem: $s_t\approx \argmin\{M_t^s(s):\Hquad\lVert
+            s\rVert\leq\Delta_t^{region}\}$\\
         }
-         Calculate $\Delta f_t\equiv f(x_t^*) - f(x_t^*+s_t)$ and $\Delta M^{s}_t\equiv M_t^s(x_t^*)
-         - M_t^s(x_t^*+s_t)$\\
+        Calculate $\Delta f_t\equiv f(x_t^*) - f(x_t^*+s_t)$ and $\Delta M^{s}_t\equiv M_t^s(x_t^*)
+        - M_t^s(x_t^*+s_t)$\\
 
-         \nonl \textbf{Acceptance decision}:\\
+        \nonl \textbf{Acceptance decision}:\\
 
-         $(Decision_t,x_{t+1}^*,\rho_t;\Hquad\cdot\Hquad) =  Accept(s_t,x_t^{*},\Delta f_t,\Delta
-         M_t^s;\Hquad\cdot\Hquad)$\\
+        \begingroup
+        \color{UBonnBlue}
+        $(Decision_t,x_{t+1}^*,\rho_t;\Hquad\cdot\Hquad) =  Accept(s_t,x_t^{*},\Delta f_t,\Delta
+        M_t^s, n^{batch};\Hquad\cdot\Hquad)$\textcolor{red}{How to include component specific arguments?}\\
+        \endgroup
 
-         \uIf{$\rho_t\geq\rho^{2}$ and  $s_t$ is large}{
-         Expand trust region radius: $\Delta^{region}_{t+1}=\gamma^{inc}\Delta^{region}_t$
+        \uIf{$\rho_t\geq\rho^{2}$ and  $s_t$ is large}{
+        Expand trust region radius: $\Delta^{region}_{t+1}=\gamma^{inc}\Delta^{region}_t$
 
         }
         \uElseIf{$\rho_t>\rho^1$}{
@@ -187,6 +196,6 @@ of a single point.
 
 
 \begin{figure}[ht]\label{fig:parallelization::benchmark}
-    \includegraphics[scale=0.9]{../bld/figures/profile_plots/parallelization_ls}
+    % \includegraphics[scale=0.9]{../bld/figures/profile_plots/parallelization_ls}
     \caption{Benchmark plots for the parallel cost model.}
 \end{figure}

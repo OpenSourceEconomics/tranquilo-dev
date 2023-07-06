@@ -18,7 +18,7 @@ OUT = BLD / "benchmarks"
 
 for batch_size in [2, 4, 8]:
 
-    for functype in ["scalar", "ls"]:
+    for functype in ["ls"]:
 
         for problem_name, problem_kwargs in PROBLEM_SETS.items():
             algorithm = get_tranquilo_version(functype)
@@ -56,6 +56,7 @@ for batch_size in [2, 4, 8]:
                         n_cores=N_CORES,
                         max_criterion_evaluations=max_evals,  # noqa: B023
                         disable_convergence=False,
+                        error_handling="raise",
                     )
 
                     if COMPAT_MODE:

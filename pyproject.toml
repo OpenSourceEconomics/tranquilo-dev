@@ -11,5 +11,5 @@ infer_latex_dependencies = true
 [tool.interrogate]
 ignore-init-module = true
 ignore-nested-functions = true
-exclude = ["setup.py", "docs", "bld","bld_paper","aux_paper"]
+exclude = ["setup.py", "docs", "bld"]
 ignore-regex = ["task_*"]
