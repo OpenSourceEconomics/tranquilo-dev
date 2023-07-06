@@ -8,18 +8,18 @@ Given how we fit the vector model in line 7 of Algorithm \ref{algo:core} (see \r
 
 
 \begin{align}
-    B := \begin{cases}
+    B_t := \begin{cases}
     \begin{aligned}
-        & \{x \in \mathbb{R}^p \, : \, \lVert x \rVert_2 \leq 1 \} & , \ & \text{if sphere} \\
-        & [-1, 1]^p & , \ & \text{if cube}
+        & \{x \in \mathbb{R}^p \, : \, \lVert x \rVert \leq 1 \} & , \ & \text{if  in $t$ we optimize on a sphere} \\
+        & [-1, 1]^p & , \ & \text{if in $t$ we optimize on a cube}
     \end{aligned}
     \end{cases}
     \label{eq:ball-metric}
 \end{align}
 
-\noindent where $\lVert\cdot\rVert_2$ is the Euclidean norm of a vector.
+\noindent where $\lVert\cdot\rVert$ is the Euclidean norm of a vector.
 % Put differently, in (i) the trust region is a spherical ball defined via a radius constraint, and in (ii) the trust region is an $n$-dimensional hypercube defined on the interval $[-1, 1]^n$. In (ii), we additionally impose the box constraints $l \leq s \leq u$.
-Note that the mapping of the parameter space onto the trust region space is already done in the fitting step; see line 7 of Algorithm \ref{algo:core}.
+Note that the mapping of the parameter space onto the subproblem space is already done in the fitting step; see line 7 of Algorithm \ref{algo:core}.
 The surrogate, or sub-, problem is defined by the quadratic model:
 
 \begin{align}
@@ -31,7 +31,7 @@ The surrogate, or sub-, problem is defined by the quadratic model:
 \end{align}
 
 
-\noindent where $g_t$ is the gradient of the aggregate model at the current iterate $x_t$ and $H_t$ is the Hessian of the aggregate model at $x_t$.
+\noindent where $g_t$ is the gradient of the scalar model at $s_t = 0$ and $H_t$ is the Hessian of the scalar model.
 Note that \ref{eq:quad-subproblem} nests the linear model by setting $H_t=0$.
 % The norm $\lVert\cdot\rVert$ denotes, depending on whether we are in the unconstrained or constrained case, the 2-norm or the $\infty$-norm, respectively. In the unconstrained case, since we normalize the trust region to have a center of 0 and a radius of 1, the box constraint simplifies to $-1 \leq s \leq 1$.
 %In the constrained case, on the other hand, the bounds $ -1 < s < 1$  are active.
@@ -39,8 +39,7 @@ To deal with both cases adequately, we use two quadratic subsolvers that determi
 Both solvers return the candidate step $s_t$ that minimizes the quadratic model \ref{eq:quad-subproblem}. In the subsequent discussion, we drop the subscript $t$ for brevity.
 % In the subsequent discussion, we leave the dependence on the trust region center $x_t$ implicit and drop the subscript $t$ for brevity.
 
-\noindent In the class of modern derivative-free trust region optimizers, POUNDERS (\cite{Wild2015}) is the only other algorithm that switches between the spherical and the cubic case. In fact, POUNDERS employs GQTPAR for (i) and BNTR for (ii), as we do. Other common trust region optimizers, however, only handle either (i), such as NEWUOA (\cite{newuoa2006}), or (ii), e.g. DFOLS (\cite{dfols2019}). NEWUOA utilizes the spherical subsolver TRSAPP and DFOLS employs the cubic TRSBOX. These subsolvers find approximate solutions to the subproblem in \ref{eq:quad-subproblem} via the conjugate gradient method.
-Note that the solution time of the surrogate problem typically poses a computational bottleneck in derivative-free optimization when the objective function is expensive to evaluate.
+\noindent In the class of modern derivative-free trust region optimizers, POUNDERS (\cite{Wild2015}) is the only other solver that supports both the spherical and the cubic case. POUNDERS provides GQTPAR for (i) and BNTR for (ii). The decision of whether to use GQTPAR and BNTR is made by the user before the start of the main loop. Tranquilo goes one step further and dynamically switches between GQTPAR and BNTR in each iteration $t$ depending on whether we are in (i) or (ii). Other common trust region optimizers, however, only handle either (i), such as NEWUOA (\cite{newuoa2006}), or (ii), e.g. DFOLS (\cite{dfols2019}). NEWUOA utilizes the spherical subsolver TRSAPP and DFOLS employs the cubic TRSBOX. These subsolvers find approximate solutions to the subproblem in \ref{eq:quad-subproblem} via the conjugate gradient method.
 We provide efficient, numba-accelerated reimplementations of both GQTPAR and BNTR, which yield almost exact solutions to \ref{eq:quad-subproblem}.
 
 
