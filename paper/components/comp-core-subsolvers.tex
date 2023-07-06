@@ -2,7 +2,7 @@
 \label{subsubsec:subsolver}
 \hfill\\
 
-\noindent Recall that in each iteration $t$, we solve for the minimizer of the aggregate model $M_{t}^{s} (s)$ in the subproblem space $B$ to obtain a new candidate step $s_t$ (see line 9 of Algorithm \ref{algo:core}).
+\noindent Recall that in each iteration $t$, we solve for the minimizer of the aggregate model $M_{t}^{s} (s)$ in the subproblem space $B_t$ to obtain a new candidate step $s_t$ (see line 9 of Algorithm \ref{algo:core}).
 % Before solving the surrogate problem, we center the trust region at the current iterate $x_t$, such that the trust region center is $0$ and the radius $\Delta^{region}_{t}$ is normalized to $1$.
 Given how we fit the vector model in line 7 of Algorithm \ref{algo:core} (see \ref{subsubsec:fitting}), the optimization problem faced by the subsolver is either defined on (i) a sphere or (ii) a cube:
 
@@ -25,7 +25,7 @@ The surrogate, or sub-, problem is defined by the quadratic model:
 \begin{align}
     M_{t}^{s} (s) &= f_t + g_t^T s + \frac{1}{2} s^T H_t s \\
     &\text{s.t.} \quad \begin{aligned}[t]
-        & s \in B
+        & s \in B_t
     \end{aligned}
     \label{eq:quad-subproblem}
 \end{align}
@@ -155,9 +155,9 @@ In a second step, we solve for $q$ in line 10 of Algorithm \ref{algo:core}, whic
 
 
 BNTR employs a trust-region-like approach combined with an active set method (\cite{TAO21}) to solve \ref{eq:quad-subproblem}.
-Instead of fitting a full surrogate model, BNTR uses a simplified quadratic model in the surrogate step. I.e. it solves for the minimizer $r$ of the reduced quadratic model $M^{r}_{t}(r)$ for the unconstrained, i.e. inactive, search directions only (see line 5 of Algorithm \ref{algo:bntr}) via a conjugate gradient method. \footnote{The available methods are Conjugate Gradient, Steihaug-Toint, and TRSBOX.}
+Instead of fitting a full surrogate model, BNTR uses a simplified quadratic model in the surrogate step. I.e. it solves for the minimizer $r$ of the reduced quadratic model $M^{r}_{l}(r)$ for the unconstrained, i.e. inactive, search directions only (see line 5 of Algorithm \ref{algo:bntr}) via a conjugate gradient method. \footnote{The available methods are Conjugate Gradient, Steihaug-Toint, and TRSBOX.}
 The reduced model is constructed using the reduced model gradient $g^r$ and the reduced model hessian $H^r$ based on the inactive set $\mathcal{I}(x)$.
-In the vain of other trust region optimizers, acceptance of the candidate step $r_t$ is determined based on the ratio of the predicted and the actual reduction of the reduced model; see lines 7 and 8 of Algorithm \ref{algo:bntr}. If the ratio is larger than a threshold, the trust region radius is increased. Else, the trust region radius is decreased.
+In the vain of other trust region optimizers, acceptance of the candidate step $r_l$ is determined based on the ratio of the predicted and the actual reduction of the reduced model; see lines 7 and 8 of Algorithm \ref{algo:bntr}. If the ratio is larger than a threshold, the trust region radius is increased. Else, the trust region radius is decreased.
 The active and inactive sets are defined as follows (\cite{Bertsekas1982}):
 \begin{align*}
 \text{lower bounded: } \mathcal{L}(s) & = \{i: s_i \leq l_i \wedge g(s)_i > 0\}, \\
@@ -182,7 +182,7 @@ The active and inactive sets are defined as follows (\cite{Bertsekas1982}):
 \end{enumerate}
 
 
-\noindent With the reduced conjugate gradient step $r$ in hand, the active parameters in $\mathfrak{B}(s)$ are then set to their respective lower, upper, or fixed bounds, which yields the candidate step $s$ (line 6 of Algorithm \ref{algo:bntr}). The process is repeated until convergence criteria are met.
+\noindent With the reduced conjugate gradient step $r_l$ in hand, the active parameters in $\mathfrak{B}(s)$ are then set to their respective lower, upper, or fixed bounds, which yields the candidate step $s$ (line 6 of Algorithm \ref{algo:bntr}). The process is repeated until convergence criteria are met.
 
 \begin{algorithm} %[H]
     \caption{BNTR algorithm}\label{algo:bntr}
@@ -194,7 +194,7 @@ The active and inactive sets are defined as follows (\cite{Bertsekas1982}):
         Create active set of bounds \\
         Construct reduced gradient and reduced model hessian \\
         Solve for the optimum of the reduced model $M^r_\ell$:
-        $r_{\ell}\approx arg\,\min\limits_rM_{\ell}^r(r) \quad \text{s.t.} \ \lVert r \rVert \leq \Delta^{sub}_{\ell}$\\
+        $r_{\ell}\approx arg\,\min\limits_rM_{\ell}^r(r) \quad \text{s.t.} \ r \leq \Delta^{sub}$\\
         Set active dimensions of $r_\ell$ to their respective lower and upper bounds \\
 
         Calculate $\kappa_\ell = \frac{M_{\ell}^r(r_{\ell - 1}) - M_{\ell}^r(r_\ell)}{M_{\ell}^s(r_{\ell - 1}) - M_{\ell}^s(r_\ell)}$,
