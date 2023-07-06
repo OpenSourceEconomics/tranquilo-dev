@@ -4,38 +4,43 @@ In this section we describe what parallelization features our algorithm offers a
 implemented. We also discuss the cost model that is used when comparing the performance of our
 parallelized algorithm to serial versions. We refrain from an analysis of a parallelized objective
 function and consider the case where the parallelization solely takes place at the optimization
-algorithm level.
+algorithm level. Note further, that the Tranquilo algorithm only parallelizes the evaluation of
+the objective functions, reflecting our primary assumption that the runtime of evaluating the
+objective function dominates the runtime of auxiliary computations.
 
-Parallelization occurs at three places in the algorithm. (1) At the beginning of the optimization,
-where we parallelize the repeated evaluation of the starting point. (2) During the sampling, where
-we evaluate the objective function in parallel at different sampling points. And, (3) during the
-acceptance step, where we utilize unused resources during the acceptance point evaluation to
-accelerate the next periods sampling or to improve upon the current candidate point. The parallel
-algorithm is given in Listing \ref{algo:parallel}, with deviations from the serial algorithm
-highlighted in blue\comment[id=TM]{Update this when we change the color}.
+Parallelization occurs whenever we have to evaluate the objective function in the algorithm. This
+happens in three places: (1) At the beginning of the optimization, where we parallelize the repeated
+evaluation of the starting point. (2) During the sample evaluation, where we evaluate the objective
+function in parallel at different sampling points. And, (3) during the acceptance step, where we
+utilize unused resources during the acceptance point evaluation to accelerate the next periods
+sampling or to improve upon the current candidate point. The parallel algorithm is given in Listing
+\ref{algo:parallel}, with deviations from the serial algorithm highlighted in
+blue\comment[id=TM]{Update this when we change the color}.
 
-\textcolor{red}{List other algorithms that parallelize and how they compare to the three categories
-(DFOLS, Parallel-Neldermead)}
+Another least-squares optimizer that parallelizes some evaluations is the DF-OLS algorithm of
+\cite{dfols2019}, which parallelizes over the set of initial sample points, but not afterwards.
 
-Tranquilo offers two parameters\comment[id=TM]{Call them parameters, options, or arguments?} to
-govern the parallelization behavior. The first, number of cores $n^{cores}$, determines the number
-of threads that are used for parallelization. The second, batch size $n^{batch}$, determines the
-number of objective evaluations we perform simultaneously. In most cases, $n^{cores} = n^{batch}$ is
-a good choice, but we allow for the possibility to set $n^{batch}$ to a larger value.\footnote{Using
-different values for the number of cores and the batch size allows, for instance, to use a
-single-core machine to test the algorithm's behavior on a machine with many cores, by setting the
-batch size to the number of available cores on the many-cores machine.} Note that the algorithms
-behavior is not affected by the number of cores, but only by the batch size.
+Tranquilo offers two options to govern the parallelization behavior: The first, number of cores
+$n^{cores}$, determines the number of threads that are used for parallelization. The second, batch
+size $n^{batch}$, determines the number of objective evaluations we perform simultaneously. In most
+cases, $n^{cores} = n^{batch}$ is a good choice, but we allow for the possibility to set $n^{batch}$
+to a larger value. Using larger values for the batch size than for the number of cores allows us to
+use a single-core machine to test the algorithm's behavior as if it were deployed on a machine with
+many cores. Note that the algorithms behavior is not affected by the number of cores, but only by
+the batch size.
 
 The following parallelization strategies are motivated by the assumption, that one
-objective evaluation is as time-consuming as performing $n^{batch}$ many. For any integer $m \in
-\mathbb{N}$ we define the smallest multiple of $n^{batch}$ that is larger or equal to $m$ as the
-\emph{next multiple} of that number with basis $n^{batch}$.\footnote{Formally, the next
-multiple of $m$ is given by $\lceil m / n^{batch}\rceil \times n^{batch}$.} Since we only consider
-the case where $n^{batch}$ is the basis, we will suppress its explicit mention hereafter. As an
-example, the next multiple of $n^{batch} + 1$, is $2 \times n^{batch}$.
+objective evaluation is as time-consuming as performing $n^{batch}$ many.
 
 \subsection{Implementation}\label{subsec:parallelization::implementation}
+
+For the implementation description we require the definition of the \emph{next multiple} of an
+integer. Let $m \in \mathbb{N}$ be such an integer; we define the smallest multiple of $n^{batch}$
+that is larger or equal to $m$ as the \emph{next multiple} of that number with basis
+$n^{batch}$.\footnote{Formally, the next multiple of $m$ is given by $\lceil m / n^{batch}\rceil
+\times n^{batch}$.} Since we only consider the case where $n^{batch}$ is the basis, we will suppress
+its explicit mention hereafter. As an example, the next multiple of $n^{batch} + 1$, is $2 \times
+n^{batch}$.
 
 \subsubsection{At Start}
 
@@ -45,15 +50,17 @@ starting value to average out noise. In the parallel case this number is replace
 multiple. See Lines \ref{algo:parallel::start-start} - \ref{algo:parallel::start-end} of Listing
 \ref{algo:parallel} for the implementation.
 
-\subsubsection{Sampling}
+\subsubsection{Sample evaluation}
 
-When parallelization is enabled, the sampling step is performed in parallel. Moreover, instead of
-sampling the requested number of points, we sample the next multiple of it. See Line
-\ref{algo:parallel:sampling} of Listing \ref{algo:parallel} for the
-implementation.\comment[id=TM]{(1) This does not really show an implementation of the
-component. (2) Should I talk about the $Sample$ component with the new variable $n^{batch}$?}
+When parallelization is enabled, the sample evaluations are performed in parallel. Moreover, instead
+of sampling the requested number of points, we sample the next multiple of it, and therefore
+evaluate the objective function at more points without further costs. See Line
+\ref{algo:parallel:sampling} of Listing \ref{algo:parallel} for the implementation. The DF-OLS
+algorithm of \cite{dfols2019} uses this parallelization strategy for their initial sample. They do
+not, however, employ this strategy for subsequent sampling.
 
-\subsubsection{Acceptance Step}\comment[id=TM]{This will be updated once the acceptance step section is written.}
+\subsubsection{Acceptance Step}\comment[id=TM]{This will be updated once the acceptance step section
+is written.}
 
 \begin{itemize}
     \item if batch size is 1 (no parallelization): do classic acceptance based on rhos
@@ -72,7 +79,7 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
 \end{itemize}
 
 \newgeometry{left=15mm,right=15mm, bottom=1cm, top=3cm}
-\begin{algorithm}[H]
+\begin{algorithm}
     \caption{Parallel Tranquilo algorithm}\label{algo:parallel}
     \KwIn{
     Starting point $x^*_0\in\mathbb{R}^p$, initial trust region radius $\Delta^{region}_0$, and
@@ -138,7 +145,7 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
 
             Improve sample geometry:
             $\mathcal{X}_t^{improved}=ImproveGeometry(\mathcal{X}_t^{model},
-            n^{drop},\Delta_t^{region})$\label{algo-core-listing-improve-geo}\\
+            n^{drop},\Delta_t^{region})$\\
 
             Sample new points: $\mathcal{X}_t^{new} =
             Sample(\mathcal{X}_t^{improved},B_t,n^{drop})$\\
@@ -159,7 +166,7 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
         \begingroup
         \color{UBonnBlue}
         $(Decision_t,x_{t+1}^*,\rho_t;\Hquad\cdot\Hquad) =  Accept(s_t,x_t^{*},\Delta f_t,\Delta
-        M_t^s, n^{batch};\Hquad\cdot\Hquad)$\textcolor{red}{How to include component specific arguments?}\\
+        M_t^s, n^{batch};\Hquad\cdot\Hquad)$
         \endgroup
 
         \uIf{$\rho_t\geq\rho^{2}$ and  $s_t$ is large}{
@@ -176,26 +183,38 @@ component. (2) Should I talk about the $Sample$ component with the new variable 
     }
 
     \end{algorithm}
-\newpage
 \restoregeometry
 
 \subsection{Benchmarking}\label{subsec:parallelization::benchmarking}
 
-The benchmark plots look have to be adjusted for the parallel case, as the number of objective
+The benchmark plots have to be adjusted for the parallel case, as the number of objective
 evaluations does not provide a good measure of runtime anymore. Instead, we use the number of batch
 evaluations as a proxy for runtime, in line with our parallel cost model. This reflects our
 assumption that in the parallel case the evaluation of a batch takes as much time as the evaluation
 of a single point.
 
-\textcolor{red}{
-\begin{enumerate}
-    \item Fix figure
-    \item Describe figure
-\end{enumerate}
-}
+Figure \ref{fig:parallelization::benchmark} shows the benchmark results of our parallel algorithm on
+the \cite{MoreWild2009} benchmark set; see Section \ref{subsec:benchmark-core-algo} for details on
+benchmarking. We compare our parallel least-squares version for $n^{batch} \in \{2, 4, 8\}$ to the
+serial DF-OLS algorithm. We parallelize at the sampling level and use the \emph{classic line search}
+for the acceptance step.\comment[id=TM]{Update this when we write the Acceptance Step section.} As
+in Section \ref{subsec:benchmark-core-algo}, the y-axis denotes the share of solved problems, while
+the x-axis denotes the multiple of minimal number of \emph{batches} needed to solve the problem.
+This implies that the intercept can be interpreted as the share of problems that the respective
+algorithm was able to solve the fastest under our parallel cost model.
 
+We notice that for the
+Tranquilo algorithm, the larger the batch size the faster its runtime measure. This is not
+surprising, as we are using more objective evaluations when we increase the batch size. For the
+DF-OLS algorithm, one batch is equal to one evaluation, as it does not parallelize. Unsurprisingly,
+the DF-OLS algorithm is slower than the Tranquilo algorithm for all batch sizes, as it utilizes
+fewer objective evaluations per batch. However, the DF-OLS algorithm is able to successfully
+solve one problem more than the Tranquilo algorithm. This is due to an accuracy, as the problem
+disappears when using a lower tolerance level for convergence. Solving this issue is a work in
+progress.
 
-\begin{figure}[ht]\label{fig:parallelization::benchmark}
-    % \includegraphics[scale=0.9]{../bld/figures/profile_plots/parallelization_ls}
+\begin{figure}
+    \includegraphics[width=\textwidth]{../bld/figures/profile_plots/parallelization_ls}
     \caption{Benchmark plots for the parallel cost model.}
-\end{figure}
+    \label{fig:parallelization::benchmark}
+\end{figure}\comment[id=TM]{The plot looks cheap; should be updated.}
