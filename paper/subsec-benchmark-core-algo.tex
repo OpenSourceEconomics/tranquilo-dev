@@ -13,6 +13,17 @@
 
 % Benchmarking Derivative-Free Optimization Solvers
 
+\begin{figure}
+    \includegraphics[width=\textwidth]{../bld/figures/profile_plots/competition_ls}
+    \caption{Benchmark plots for the least squares case.}
+    \label{fig:core::benchmark-ls}
+\end{figure}\comment[id=TM]{Benchmark plot: Need to remove default line and remove the "experimental" suffix.}
+
+\begin{figure}
+    \includegraphics[width=\textwidth]{../bld/figures/profile_plots/competition_scalar}
+    \caption{Benchmark plots for the scalar case.}
+    \label{fig:core::benchmark-scalar}
+\end{figure}\comment[id=TM]{Benchmark plot: Need to remove default line and remove the "experimental" suffix.}
 
 \noindent A benchmark is defined in terms of (i) a set of problems, (ii) a set of solvers, and
 (iii) a convergence test \cite{Dolan2002}. We focus on the class of least squares problems, where there is a limit on the user's computational budget, the objective function is expensive to evaluate and derivates are not readily available.
