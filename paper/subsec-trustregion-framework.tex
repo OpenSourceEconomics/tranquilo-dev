@@ -68,7 +68,7 @@ At the beginning of every iteration, we are equipped with the following informat
 
 \item \textit{Trust region} defined by its radius $\Delta_t^{region}$ and center $x_t\in\mathbb{R}^p$ as follows:
 \begin{align}
-    B(x_t,\Delta_t^{region})\equiv\{x\in\mathbb{R}^p|\Hquad\lVert x-x_t\rVert\leq\Delta_t^{region}\}
+    R(x_t,\Delta_t^{region})\equiv\{x\in\mathbb{R}^p|\Hquad\lVert x-x_t\rVert\leq\Delta_t^{region}\}
     \label{eq:def-trustregion}
 \end{align}
 where $\lVert\cdot\rVert$ denotes the 2-norm of a vector.
@@ -90,10 +90,10 @@ where $M_t^v = \{M_t^i,\dots,M_t^i\}$, and the residual models $M^i_t$ can be po
 
 To build a model $M_t^v$, we solve a fitting problem on a set of model points $\mathcal{X}^{model}=\{x_t^*,x_1,\dots,x_{n_{t}-1}\}\subset\mathbb{R}^p$ and corresponding evaluations $\{r(x_t)|\Hquad x_t\in\mathcal{X}^{model}\}$. The Tranquilo fitting function can be applied to both underdetermined (when $n_t$ is smaller than the degrees of freedom of the residual models), just determined ($n_t=DoF(M^i)$) and over determined ($n_t>DoF(M^i_t))$ regression problems. We therefore offer the following general formulation of the fitting problem:
 \begin{align}
-    M_t^v\equiv Fit(\mathcal{X}_t^{model};r,B_t)
+    M_t^v\equiv Fit(\mathcal{X}_t^{model};r,R_t)
     \label{eq:fit-model}
 \end{align}
-where the additional dependency on the trust region $B_t$ is necessary to scale the model to a unit circle to facilitate solving for the minimum of the scalar model.
+where the additional dependency on the trust region $R_t$ is necessary to scale the parameter vectors to either a unit hypershpere (unconstrained optimization) or a $[-1,1]^p$ hypercube (bound-constrained optimization) to facilitate solving the subproblem.
 
 To obtain the model points $\mathcal{X}^{model}_t$, we first search the history of function evaluations for points that lie within $\Delta_t^{search}=\gamma^{search}\Delta_t^{search}$ neighborhood of the candidate point $x_t^*$:
 \begin{align}
@@ -125,9 +125,10 @@ where the $Aggregate$ function allows for different aggregation strategies fit f
 
 To find a candidate step $s_t$, we approximately solve for the optimum of the aggregate model in the current trust region:
 \begin{align}
-    s_t\approx \underset{{\Hquad\lVert s\rVert\leq\Delta_t^{region}}}{arg\,\min}M_t^s(s)
+    s_t\approx \underset{{\Hquad\lVert s\in B}}{arg\,\min}M_t^s(s)
     \label{eq:tr-subproblem}
 \end{align}
+Where $B$ is the scaled trust region, as discussed in the fitting step.
 
 To avoid a fast collapse of the trust region, we impose a lower threshold on the step size $\lVert s_t\rVert$ to accept a candidate step. To this end, we improve the sample geometry by first discarding points that are outside of the trust region. If then we are left with only points that are inside the trust region, we discard points such that we have have points as far out within the trust region as possible. This approach reflects on the fact that we want to obtain as uniform coverage of the trust region as possible. Formally, we have:
 \begin{align}
@@ -167,4 +168,4 @@ The $Accept$ function nests the classical trust region acceptance step:
 \end{align}
 as a special case.
 
-Having obtained the acceptance results, we expand the trust region radius for the next iteration to $\Delta_{t+1}^{region}=\gamma^{inc}\Delta_t^{region}$ if both the ratio $\rho_t$ and the step size $\lVert s_t\rVert$ are sufficiently large. For low values of $rho_t$, we shrink the radius to $\Delta^{region}_{t+1} = \gamma^{dec}\Delta_t^{region}$
+Having obtained the acceptance results, we expand the trust region radius for the next iteration to $\Delta_{t+1}^{region}=\gamma^{inc}\Delta_t^{region}$ if both the ratio $\rho_t$ and the step size $\lVert s_t\rVert$ are sufficiently large. For low values of $\rho_t$, we shrink the radius to $\Delta^{region}_{t+1} = \gamma^{dec}\Delta_t^{region}$

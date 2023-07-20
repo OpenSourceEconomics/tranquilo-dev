@@ -3,13 +3,25 @@
 \hfill\\
 
 
-\noindent In most of the existing model-based trust region algorithms, fitting the vector model is equivalent to solving some variant of an ordinary least squares problem:
+In most of the existing model-based trust region algorithms, fitting the vector model is equivalent to solving some variant of an ordinary least squares problem:
 \begin{align}
-    \min\limits_{\theta}\sum\limits_{i=1}^{n_t}\lVert M_t^v(x_i-x_t^*;\theta)-r(x_i)\rVert^2
+    \min\limits_{\theta}\sum\limits_{i=1}^{n_t}\lVert M_t^v(x_i-x_t^*,\theta)-r(x_i)\rVert^2
+    \label{eq:ls-fitting-problem}
 \end{align}
-where we use the convention $x_0=x_t^*$, and $\theta$ represents the vector of model parameters, which includes the intercept, the linear terms, and in case of quadratic models, the second order terms.
+where we use the convention $x_0=x_t^*$, and, with an abuse of notation, $\{x_i\}_{i=0}^{n_t}$ represent the parameter vectors scaled to the space $B$ (a hypersphere or a hypercube), as discussed in section \ref{subsec:tr-framework}.
 
-To obtain a fully determined system of least equations in the case of quadratic residual models, one needs to evaluate the objective function at $(p+1)(p+2)/2$ interpolation points. With expensive objective functions, the entailed computational cost can be prohibitively expensive.
+In case of linear residual models, the model parameters $\theta$ in \ref{eq:ls-fitting-problem} include an intercept and linear terms:
+\begin{align}
+    M_t^i(s)= c^i_t+g_t^is^T
+    \label{eq:resid-model-linear}
+\end{align}
+In case of quadratic residual models, $\theta$ additionally includes the second order terms:
+\begin{align}
+    M_t^i(s)= c^i_t+g_t^is^T+\frac{1}{2}s^TH_t^is
+    \label{eq:resid-model-quadratic}
+\end{align}
+
+To obtain a fully determined system of equations in \ref{eq:resid-model-quadratic}, one needs to evaluate the objective function at $(p+1)(p+2)/2$ interpolation points. With expensive objective functions, the entailed computational cost can be prohibitively expensive.
 
 To overcome this burden, a number of algorithms have developed methods to build the approximation models with fewer points than  $(p+1)(p+2)/2$, resolving the uncovered degrees of freedom by minimizing various criteria.
 
