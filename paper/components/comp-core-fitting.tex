@@ -30,7 +30,7 @@ A popular approach employed in BOBYQA is to take up the unresolved degrees of fr
     \min\lVert H-H_{t-1}\rVert_F = \min\sqrt{\sum\limits_{i=1}^p\sum\limits_{j=1}^{p}(h^{ij}(x)-h^{ij}_{t-1}(x))^2}
     \label{eq:min-frob-diff}
 \end{align}
-where $h_{ij}$ is the element in the $i$th row and $j$th column of the square matrix $H$. DFBOLS \citep{Zhang2010} uses this approach in a least-squares optimization problem to obtain quadratic approximations of the residual functions with $2p+1$ points.
+where $h_{ij}$ is the element in the $i$-th row and $j$th column of the square matrix $H$. DFBOLS \citep{Zhang2010} uses this approach in a least-squares optimization problem to obtain quadratic approximations of the residual functions with $2p+1$ points.
 
 Another approach, employed by POUNDERS, is to penalize the quadratic terms themselves, again using the Frobenius norm:
 \begin{align}
@@ -41,15 +41,15 @@ Detailed in \cite{Wild2008}, this approach is motivated by theoretical results t
 
 Other algorithms tackling underdetermined quadratic models are discussed in \cite{Larson2019}. Among these, \cite{Powell2012} minimizes a semi-norm combining the Frobenius norm of the second order and the square norm of the linear terms of the surrogate model.
 
-In Tranquilo, we use ordinary least squares fitting for just- and overidentified problems ($|\mathcal{X}_t^{model}|\geq DoF(M_t^{i}))$. We also nest the two approaches given by equations \ref{eq:min-frob-diff} and \ref{eq:min-frob}. Specifically, we minimize the Frobenius norm of second-order terms of a vector model, which, if specified, can be residualized using the model from the prior iteration, thus resulting in \ref{eq:min-frob-diff}.
+In Tranquilo, we use ordinary least squares fitting for just- and overidentified problems ($|\mathcal{X}_t^{model}|\geq DoF(M_t^{i}))$. We also nest the two approaches given by equations \ref{eq:min-frob-diff} and \ref{eq:min-frob}. Specifically, we minimize the Frobenius norm of second-order terms of a vector model, which, if specified, can be residualized using the model from the prior iteration, resulting in \ref{eq:min-frob-diff}.
 
-Motivated by the comparable success of the ordinary least squares and the penalization of second order terms\textcolor{red}{need concrete examples from literature or our experiments}, in Tranquilo we implement a fitting method that combines the two approaches smoothly by a least squares problem that penalizes the linear terms less strongly. In practice, we apply a weighting matrix to the observations of the OLS problem that augments values in the first $p+1$ columns and shrinks the values in the last $p(p+1)/2-p-1$ columns.
+Motivated by the comparable success of the ordinary least squares and the penalization of second order terms\textcolor{red}{need concrete examples from literature or our experiments}, in Tranquilo we also implement a fitting method that combines the two approaches smoothly by a least squares problem that penalizes the linear terms less strongly. In practice, we apply a weighting matrix to the observations of the OLS problem that augments values in the first $p+1$ columns and shrinks the values in the last $p(p+1)/2-p-1$ columns.
 
 In addition to the fitting methods discussed above, we make available two approaches particularly fit for noisy optimization problems: 1) Ridge regression and 2) Qauntile (median) regression.
 
 Ridge regression performs a square norm regularization by solving the following problem:
 \begin{align}
-    \min\limits_{\theta}\sum\limits_{i=1}^{n}(M^v(x_i;\theta)-r(x_i))^2+\lambda\sum\limits_{i=1}^{p}\theta_i^2
+    \min\limits_{\theta}\sum\limits_{i=1}^{n}(M^v(x_i;\theta)-r(x_i))^2+\lambda\sum\limits_{i=1}^{m_p}\theta_i^2
     \label{eq:fit-ridge}
 \end{align}
 Where $\theta$ is the parameter vector, and the constant $\lambda$ is a penalty coefficient that controls the parsimony of the resulting model. The regularization offered by Ridge regression is relevant when we do not want to give equal weights to all the function evaluations since they may have high noise levels and not represent true function values.

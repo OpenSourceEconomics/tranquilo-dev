@@ -1,7 +1,7 @@
 
 \subsection{The trust region framework}
 \label{subsec:tr-framework}
-In this section we review the general trust region framework and the main components of the Tranquilo algorithm. The specific functional forms the algorithm components are further discussed in section \ref{subsec:core-implementation}. We provide the full statement of Tranquilo in Algorithm \ref{algo:core}.
+In this section we review the general trust region framework and the main components of the Tranquilo algorithm. The specific functional forms of the components are further discussed in section \ref{subsec:core-implementation}. We provide the full statement of Tranquilo in Algorithm \ref{algo:core}.
 \newpage
 \newgeometry{left=15mm,right=15mm, bottom=3cm}
 \begin{algorithm}[H]
@@ -20,25 +20,25 @@ In this section we review the general trust region framework and the main compon
         Given $x_t^*$ and $\Delta_t^{search}=\gamma^{search}\Delta^{region}_{t}$, scan history for points in the search region: $\mathcal{X}^{existing}_t = \{x\in\mathcal{H}|\Hquad\lVert x^*_t-x\rVert\leq\Delta^{search}_t\}$\\
         Filter existing points: $\mathcal{X}^{filtered}_t\equiv Filter(\mathcal{X}^{existing}_t) = \{Filter(x)|\Hquad x\in \mathcal{X}^{existing}_t\}$\\
         \If{$|\mathcal{X}_t^{filtered}|<n^{target}$}{
-            Sample new points in the trust region: $\mathcal{X}^{new}_t\equiv Sample(\mathcal{X}_t^{filtered},B_t,n^{target})$
+            Sample new points in the trust region: $\mathcal{X}^{new}_t\equiv Sample(\mathcal{X}_t^{filtered},R_t,n^{target})$
         }
-        Build a vector model $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,B_t)$ on $\mathcal{X}^{model}_t\equiv\mathcal{X}^{filtered}_t\cup\mathcal{X}^{new}_t$\label{algo-core-line:fit}\\
+        Build a vector model $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,R_t)$ on $\mathcal{X}^{model}_t\equiv\mathcal{X}^{filtered}_t\cup\mathcal{X}^{new}_t$\label{algo-core-line:fit}\\
         Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\label{algo-core-aggregate}\\
         Solve the surrogate problem: $s_t\approx\underset{{\Hquad\lVert s\rVert\leq\Delta_t^{region}}}{arg\,\min}M_t^s(s)$\label{algo-core-line:solve}\\
-        \If{$|\mathcal{X}^{model}_t|>n^{target}$}{
-            \While{$\lVert s_t\rVert\leq s^{min}$}{
-                Improve sample geometry: $\mathcal{X}_t^{improved}=ImproveGeometry(\mathcal{X}_t^{model}, n^{drop},\Delta_t^{region})$ and set $\mathcal{X}_t^{model}=\mathcal{X}_t^{improved}$\label{algo-core-listing-improve-geo}\\
-                Build a vector model: $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,B_t)$\\
+
+            \While{$|\mathcal{X}^{model}_t|>n^{target}$ and $\lVert s_t\rVert\leq s^{min}$}{
+                Drop worst points: $\mathcal{X}_t^{reduced}=Drop(\mathcal{X}_t^{model}, n^{drop},\Delta_t^{region})$ and set $\mathcal{X}_t^{model}=\mathcal{X}_t^{reduced}$\label{algo-core-listing-improve-geo}\\
+                Build a vector model: $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,R_t)$\\
                 Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\\
                 Solve the surrogate problem: $M_t^s$: $s_t\approx\underset{{\Hquad\lVert s\rVert\leq\Delta_t^{region}}}{arg\,\min}M_t^s(s)$\\
                 }
-        }
+
 
 
         \While{$\lVert s_t\rVert\leq s^{min}$}{
-            Improve sample geometry: $\mathcal{X}_t^{improved}=ImproveGeometry(\mathcal{X}_t^{model}, n^{drop},\Delta_t^{region})$\label{algo-core-listing-improve-geo}\\
-            Sample new points: $\mathcal{X}_t^{new} = Sample(\mathcal{X}_t^{improved},B_t,n^{drop})$\\
-            Build a vector model: $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,B_t)$ on $\mathcal{X}_t^{model}=\mathcal{X}_t^{improved}\cup\mathcal{X}_t^{new}$\\
+            Drop worst points: $\mathcal{X}_t^{reduced}=Drop(\mathcal{X}_t^{model}, n^{drop},\Delta_t^{region})$\label{algo-core-listing-improve-geo}\\
+            Sample new points: $\mathcal{X}_t^{new} = Sample(\mathcal{X}_t^{reduced},R_t,n^{drop})$\\
+            Build a vector model: $M_t^v\equiv Fit(\mathcal{X}_t^{model};r,R_t)$ on $\mathcal{X}_t^{model}=\mathcal{X}_t^{reduced}\cup\mathcal{X}_t^{new}$\\
             Aggregate the vector model: ${M}_t^s = Aggregate(M_t^v)$\\
             Solve the surrogate problem: $s_t\approx\underset{{\Hquad\lVert s\rVert\leq\Delta_t^{region}}}{arg\,\min}M_t^s(s)$\\
         }
@@ -66,9 +66,9 @@ At the beginning of every iteration, we are equipped with the following informat
 \begin{itemize}
     \item\textit{Candidate point} $x_t^*\in\mathbb{R}^p$.
 
-\item \textit{Trust region} defined by its radius $\Delta_t^{region}$ and center $x_t\in\mathbb{R}^p$ as follows:
+\item \textit{Trust region} defined by its radius $\Delta_t^{region}$ and center $x_t^*\in\mathbb{R}^p$ as follows:
 \begin{align}
-    R(x_t,\Delta_t^{region})\equiv\{x\in\mathbb{R}^p|\Hquad\lVert x-x_t\rVert\leq\Delta_t^{region}\}
+    R_t\equiv R(x_t&*,\Delta_t^{region})\equiv\{x\in\mathbb{R}^p|\Hquad\lVert x-x_t\rVert\leq\Delta_t^{region}\}
     \label{eq:def-trustregion}
 \end{align}
 where $\lVert\cdot\rVert$ denotes the 2-norm of a vector.
@@ -100,7 +100,7 @@ To obtain the model points $\mathcal{X}^{model}_t$, we first search the history 
     \mathcal{X}^{existing}_t\equiv\{x\in\mathcal{H}|\Hquad\lVert x^*_t-x\rVert\leq\Delta^{search}_t\}
     \label{eq:hist-search}
 \end{align}
-We filter the set of existing points to improve the quality of the sample geometry:
+We filter the set of existing points \textcolor{red}{to improve the quality of the sample geometry}:
 \begin{align}
     \mathcal{X}^{filtered}_t\equiv Filter (\mathcal{X}^{existing}_t) = \{ Filter (x)|\Hquad x\in \mathcal{X}^{existing}_t\}
     \label{eq:filtering}
@@ -111,7 +111,7 @@ Where the filter function can be applied to, for example, to detect clusters and
 If the size of the filtered sample is smaller than the target sample size $n^{target}$, we sample new points in the current trust region:
 
 \begin{align}
-    \mathcal{X}^{new}_{t}\equiv Sample(\mathcal{X}_t^{filtered},B_t,n^{target})
+    \mathcal{X}^{new}_{t}\equiv Sample(\mathcal{X}_t^{filtered},R_t,n^{target})
     \label{eq:sample-points}
 \end{align}
 where the sampling function nests several strategies for sampling either in the interior or on the hull of the trust region.
@@ -130,14 +130,14 @@ To find a candidate step $s_t$, we approximately solve for the optimum of the ag
 \end{align}
 Where $B$ is the scaled trust region, as discussed in the fitting step.
 
-To avoid a fast collapse of the trust region, we impose a lower threshold on the step size $\lVert s_t\rVert$ to accept a candidate step. To this end, we improve the sample geometry by first discarding points that are outside of the trust region. If then we are left with only points that are inside the trust region, we discard points such that we have have points as far out within the trust region as possible. This approach reflects on the fact that we want to obtain as uniform coverage of the trust region as possible. Formally, we have:
+To avoid a fast collapse of the trust region, we impose a lower threshold on the step size $\lVert s_t\rVert$ to accept a candidate step. To this end, we drop points that we consider to be "worse" in the following sense: We first discard points that are outside of the trust region. If then we are left with only points that are inside the trust region, we discard points such that we have have points as far out within the trust region as possible. This approach reflects on the fact that we want to obtain as uniform coverage of the trust region as possible. Formally, we have:
 \begin{align}
-    \mathcal{X}_t^{improved} = ImproveGeometry(\mathcal{X}_t^{model},\Delta_t^{region} n^{drop})
+    \mathcal{X}_t^{reduced} = Drop(\mathcal{X}_t^{model},\Delta_t^{region} n^{drop})
     \label{eq:improve-geo}
 \end{align}
 where $n^{drop}\geq1$.
 
-We then fit a vector model and solve the trust region subproblem \ref{eq:tr-subproblem}. We repeat these steps until we obtain a satisfactory step. If $|\mathcal{X}_t^{improved}|$ drops below the target sample size $n^{target}$ before we obtain a large candidate step, in addition to \ref{eq:improve-geo}, we sample new points.
+We then fit a vector model and solve the trust region subproblem \ref{eq:tr-subproblem}. We repeat these steps until we obtain a satisfactory step. If $|\mathcal{X}_t^{reduced}|$ drops below the target sample size $n^{target}$ before we obtain a large candidate step, in addition to \ref{eq:improve-geo}, we sample new points.
 
 
 We evaluate the aggregate criterion $f$ at $x^{*}_t+s_t$, and compute the decrease in the objective produced by the candidate step:
@@ -152,7 +152,7 @@ Similarly, we compute the expected improvement predicted my the aggregate model:
     \label{eq:expected-improvement}
 \end{align}
 
-In a comprehensive acceptance step, details of which we will discuss in sections \ref{subsubsec:acceptance} (\textcolor{red}{add references to sections of acceptance details in noisy and parallel cases}), we take into account the actual and expected improvements $\Delta f_t$ and $\Delta M_t^s$, to obtain the candidate point for the next iteration $x_{t+1}^*$ and the relative improvement $\rho_t\equiv \Delta f_t/ \Delta M^s_t$:
+In a comprehensive acceptance step, details of which we will discuss in section \ref{subsubsec:acceptance}, we take into account the actual and expected improvements $\Delta f_t$ and $\Delta M_t^s$, to obtain the candidate point for the next iteration $x_{t+1}^*$ and the relative improvement $\rho_t\equiv \Delta f_t/ \Delta M^s_t$:
 
 \begin{align}
     Accept(s_t,x_t^{*},\Delta f_t,\Delta M_t^s;\Hquad\cdot\Hquad)=(Decision_t,x_{t+1}^{*},\rho_t;\Hquad\cdot\Hquad)
