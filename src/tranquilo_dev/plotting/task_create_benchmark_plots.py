@@ -10,8 +10,14 @@ from tranquilo_dev.config import PROBLEM_SETS
 
 LABELS = {
     "dfols": "DF-OLS",
-    "tranquilo": "Tranquilo",
+    "tranquilo": "Tranquilo-Scalar",
+    "tranquilo_default": "Tranquilo-Scalar",
+    "tranquilo_ls_default": "Tranquilo",
+    "tranquilo_ls": "Tranquilo",
+    "tranquilo_experimental": "Tranquilo-Scalar-Experimental",
+    "tranquilo_ls_experimental": "Tranquilo-Experimental",
     "nag_bobyqa": "BOBYQA",
+    "nlopt_bobyqa": "PYBOBYQA",
     "nlopt_neldermead": "Nelder-Mead",
 }
 
@@ -30,7 +36,6 @@ competitor = [
 ][0]
 LINE_SETTINGS["parallelization_ls"][competitor] = {
     "line": {"color": "#e53935", "dash": "solid"},
-    "name": LABELS[competitor],
 }
 
 alphas = [0.38, 0.6, 1]
@@ -39,8 +44,8 @@ for i, scenario in enumerate(tranquilo_scenarios):
     LINE_SETTINGS["parallelization_ls"][scenario] = {
         "line": {"color": "#014683", "dash": "solid"},
         "opacity": alphas[i],
-        "name": f"{LABELS['tranquilo']}-{scenario.split('_')[-1]}-cores",
     }
+    LABELS[scenario] = f"{LABELS['tranquilo']}-{scenario.split('_')[-1]}-Cores"
 dfols_scenarios = [sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if "dfols" in sc]
 dfols_scenarios = sorted(dfols_scenarios, key=lambda x: int(x.split("_")[-1]))
 
@@ -49,39 +54,34 @@ tranquilo_noisy = [
 ][0]
 LINE_SETTINGS["noisy_ls"][tranquilo_noisy] = {
     "line": {"color": "#014683", "dash": "solid"},
-    "name": LABELS["tranquilo"] + "-noisy",
 }
+LABELS[tranquilo_noisy] = LABELS[tranquilo_noisy]
 
 for i, scenario in enumerate(dfols_scenarios):
     LINE_SETTINGS["noisy_ls"][scenario] = {
         "line": {"color": "#e53935", "dash": "solid"},
         "opacity": alphas[i],
-        "name": f"{LABELS['dfols']}-noisy-{scenario.split('_')[-1]}",
     }
+    LABELS[scenario] = f"{LABELS['dfols']}-{scenario.split('_')[-1]}"
+
 LINE_SETTINGS["scalar_and_ls"]["dfols"] = {
     "line": {"color": "#e53935", "dash": "solid"},
-    "name": LABELS["dfols"],
 }
 
 LINE_SETTINGS["scalar_and_ls"]["tranquilo_default"] = {
     "line": {"color": "#014683", "dash": "solid"},
     "opacity": 0.6,
-    "name": f"{LABELS['tranquilo']}-scalar",
 }
 
 LINE_SETTINGS["scalar_and_ls"]["tranquilo_ls_default"] = {
     "line": {"color": "#014683", "dash": "solid"},
-    "name": f"{LABELS['tranquilo']}-ls",
 }
 LINE_SETTINGS["scalar_and_ls"]["nlopt_bobyqa"] = {
     "line": {"color": "green", "dash": "solid"},
-    "name": LABELS["nlopt_bobyqa"],
 }
 LINE_SETTINGS["scalar_and_ls"]["nlopt_neldermead"] = {
     "line": {"color": "orange", "dash": "solid"},
-    "name": LABELS["nlopt_neldermead"],
 }
-
 
 for name, info in PLOT_CONFIG.items():
     problem_name = info["problem_name"]
@@ -119,17 +119,22 @@ for name, info in PLOT_CONFIG.items():
                 results=results,
                 **kwargs,
             )
-            if plot_type == "profile" and name in [
-                "parallelization_ls",
-                "noisy_ls",
-                "scalar_and_ls",
-            ]:
-
-                for trace_name, kwargs in LINE_SETTINGS[name].items():
+            if plot_type == "profile":
+                if name in [
+                    "parallelization_ls",
+                    "noisy_ls",
+                    "scalar_and_ls",
+                ]:
+                    for trace_name, kwargs in LINE_SETTINGS[name].items():
+                        for trace in fig.data:
+                            if trace.name == trace_name:
+                                trace.update(kwargs)
+                                trace.update(name=LABELS[trace.name])
+                if name in ["competition_scalar", "competition_ls"]:
                     for trace in fig.data:
+                        trace.update(name=LABELS[trace.name])
 
-                        if trace.name == trace_name:
-                            trace.update(kwargs)
                 if name == "scalar_and_ls":
                     fig.update_xaxes(range=[trace.x[0], trace.x[-8]])
+
             fig.write_image(produces)
