@@ -76,6 +76,8 @@ COMPETITION = {
     "nag_bobyqa": {"algorithm": "nag_pybobyqa"},
     "dfols": {"algorithm": "nag_dfols"},
     "pounders": {"algorithm": "pounders"},
+    "tao_pounders": {"algorithm": "tao_pounders"},
+    "scipy_neldermead": {"algorithm": "scipy_neldermead"},
     "nlopt_neldermead": {"algorithm": "nlopt_neldermead"},
     "nag_bobyqa_noisy_3": {
         "algorithm": "nag_dfols",
@@ -128,6 +130,9 @@ _deterministic_plots = {
             "tranquilo_default",
             "tranquilo_experimental",
             "nag_bobyqa",
+            "nlopt_bobyqa",
+            "nlopt_neldermead",
+            "scipy_neldermead",
         ],
         "profile_plot_options": {
             "y_precision": DETERMINISTIC_Y_TOL,
@@ -179,6 +184,67 @@ _deterministic_plots = {
         "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
         "deviation_plot_options": {"runtime_measure": "n_batches"},
     },
+    "publication_scalar_benchmark": {
+        "problem_name": "mw",
+        "scenarios": [
+            "tranquilo_default",
+            "nag_bobyqa",
+            "nlopt_bobyqa",
+            "nlopt_neldermead",
+            "scipy_neldermead",
+        ],
+        "profile_plot_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "normalize_runtime": True,
+        },
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "publication_ls_benchmark": {
+        "problem_name": "mw",
+        "scenarios": [
+            "tranquilo_ls_default",
+            "dfols",
+            "pounders",
+        ],
+        "profile_plot_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "normalize_runtime": True,
+        },
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "publication_parallel_benchmark": {
+        "problem_name": "mw",
+        "scenarios": [
+            "tranquilo_ls_default",
+            "tranquilo_ls_parallel_2",
+            "tranquilo_ls_parallel_4",
+            "tranquilo_ls_parallel_8",
+            "dfols",
+        ],
+        "profile_plot_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "normalize_runtime": True,
+            "runtime_measure": "n_batches",
+        },
+        "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
+        "deviation_plot_options": {"runtime_measure": "n_batches"},
+    },
+    "publication_scalar_vs_ls_benchmark": {
+        "problem_name": "mw",
+        "scenarios": [
+            "dfols",
+            "tranquilo_default",
+            "tranquilo_ls_default",
+            "nlopt_bobyqa",
+            "nlopt_neldermead",
+            "pounders",
+        ],
+        "profile_plot_options": {
+            "y_precision": DETERMINISTIC_Y_TOL,
+            "normalize_runtime": True,
+        },
+        "convergence_plot_options": {"n_cols": 6},
+    },
 }
 
 _noisy_plots = {
@@ -203,6 +269,17 @@ _noisy_plots = {
         "convergence_plot_options": {"n_cols": 6},
     },
     "noisy_ls": {
+        "problem_name": "mw_noisy",
+        "scenarios": [
+            "dfols_noisy_3",
+            "dfols_noisy_5",
+            "dfols_noisy_10",
+            "tranquilo_ls_default",
+        ],
+        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
+        "convergence_plot_options": {"n_cols": 6},
+    },
+    "publication_noisy_benchmark": {
         "problem_name": "mw_noisy",
         "scenarios": [
             "dfols_noisy_3",
