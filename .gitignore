@@ -184,3 +184,8 @@ _version.py
 pdfs
 
 sandbox/
+
+
+_bld/
+
+Untitled.ipynb

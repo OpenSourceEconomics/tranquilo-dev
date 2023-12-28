@@ -30,7 +30,7 @@ dependencies:
   # Misc Start
   - setuptools_scm
   - toml
-  - pytask >=0.2.3
+  - pytask<0.4
   - pytask-latex
   - black
   - nb_black
