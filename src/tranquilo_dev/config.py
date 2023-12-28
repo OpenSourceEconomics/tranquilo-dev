@@ -130,9 +130,6 @@ _deterministic_plots = {
             "tranquilo_default",
             "tranquilo_experimental",
             "nag_bobyqa",
-            "nlopt_bobyqa",
-            "nlopt_neldermead",
-            "scipy_neldermead",
         ],
         "profile_plot_options": {
             "y_precision": DETERMINISTIC_Y_TOL,
