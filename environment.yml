@@ -29,7 +29,7 @@ dependencies:
   # Misc Start
   - setuptools_scm
   - toml
-  - pytask >=0.2.3
+  - pytask<0.4
   - black
   - nb_black
   - pre-commit

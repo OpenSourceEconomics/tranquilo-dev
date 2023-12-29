@@ -9,8 +9,8 @@ PUBLIC = SRC / "slidev" / "public"
 
 for name in PLOT_CONFIG:
     for plot_type in ["profile", "convergence", "deviation"]:
-        source_file = BLD / "figures" / f"{plot_type}_plots" / f"{name}.svg"
-        dest_file = PUBLIC / "bld" / "figures" / f"{plot_type}_plots" / f"{name}.svg"
+        source_file = BLD / "figures" / f"{plot_type}_plots" / f"{name}.eps"
+        dest_file = PUBLIC / "bld" / "figures" / f"{plot_type}_plots" / f"{name}.eps"
 
         @pytask.mark.depends_on(source_file)
         @pytask.mark.produces(dest_file)

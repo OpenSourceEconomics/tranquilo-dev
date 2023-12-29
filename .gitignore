@@ -15,6 +15,26 @@ __pycache__/
 # C extensions
 *.so
 
+# latex
+*.synctex(busy)
+*.toc
+*-blx.bib
+*.dvi
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.run.xml
+*.synctex.gz
+*.loc
+*.pdf
+*.soc
+*.upa
+*.upb
+
 # Distribution / packaging
 .Python
 build/
@@ -164,3 +184,8 @@ _version.py
 pdfs
 
 sandbox/
+
+
+_bld/
+
+Untitled.ipynb

@@ -7,6 +7,8 @@ from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
+from tranquilo_dev.plotting.plotting_functions import LABELS
+
 
 LINE_SETTINGS = {"parallelization_ls": {}, "noisy_ls": {}, "scalar_and_ls": {}}
 
@@ -24,7 +26,6 @@ LINE_SETTINGS["parallelization_ls"][competitor] = {
     "line": {"color": "#e53935", "dash": "solid"},
 }
 
-
 alphas = [0.38, 0.6, 1]
 
 for i, scenario in enumerate(tranquilo_scenarios):
@@ -32,6 +33,7 @@ for i, scenario in enumerate(tranquilo_scenarios):
         "line": {"color": "#014683", "dash": "solid"},
         "opacity": alphas[i],
     }
+    LABELS[scenario] = f"{LABELS['tranquilo']}-{scenario.split('_')[-1]}-Cores"
 dfols_scenarios = [sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if "dfols" in sc]
 dfols_scenarios = sorted(dfols_scenarios, key=lambda x: int(x.split("_")[-1]))
 
@@ -41,14 +43,17 @@ tranquilo_noisy = [
 LINE_SETTINGS["noisy_ls"][tranquilo_noisy] = {
     "line": {"color": "#014683", "dash": "solid"},
 }
+LABELS[tranquilo_noisy] = LABELS[tranquilo_noisy]
 
 for i, scenario in enumerate(dfols_scenarios):
     LINE_SETTINGS["noisy_ls"][scenario] = {
         "line": {"color": "#e53935", "dash": "solid"},
         "opacity": alphas[i],
     }
+    LABELS[scenario] = f"{LABELS['dfols']}-{scenario.split('_')[-1]}"
+
 LINE_SETTINGS["scalar_and_ls"]["dfols"] = {
-    "line": {"color": "#e53935", "dash": "solid"}
+    "line": {"color": "#e53935", "dash": "solid"},
 }
 
 LINE_SETTINGS["scalar_and_ls"]["tranquilo_default"] = {
@@ -66,7 +71,6 @@ LINE_SETTINGS["scalar_and_ls"]["nlopt_neldermead"] = {
     "line": {"color": "orange", "dash": "solid"},
 }
 
-
 for name, info in PLOT_CONFIG.items():
     problem_name = info["problem_name"]
     DEPS = {}
@@ -78,7 +82,7 @@ for name, info in PLOT_CONFIG.items():
         OUT = BLD / "figures" / f"{plot_type}_plots"
 
         @pytask.mark.depends_on(DEPS)
-        @pytask.mark.produces(OUT / f"{name}.svg")
+        @pytask.mark.produces(OUT / f"{name}.eps")
         @pytask.mark.task(id=f"{plot_type}_plot_{name}")
         def task_create_benchmark_plots(
             depends_on, produces, info=info, plot_type=plot_type, name=name
@@ -103,17 +107,22 @@ for name, info in PLOT_CONFIG.items():
                 results=results,
                 **kwargs,
             )
-            if plot_type == "profile" and name in [
-                "parallelization_ls",
-                "noisy_ls",
-                "scalar_and_ls",
-            ]:
-
-                for trace_name, kwargs in LINE_SETTINGS[name].items():
+            if plot_type == "profile":
+                if name in [
+                    "parallelization_ls",
+                    "noisy_ls",
+                    "scalar_and_ls",
+                ]:
+                    for trace_name, kwargs in LINE_SETTINGS[name].items():
+                        for trace in fig.data:
+                            if trace.name == trace_name:
+                                trace.update(kwargs)
+                                trace.update(name=LABELS[trace.name])
+                if name in ["competition_scalar", "competition_ls"]:
                     for trace in fig.data:
+                        trace.update(name=LABELS[trace.name])
 
-                        if trace.name == trace_name:
-                            trace.update(kwargs)
                 if name == "scalar_and_ls":
                     fig.update_xaxes(range=[trace.x[0], trace.x[-8]])
+
             fig.write_image(produces)
