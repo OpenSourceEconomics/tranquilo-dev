@@ -6,11 +6,9 @@ LABELS = {
     "tranquilo_default": "Tranquilo-Scalar",
     "tranquilo_ls_default": "Tranquilo-LS",
     "tranquilo_ls": "Tranquilo-LS",
-    "tranquilo_experimental": "Tranquilo-Scalar-Experimental",
-    "tranquilo_ls_experimental": "Tranquilo-Experimental",
-    "nag_bobyqa": "BOBYQA",
-    "nlopt_bobyqa": "PYBOBYQA",
-    "nlopt_neldermead": "Nelder-Mead",
+    "nag_bobyqa": "NAG-BOBYQA",
+    "nlopt_bobyqa": "NlOpt-BOBYQA",
+    "nlopt_neldermead": "NlOpt-Nelder-Mead",
     "scipy_neldermead": "SciPy-Nelder-Mead",
     "tao_pounders": "TAO-Pounders",
     "pounders": "Pounders",
@@ -20,10 +18,12 @@ LABELS = {
 def update_scalar_benchmark_plot(fig):
     fig = _update_labels(fig)
     fig = _update_legend(fig)
+    # cutoff xaxis range[0, 15]
     return fig
 
 
 def update_ls_benchmark_plot(fig):
+    # cutoff xaxis range[0, 40], is the red-line constant?
     fig = _update_labels(fig)
     fig = _update_legend(fig)
     return fig
@@ -41,6 +41,7 @@ def update_noisy_benchmark_plot(fig):
 
 def update_scalar_vs_ls_benchmark_plot(fig):
     fig = _update_legend(fig)
+    # cutoff xaxis range[0, 50]
     return fig
 
 

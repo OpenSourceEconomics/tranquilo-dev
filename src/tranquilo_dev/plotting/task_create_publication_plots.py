@@ -7,6 +7,9 @@ from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
 
 
+BLD_PAPER = BLD.joinpath("bld_paper")
+
+
 for plot_type in (
     "scalar_benchmark",
     "ls_benchmark",
@@ -14,7 +17,6 @@ for plot_type in (
     "noisy_benchmark",
     "scalar_vs_ls_benchmark",
 ):
-
     # Retrieve plotting info and function
     # ==================================================================================
     info = PLOT_CONFIG[f"publication_{plot_type}"]
@@ -31,7 +33,7 @@ for plot_type in (
     ]
     problems = em.get_benchmark_problems(**PROBLEM_SETS[problem_name])
 
-    # Pass variables created in loop to function; otherwise they don't bind to the func.
+    # Pass variables created in loop to function; otherwise they don't bind to the task
     # ==================================================================================
     kwargs = {
         "plot_kwargs": plot_kwargs,
@@ -41,7 +43,7 @@ for plot_type in (
 
     @pytask.mark.task(id=plot_type, kwargs=kwargs)
     @pytask.mark.depends_on(dependencies)
-    @pytask.mark.produces(BLD.joinpath("figures", "publication", f"{plot_type}.eps"))
+    @pytask.mark.produces(BLD_PAPER.joinpath("figures", f"{plot_type}.eps"))
     def task_create_publication_plots(
         depends_on,
         produces,
