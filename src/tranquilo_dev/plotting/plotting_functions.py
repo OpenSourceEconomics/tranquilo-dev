@@ -14,34 +14,85 @@ LABELS = {
     "pounders": "Pounders",
 }
 
+# ======================================================================================
+# Profile plot updates
+# ======================================================================================
 
-def update_scalar_benchmark_plot(fig):
+
+def update_scalar_benchmark_profile_plot(fig):
     fig = _update_labels(fig)
     fig = _update_legend(fig)
-    # cutoff xaxis range[0, 15]
+    fig = _update_xrange(fig, 0, 50)
     return fig
 
 
-def update_ls_benchmark_plot(fig):
-    # cutoff xaxis range[0, 40], is the red-line constant?
+def update_ls_benchmark_profile_plot(fig):
     fig = _update_labels(fig)
     fig = _update_legend(fig)
+    fig = _update_xrange(fig, 0, 40)
     return fig
 
 
-def update_parallel_benchmark_plot(fig):
+def update_parallel_benchmark_profile_plot(fig):
     fig = _update_legend(fig)
     return fig
 
 
-def update_noisy_benchmark_plot(fig):
+def update_noisy_benchmark_profile_plot(fig):
     fig = _update_legend(fig)
     return fig
 
 
-def update_scalar_vs_ls_benchmark_plot(fig):
+def update_scalar_vs_ls_benchmark_profile_plot(fig):
     fig = _update_legend(fig)
-    # cutoff xaxis range[0, 50]
+    fig = _update_xrange(fig, 0, 50)
+    return fig
+
+
+# ======================================================================================
+# Deviation plot updates
+# ======================================================================================
+
+
+def update_scalar_benchmark_deviation_plot(fig):
+    fig = _update_labels(fig)
+    fig = _update_legend(fig)
+    fig = _update_xrange(fig, 0, 300)
+    return fig
+
+
+def update_ls_benchmark_deviation_plot(fig):
+    fig = _update_labels(fig)
+    fig = _update_legend(fig)
+    fig = _update_xrange(fig, 0, 400)
+    return fig
+
+
+def update_parallel_benchmark_deviation_plot(fig):
+    fig = _update_legend(fig)
+    fig = _update_xrange(fig, 0, 50)
+    return fig
+
+
+def update_noisy_benchmark_deviation_plot(fig):
+    fig = _update_legend(fig)
+    return fig
+
+
+def update_scalar_vs_ls_benchmark_deviation_plot(fig):
+    fig = _update_legend(fig)
+    fig = _update_xrange(fig, 0, 500)
+    return fig
+
+
+# ======================================================================================
+# Shared functions
+# ======================================================================================
+
+
+def _update_xrange(fig, lower, upper):
+    fig = go.Figure(fig)  # makes a copy of the figure
+    fig.update_xaxes(range=[lower, upper])
     return fig
 
 
