@@ -33,7 +33,7 @@ for plot_type in ("profile_plot", "deviation_plot"):
         problem_name = info["problem_name"]
         plot_kwargs = info.get(f"{plot_type}_options", {})
 
-        update_plot = getattr(plotting_functions, f"update_{benchmark}_{plot_type}")
+        update_plot = getattr(plotting_functions, f"update_{plot_type}_{benchmark}")
 
         # Retrieve plotting data
         # ==================================================================================
