@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 
 LABELS = {
-    "dfols": "DF-OLS",
+    "dfols": "DFO-LS",
     "tranquilo": "Tranquilo-Scalar",
     "tranquilo_default": "Tranquilo-Scalar",
     "tranquilo_ls_default": "Tranquilo-LS",
@@ -12,6 +12,8 @@ LABELS = {
     "scipy_neldermead": "SciPy-Nelder-Mead",
     "tao_pounders": "TAO-Pounders",
     "pounders": "Pounders",
+    "tranquilo_experimental": "Tranquilo-Scalar-Experimental",
+    "tranquilo_ls_experimental": "Tranquilo-Experimental",
 }
 
 # ======================================================================================

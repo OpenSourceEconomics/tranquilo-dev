@@ -7,19 +7,7 @@ from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
-
-LABELS = {
-    "dfols": "DF-OLS",
-    "tranquilo": "Tranquilo-Scalar",
-    "tranquilo_default": "Tranquilo-Scalar",
-    "tranquilo_ls_default": "Tranquilo",
-    "tranquilo_ls": "Tranquilo",
-    "tranquilo_experimental": "Tranquilo-Scalar-Experimental",
-    "tranquilo_ls_experimental": "Tranquilo-Experimental",
-    "nag_bobyqa": "BOBYQA",
-    "nlopt_bobyqa": "PYBOBYQA",
-    "nlopt_neldermead": "Nelder-Mead",
-}
+from tranquilo_dev.plotting.plotting_functions import LABELS
 
 
 LINE_SETTINGS = {"parallelization_ls": {}, "noisy_ls": {}, "scalar_and_ls": {}}

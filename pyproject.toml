@@ -5,9 +5,6 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.0"]
 [tool.setuptools_scm]
 write_to = "src/tranquilo_dev/_version.py"
 
-[tool.pytask.ini_options]
-infer_latex_dependencies = true
-
 [tool.interrogate]
 ignore-init-module = true
 ignore-nested-functions = true
