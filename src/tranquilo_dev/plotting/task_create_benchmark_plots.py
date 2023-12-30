@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import estimagic as em
 import pandas as pd
 import plotly.io as pio
@@ -6,9 +8,12 @@ from estimagic import convergence_plot
 from estimagic import profile_plot
 from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.config import BLD
+from tranquilo_dev.config import LABELS
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
-from tranquilo_dev.plotting.plotting_functions import LABELS
+
+# Require a deepcopy since we will modify the labels
+LABELS = deepcopy(LABELS)
 
 
 LINE_SETTINGS = {"parallelization_ls": {}, "noisy_ls": {}, "scalar_and_ls": {}}

@@ -29,7 +29,7 @@ for plot_type in ("profile_plot", "deviation_plot"):
         "scalar_vs_ls_benchmark",
     ):
         # Retrieve plotting info and function
-        # ==================================================================================
+        # ==============================================================================
         info = PLOT_CONFIG[f"publication_{benchmark}"]
         problem_name = info["problem_name"]
         plot_kwargs = info.get(f"{plot_type}_options", {})
@@ -37,13 +37,15 @@ for plot_type in ("profile_plot", "deviation_plot"):
         update_plot = getattr(plotting_functions, f"update_{plot_type}_{benchmark}")
 
         # Retrieve plotting data
-        # ==================================================================================
+        # ==============================================================================
         dependencies = [
             BLD.joinpath("benchmarks", f"{problem_name}_{scenario}.pkl")
             for scenario in info["scenarios"]
         ]
         problems = em.get_benchmark_problems(**PROBLEM_SETS[problem_name])
 
+        # Store variables in kwargs to pass to pytask
+        # ==============================================================================
         kwargs = {
             "plot_func": plot_func,
             "plot_kwargs": plot_kwargs,
