@@ -1,5 +1,6 @@
 import estimagic as em
 import pandas as pd
+import plotly.io as pio
 import pytask
 from estimagic import convergence_plot
 from estimagic import profile_plot
@@ -82,7 +83,7 @@ for name, info in PLOT_CONFIG.items():
         OUT = BLD / "figures" / f"{plot_type}_plots"
 
         @pytask.mark.depends_on(DEPS)
-        @pytask.mark.produces(OUT / f"{name}.eps")
+        @pytask.mark.produces(OUT / f"{name}.pdf")
         @pytask.mark.task(id=f"{plot_type}_plot_{name}")
         def task_create_benchmark_plots(
             depends_on, produces, info=info, plot_type=plot_type, name=name
@@ -125,4 +126,6 @@ for name, info in PLOT_CONFIG.items():
                 if name == "scalar_and_ls":
                     fig.update_xaxes(range=[trace.x[0], trace.x[-8]])
 
+            # Deactivate warnings, that could otherwise be printed on the figure
+            pio.full_figure_for_development(fig, warn=False)
             fig.write_image(produces)

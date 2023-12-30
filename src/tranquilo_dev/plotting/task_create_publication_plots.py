@@ -1,5 +1,6 @@
 import estimagic as em
 import pandas as pd
+import plotly.io as pio
 import pytask
 import tranquilo_dev.plotting.plotting_functions as plotting_functions
 from estimagic import profile_plot
@@ -54,7 +55,7 @@ for plot_type in ("profile_plot", "deviation_plot"):
 
         @pytask.mark.task(id=task_id, kwargs=kwargs)
         @pytask.mark.depends_on(dependencies)
-        @pytask.mark.produces(BLD_PAPER.joinpath(f"{plot_type}s", f"{benchmark}.eps"))
+        @pytask.mark.produces(BLD_PAPER.joinpath(f"{plot_type}s", f"{benchmark}.pdf"))
         def task_create_publication_plots(
             depends_on,
             produces,
@@ -69,4 +70,6 @@ for plot_type in ("profile_plot", "deviation_plot"):
 
             fig = plot_func(problems=problems, results=results, **plot_kwargs)
             updated = update_plot(fig)
+            # Deactivate warnings, that could otherwise be printed on the figure
+            pio.full_figure_for_development(fig, warn=False)
             updated.write_image(produces)
