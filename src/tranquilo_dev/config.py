@@ -184,7 +184,7 @@ _deterministic_plots = {
     "publication_scalar_benchmark": {
         "problem_name": "mw",
         "scenarios": [
-            "tranquilo_default",
+            "tranquilo_scalar_default",
             "nag_bobyqa",
             "nlopt_bobyqa",
             "nlopt_neldermead",
@@ -230,7 +230,7 @@ _deterministic_plots = {
         "problem_name": "mw",
         "scenarios": [
             "dfols",
-            "tranquilo_default",
+            "tranquilo_scalar_default",
             "tranquilo_ls_default",
             "nlopt_bobyqa",
             "nlopt_neldermead",
