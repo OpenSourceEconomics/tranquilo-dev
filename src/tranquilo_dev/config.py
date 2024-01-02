@@ -39,7 +39,7 @@ def get_max_iterations(noisy, functype):  # noqa: U100
 
 
 def get_tranquilo_version(functype):
-    return "tranquilo_scalar" if functype == "scalar" else "tranquilo_ls"
+    return "tranquilo" if functype == "scalar" else "tranquilo_ls"
 
 
 N_CORES = 10
@@ -127,8 +127,8 @@ _deterministic_plots = {
     "competition_scalar": {
         "problem_name": "mw",
         "scenarios": [
-            "tranquilo_scalar_default",
-            "tranquilo_scalar_experimental",
+            "tranquilo_default",
+            "tranquilo_experimental",
             "nag_bobyqa",
         ],
         "profile_plot_options": {
@@ -156,7 +156,7 @@ _deterministic_plots = {
             "dfols",
             "tranquilo_ls_default",
             "nlopt_bobyqa",
-            "tranquilo_scalar_default",
+            "tranquilo_default",
             "nlopt_neldermead",
         ],
         "profile_plot_options": {
@@ -184,7 +184,7 @@ _deterministic_plots = {
     "publication_scalar_benchmark": {
         "problem_name": "mw",
         "scenarios": [
-            "tranquilo_scalar_default",
+            "tranquilo_default",
             "nag_bobyqa",
             "nlopt_bobyqa",
             "nlopt_neldermead",
@@ -230,7 +230,7 @@ _deterministic_plots = {
         "problem_name": "mw",
         "scenarios": [
             "dfols",
-            "tranquilo_scalar_default",
+            "tranquilo_default",
             "tranquilo_ls_default",
             "nlopt_bobyqa",
             "nlopt_neldermead",
@@ -248,8 +248,8 @@ _noisy_plots = {
     "competition_scalar_noisy": {
         "problem_name": "mw_noisy",
         "scenarios": [
-            "tranquilo_scalar_default",
-            "tranquilo_scalar_experimental",
+            "tranquilo_default",
+            "tranquilo_experimental",
             "nag_bobyqa_noisy_5",
         ],
         "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
@@ -304,7 +304,7 @@ UNUSED_PLOTS = {
             "nag_bobyqa_noisy_3",
             "nag_bobyqa_noisy_5",
             "nag_bobyqa_noisy_10",
-            "tranquilo_scalar_default",
+            "tranquilo_default",
         ],
         "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},

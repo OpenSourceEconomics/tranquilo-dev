@@ -4,8 +4,6 @@ LABELS = {
     "dfols": "DFO-LS",
     "tranquilo": "Tranquilo-Scalar",
     "tranquilo_default": "Tranquilo-Scalar",
-    "tranquilo_scalar": "Tranquilo-Scalar",
-    "tranquilo_scalar_default": "Tranquilo-Scalar",
     "tranquilo_ls_default": "Tranquilo-LS",
     "tranquilo_ls": "Tranquilo-LS",
     "nag_bobyqa": "NAG-BOBYQA",
@@ -15,7 +13,6 @@ LABELS = {
     "tao_pounders": "TAO-Pounders",
     "pounders": "Pounders",
     "tranquilo_experimental": "Tranquilo-Scalar-Experimental",
-    "tranquilo_scalar_experimental": "Tranquilo-Scalar-Experimental",
     "tranquilo_ls_experimental": "Tranquilo-Experimental",
 }
 
