@@ -74,7 +74,6 @@ def _n_evals_10(*args, **kwargs):  # noqa: U100
 LABELS = {
     # Tranquilo labels
     "tranquilo": "Tranquilo-Scalar",
-    "tranquilo_scalar_default": "Tranquilo-Scalar",
     "tranquilo_default": "Tranquilo-Scalar",
     "tranquilo_ls": "Tranquilo-LS",
     "tranquilo_ls_default": "Tranquilo-LS",
@@ -82,7 +81,6 @@ LABELS = {
     "tranquilo_ls_parallel_4": "Tranquilo-LS (4)",
     "tranquilo_ls_parallel_8": "Tranquilo-LS (8)",
     "tranquilo_experimental": "Tranquilo-Scalar-Experimental",
-    "tranquilo_scalar_experimental": "Tranquilo-Scalar-Experimental",
     "tranquilo_ls_experimental": "Tranquilo-LS-Experimental",
     # DFO-LS labels
     "dfols": "DFO-LS",
