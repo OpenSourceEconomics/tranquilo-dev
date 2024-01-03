@@ -1,6 +1,5 @@
 import estimagic as em
 import pandas as pd
-import plotly.io as pio
 import pytask
 import tranquilo_dev.plotting.plotting_functions as plotting_functions
 from estimagic import profile_plot
@@ -70,8 +69,13 @@ for plot_type in ("profile_plot", "deviation_plot"):
             for path in depends_on.values():
                 results = {**results, **pd.read_pickle(path)}
 
-            fig = plot_func(problems=problems, results=results, **plot_kwargs)
-            updated = update_plot(fig)
-            # Deactivate warnings, that could otherwise be printed on the figure
-            pio.full_figure_for_development(fig, warn=False)
-            updated.write_image(produces)
+            plotly_fig = plot_func(problems=problems, results=results, **plot_kwargs)
+            plotting_data = get_data_from_plotly_figure(plotly_fig)
+
+            fig = update_plot(plotting_data)
+            fig.savefig(produces, bbox_inches="tight")
+
+
+def get_data_from_plotly_figure(fig):
+    lines = fig.data
+    return {line.name: {"x": line.x, "y": line.y} for line in lines}
