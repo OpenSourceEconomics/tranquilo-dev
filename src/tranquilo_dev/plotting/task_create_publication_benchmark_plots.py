@@ -6,7 +6,7 @@ from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
-from tranquilo_dev.plotting.plotting_functions import plot_benchmark
+from tranquilo_dev.plotting.benchmark_plotting_functions import plot_benchmark
 
 
 BLD_PAPER = BLD.joinpath("bld_paper")
@@ -56,7 +56,7 @@ for plot_type in ("profile_plot", "deviation_plot"):
         @pytask.mark.task(id=task_id, kwargs=kwargs)
         @pytask.mark.depends_on(dependencies)
         @pytask.mark.produces(BLD_PAPER.joinpath(f"{plot_type}s", f"{benchmark}.pdf"))
-        def task_create_publication_plots(
+        def task_create_publication_benchmark_plots(
             depends_on,
             produces,
             plot_func,
