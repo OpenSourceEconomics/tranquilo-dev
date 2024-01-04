@@ -1,12 +1,12 @@
 import estimagic as em
 import pandas as pd
 import pytask
-import tranquilo_dev.plotting.plotting_functions as plotting_functions
 from estimagic import profile_plot
 from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
+from tranquilo_dev.plotting.plotting_functions import plot_benchmark
 
 
 BLD_PAPER = BLD.joinpath("bld_paper")
@@ -33,8 +33,6 @@ for plot_type in ("profile_plot", "deviation_plot"):
         problem_name = info["problem_name"]
         plot_kwargs = info.get(f"{plot_type}_options", {})
 
-        update_plot = getattr(plotting_functions, f"update_{plot_type}_{benchmark}")
-
         # Retrieve plotting data
         # ==============================================================================
         dependencies = [
@@ -48,8 +46,9 @@ for plot_type in ("profile_plot", "deviation_plot"):
         kwargs = {
             "plot_func": plot_func,
             "plot_kwargs": plot_kwargs,
-            "update_plot": update_plot,
             "problems": problems,
+            "plot_type": plot_type,
+            "benchmark": benchmark,
         }
 
         task_id = f"{plot_type}_{benchmark}"
@@ -62,8 +61,9 @@ for plot_type in ("profile_plot", "deviation_plot"):
             produces,
             plot_func,
             plot_kwargs,
-            update_plot,
             problems,
+            plot_type,
+            benchmark,
         ):
             results = {}
             for path in depends_on.values():
@@ -72,7 +72,11 @@ for plot_type in ("profile_plot", "deviation_plot"):
             plotly_fig = plot_func(problems=problems, results=results, **plot_kwargs)
             plotting_data = get_data_from_plotly_figure(plotly_fig)
 
-            fig = update_plot(plotting_data)
+            fig = plot_benchmark(
+                plotting_data,
+                plot=plot_type,
+                benchmark=benchmark,
+            )
             fig.savefig(produces, bbox_inches="tight")
 
 
