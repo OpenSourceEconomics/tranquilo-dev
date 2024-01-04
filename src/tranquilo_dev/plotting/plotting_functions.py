@@ -1,3 +1,14 @@
+"""Plotting function that create the publication ready figures.
+
+Most of the plotting behavior can be configured by changing some global dictionaries:
+
+- `AXIS_LABELS`: Contains the axis labels for each plot type.
+- `X_RANGE`: Contains the x-axis range given each benchmark.
+- `COLORS`: Contains the colors for each line given each benchmark.
+- `LINE_WIDTH_UPDATES`: Contains the line width for each line given each benchmark.
+- `LEGEND_LABEL_ORDER`: Contains the order of the legend labels given each benchmark.
+
+"""
 import itertools
 
 import matplotlib
@@ -6,8 +17,11 @@ from tranquilo_dev.config import LABELS
 
 
 # ======================================================================================
-# Config
+# Plot Config
 # ======================================================================================
+
+FIGURE_WIDTH_IN_CM = 14.69785
+FIGURE_HEIGHT_IN_CM = 10.0
 
 AXIS_LABELS = {
     "profile_plot": {
@@ -20,8 +34,25 @@ AXIS_LABELS = {
     },
 }
 
-FIGURE_WIDTH = 14.69785  # textwidth of paper in cm
-FIGURE_HEIGHT = 10.0
+X_RANGE = {
+    "profile_plot": {
+        "scalar_benchmark": (1, 50),
+        "ls_benchmark": (1, 40),
+        "parallel_benchmark": (1,),
+        "noisy_benchmark": (1,),
+        "scalar_vs_ls_benchmark": (1, 50),
+    },
+    "deviation_plot": {
+        "scalar_benchmark": (0, 300),
+        "ls_benchmark": (0, 400),
+        "parallel_benchmark": (0, 50),
+        "noisy_benchmark": (0,),
+        "scalar_vs_ls_benchmark": (0, 500),
+    },
+}
+
+# Colors
+# ======================================================================================
 
 DARK_GRAY = "#534a46"
 
@@ -37,34 +68,68 @@ TABLEAU_10_COLORS = {
     "brown": "#967662",
     "gray": "#b8b0ac",
     # Additional shades. (Taken by plugging in the color code of blue and green at
-    # https://www.w3schools.com/colors/colors_picker.asp, and selecting a lighter shade)
-    "green-light": "#8ab77b",
-    "green-very-light": "#b6d2ad",
-    "blue-light": "#7995b9",
-    "blue-very-light": "#abbdd3",
-    "blue-very-very-light": "#dee4ed",
+    # https://www.w3schools.com/colors/colors_picker.asp, and selecting a lighter /
+    # darker color given some percentage.)
+    "green-25": "#b7d2ad",
+    "green-50": "#6ea45b",
+    "green-75": "#37522d",
+    "blue-75": "#abbed4",
+    "blue-55": "#688ab1",
+    "blue-35": "#3d5776",
+    "blue-15": "#1a2532",
 }
 
-COLORS = {
-    # Tranquilo colors
+
+BASE_COLORS = {
     "Tranquilo-Scalar": TABLEAU_10_COLORS["teal"],
     "Tranquilo-LS": TABLEAU_10_COLORS["blue"],
-    "Tranquilo-LS (2 cores)": TABLEAU_10_COLORS["blue-light"],
-    "Tranquilo-LS (4 cores)": TABLEAU_10_COLORS["blue-very-light"],
-    "Tranquilo-LS (8 cores)": TABLEAU_10_COLORS["blue-very-very-light"],
-    # DFO-LS colors
     "DFO-LS": TABLEAU_10_COLORS["green"],
-    "DFO-LS (3 evals)": TABLEAU_10_COLORS["green"],
-    "DFO-LS (5 evals)": TABLEAU_10_COLORS["green-light"],
-    "DFO-LS (10 evals)": TABLEAU_10_COLORS["green-very-light"],
-    # Other colors
     "NAG-BOBYQA": TABLEAU_10_COLORS["orange"],
     "NlOpt-BOBYQA": TABLEAU_10_COLORS["red"],
     "NlOpt-Nelder-Mead": TABLEAU_10_COLORS["purple"],
-    "SciPy-Nelder-Mead": TABLEAU_10_COLORS["pink"],
+    "SciPy-Nelder-Mead": TABLEAU_10_COLORS["brown"],
     "Pounders": TABLEAU_10_COLORS["gray"],
 }
 
+PARALLEL_COLOR_UPDATES = {
+    "Tranquilo-LS": TABLEAU_10_COLORS["blue-75"],
+    "Tranquilo-LS (2 cores)": TABLEAU_10_COLORS["blue-55"],
+    "Tranquilo-LS (4 cores)": TABLEAU_10_COLORS["blue-35"],
+    "Tranquilo-LS (8 cores)": TABLEAU_10_COLORS["blue-15"],
+}
+
+NOISY_COLOR_UPDATES = {
+    "DFO-LS (3 evals)": TABLEAU_10_COLORS["green-25"],
+    "DFO-LS (5 evals)": TABLEAU_10_COLORS["green-50"],
+    "DFO-LS (10 evals)": TABLEAU_10_COLORS["green-75"],
+}
+
+COLORS = {
+    "scalar_benchmark": BASE_COLORS,
+    "ls_benchmark": BASE_COLORS,
+    "parallel_benchmark": {**BASE_COLORS, **PARALLEL_COLOR_UPDATES},
+    "noisy_benchmark": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
+    "scalar_vs_ls_benchmark": BASE_COLORS,
+}
+
+# Line width
+# ======================================================================================
+DEFAULT_LINE_WIDTH = 1.5
+
+LINE_WIDTH_UPDATES = {
+    "parallel_benchmark": {
+        "Tranquilo-LS (2 cores)": 1.6,
+        "Tranquilo-LS (4 cores)": 1.7,
+        "Tranquilo-LS (8 cores)": 1.8,
+    },
+    "noisy_benchmark": {
+        "DFO-LS (5 evals)": 1.6,
+        "DFO-LS (10 evals)": 1.7,
+    },
+}
+
+# Legend
+# ======================================================================================
 
 LEGEND_LABEL_ORDER = {
     "scalar_benchmark": [
@@ -87,10 +152,10 @@ LEGEND_LABEL_ORDER = {
         "DFO-LS",
     ],
     "noisy_benchmark": [
-        "Tranquilo-LS",
         "DFO-LS (3 evals)",
         "DFO-LS (5 evals)",
         "DFO-LS (10 evals)",
+        "Tranquilo-LS",
     ],
     "scalar_vs_ls_benchmark": [
         "Tranquilo-LS",
@@ -102,23 +167,8 @@ LEGEND_LABEL_ORDER = {
     ],
 }
 
-
-X_RANGE = {
-    "profile_plot": {
-        "scalar_benchmark": (1, 50),
-        "ls_benchmark": (1, 40),
-        "parallel_benchmark": (1,),
-        "noisy_benchmark": (1,),
-        "scalar_vs_ls_benchmark": (1, 50),
-    },
-    "deviation_plot": {
-        "scalar_benchmark": (0, 300),
-        "ls_benchmark": (0, 400),
-        "parallel_benchmark": (0, 50),
-        "noisy_benchmark": (0,),
-        "scalar_vs_ls_benchmark": (0, 500),
-    },
-}
+# Font
+# ======================================================================================
 
 matplotlib.rcParams["font.size"] = 10
 matplotlib.rcParams["font.sans-serif"] = "Fira Sans"
@@ -152,10 +202,17 @@ def plot_benchmark(data, plot, benchmark):
 
     # Create matplotlib base figure
     fig, ax = plt.subplots(
-        figsize=(_cm_to_inch(FIGURE_WIDTH), _cm_to_inch(FIGURE_HEIGHT))
+        figsize=(_cm_to_inch(FIGURE_WIDTH_IN_CM), _cm_to_inch(FIGURE_HEIGHT_IN_CM))
     )
     for name, line in data.items():
-        ax.plot(line["x"], line["y"], label=name, color=COLORS[name])
+        lw = LINE_WIDTH_UPDATES.get(benchmark, {}).get(name, DEFAULT_LINE_WIDTH)
+        ax.plot(
+            line["x"],
+            line["y"],
+            label=name,
+            color=COLORS[benchmark][name],
+            linewidth=lw,
+        )
 
     # Remove top and right border (spine)
     ax.spines[["right", "top"]].set_visible(False)
