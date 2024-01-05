@@ -71,6 +71,32 @@ def _n_evals_10(*args, **kwargs):  # noqa: U100
     return 10
 
 
+LABELS = {
+    # Tranquilo labels
+    "tranquilo": "Tranquilo-Scalar",
+    "tranquilo_default": "Tranquilo-Scalar",
+    "tranquilo_ls": "Tranquilo-LS",
+    "tranquilo_ls_default": "Tranquilo-LS",
+    "tranquilo_ls_parallel_2": "Tranquilo-LS (2 cores)",
+    "tranquilo_ls_parallel_4": "Tranquilo-LS (4 cores)",
+    "tranquilo_ls_parallel_8": "Tranquilo-LS (8 cores)",
+    "tranquilo_experimental": "Tranquilo-Scalar-Experimental",
+    "tranquilo_ls_experimental": "Tranquilo-LS-Experimental",
+    # DFO-LS labels
+    "dfols": "DFO-LS",
+    "dfols_noisy_3": "DFO-LS (3 evals)",
+    "dfols_noisy_5": "DFO-LS (5 evals)",
+    "dfols_noisy_10": "DFO-LS (10 evals)",
+    # Other labels
+    "nag_bobyqa": "NAG-BOBYQA",
+    "nlopt_bobyqa": "NlOpt-BOBYQA",
+    "nlopt_neldermead": "NlOpt-Nelder-Mead",
+    "scipy_neldermead": "SciPy-Nelder-Mead",
+    "tao_pounders": "TAO-Pounders",
+    "pounders": "Pounders",
+}
+
+
 COMPETITION = {
     "nlopt_bobyqa": {"algorithm": "nlopt_bobyqa"},
     "nag_bobyqa": {"algorithm": "nag_pybobyqa"},

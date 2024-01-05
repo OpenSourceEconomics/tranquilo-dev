@@ -1,13 +1,19 @@
+from copy import deepcopy
+
 import estimagic as em
 import pandas as pd
+import plotly.io as pio
 import pytask
 from estimagic import convergence_plot
 from estimagic import profile_plot
 from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.config import BLD
+from tranquilo_dev.config import LABELS
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
-from tranquilo_dev.plotting.plotting_functions import LABELS
+
+# Require a deepcopy since we will modify the labels
+LABELS = deepcopy(LABELS)
 
 
 LINE_SETTINGS = {"parallelization_ls": {}, "noisy_ls": {}, "scalar_and_ls": {}}
@@ -82,7 +88,7 @@ for name, info in PLOT_CONFIG.items():
         OUT = BLD / "figures" / f"{plot_type}_plots"
 
         @pytask.mark.depends_on(DEPS)
-        @pytask.mark.produces(OUT / f"{name}.eps")
+        @pytask.mark.produces(OUT / f"{name}.pdf")
         @pytask.mark.task(id=f"{plot_type}_plot_{name}")
         def task_create_benchmark_plots(
             depends_on, produces, info=info, plot_type=plot_type, name=name
@@ -125,4 +131,6 @@ for name, info in PLOT_CONFIG.items():
                 if name == "scalar_and_ls":
                     fig.update_xaxes(range=[trace.x[0], trace.x[-8]])
 
+            # Deactivate warnings, that could otherwise be printed on the figure
+            pio.full_figure_for_development(fig, warn=False)
             fig.write_image(produces)
