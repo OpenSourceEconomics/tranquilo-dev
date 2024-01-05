@@ -6,6 +6,9 @@ PROBLEM_SETS: This is a dictionary that defines the problems that can be used in
 benchmarks. The keys are names, the values are dictionaries with keyword arguments for
 `em.get_benchmark_problems`.
 
+BENCHMARK_PROBLEMS_INFO: This is a dictionary that defines how many additional problems
+are generated for each problem in PROBLEM_SETS. The keys are "n_draws" and "seed".
+
 COMPETITION: This is a dictionary that defines the optimizer configurations against
 which we want to compare tranquilo. The keys are the names of the optimizer
 configurations, the values are dictionaries with keyword arguments for the minimization.
@@ -56,6 +59,16 @@ PROBLEM_SETS = {
         "additive_noise_options": {"distribution": "normal", "std": 1.2},
         "seed": 925408,
     },
+}
+
+
+BENCHMARK_PROBLEMS_INFO = {
+    # Number of additional draws per problem that are used to generate more problems.
+    # For each problems n_draws new start vectors are drawn in the vicinity of the
+    # original start vector, each defining a new problem.
+    "n_draws": 4,
+    # Random number generator seed used to control the random draws.
+    "seed": 440219,
 }
 
 
