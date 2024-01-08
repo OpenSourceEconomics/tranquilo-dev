@@ -1,36 +1,56 @@
 from collections import ChainMap
+from typing import NamedTuple
 
 import estimagic as em
 import numpy as np
 from pybaum import tree_update
 
 
-DEFAULT_SAMPLE_KWARGS = {
-    "minimal_radius": 0.1,
-    "percentage_deviation_radius": 0.01,
-}
+class SampleOptions(NamedTuple):
+    minimal_radius: float = 0.1
+    percentage_deviation_radius: float = 0.01
 
 
 def get_extended_benchmark_problems(
-    n_draws=0, seed=None, benchmark_kwargs=None, sample_kwargs=None
+    benchmark_kwargs=None,
+    n_additional_draws=0,
+    sample_options=None,
+    seed=None,
 ):
+    """Get extended benchmark problems.
+
+    Args:
+        benchmark_kwargs (dict): Dictionary of keyword arguments that are passed to the
+            function estimagic.get_benchmark_problems.
+        n_additional_draws (int): Number of additional bootstrap draws from the
+            benchmark set. This many new starting vectors are sampled in the
+            neighborhood of the original starting vector for each problem. The sampling
+            behavior is governed by the argument 'sample_kwargs'.
+        sample_options (dict): Dictionary containing arguments that govern the sampling
+            behavior. See class `SampleOptions`.
+        seed (int): Seed that is passed to the numpy random number generator.
+
+    Returns:
+        dict: Dictionary of benchmark problems.
+
+    """
     # Process kwargs that are passed to em.get_benchmark_problems and get base problems
     benchmark_kwargs = {} if benchmark_kwargs is None else benchmark_kwargs
     problems = em.get_benchmark_problems(**benchmark_kwargs)
 
     # Process kwargs that are used to for the random sampling
-    if isinstance(sample_kwargs, dict):
-        sample_kwargs = tree_update(DEFAULT_SAMPLE_KWARGS, sample_kwargs)
+    if isinstance(sample_options, dict):
+        sample_options = SampleOptions()._replace(**sample_options)
     else:
-        sample_kwargs = DEFAULT_SAMPLE_KWARGS
+        sample_options = SampleOptions()._asdict()
 
     # Sample new problems
-    if n_draws > 0:
+    if n_additional_draws > 0:
         new_problems = _sample_new_problems(
             problems=problems,
-            n_draws=n_draws,
+            n_draws=n_additional_draws,
             seed=seed,
-            sample_kwargs=sample_kwargs,
+            sample_kwargs=sample_options,
         )
     else:
         new_problems = {}
@@ -81,7 +101,7 @@ def _generate_new_problems(
 
     new_problems = {}
     for k, new_start_vector in enumerate(new_start_vectors):
-        new_problem = _update_start_vector_in_problem(problem, new_start_vector)
+        new_problem = _get_problem_with_new_start_vector(problem, new_start_vector)
         new_name = f"{problem_name}__draw_{k}"
         new_problems[new_name] = new_problem
 
@@ -143,15 +163,13 @@ def _draw_single_new_start_vector(
 
     success = False
 
-    for _ in range(100):
+    for _ in range(50):
         candidate = rng.uniform(low=x - radius, high=x + radius)
 
         # Verify that the criterion function is well-defined at the candidate x-value,
         # and otherwise reduce the radius by half.
         try:
-            _value = criterion(candidate)
-            value = _value["value"] if isinstance(_value, dict) else _value
-            assert np.isfinite(value)
+            _evaluate_criterion_and_assert_finite(criterion, params=candidate)
         except Exception:
             radius /= 2
         else:
@@ -187,8 +205,14 @@ def _calculate_radius(
     return np.clip(candidate, a_min=minimal_radius, a_max=None)
 
 
-def _update_start_vector_in_problem(
-    problem: dict, new_start_vector: np.ndarray
+def _get_problem_with_new_start_vector(
+    old_problem: dict, new_start_vector: np.ndarray
 ) -> dict:
     update_dict = {"inputs": {"params": new_start_vector}}
-    return tree_update(problem, update_dict)
+    return tree_update(old_problem, update_dict)
+
+
+def _evaluate_criterion_and_assert_finite(criterion, params):
+    _value = criterion(params)
+    value = _value["value"] if isinstance(_value, dict) else _value
+    assert np.isfinite(value)
