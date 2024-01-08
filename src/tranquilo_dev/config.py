@@ -291,7 +291,7 @@ _noisy_plots = {
     #         "tranquilo_experimental",
     #         "nag_bobyqa_noisy_5",
     #     ],
-    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
+    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},  # noqa: E501
     #     "convergence_plot_options": {"n_cols": 6},
     # },
     # "competition_ls_noisy": {
@@ -301,7 +301,7 @@ _noisy_plots = {
     #         "tranquilo_ls_experimental",
     #         "dfols_noisy_5",
     #     ],
-    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
+    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},  # noqa: E501
     #     "convergence_plot_options": {"n_cols": 6},
     # },
     "noisy_ls": {

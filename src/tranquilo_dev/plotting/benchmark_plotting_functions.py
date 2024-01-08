@@ -181,7 +181,7 @@ matplotlib.rcParams["font.family"] = "sans-serif"
 
 
 def plot_benchmark(data, plot, benchmark):
-    """Create the base matplotlib figure.  # noqa: D406, D407, D400
+    """Create the base matplotlib figure.
 
     Args:
         data (dict): Dictionary containing the data to plot. Keys represent a single

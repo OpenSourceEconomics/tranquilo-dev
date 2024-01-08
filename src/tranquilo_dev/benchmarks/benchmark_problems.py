@@ -7,8 +7,10 @@ from pybaum import tree_update
 
 
 class SampleOptions(NamedTuple):
+    """Options for the random sampling of new problems."""
+
     minimal_radius: float = 0.1
-    percentage_deviation_radius: float = 0.01
+    percentage_deviation_radius: float = 0.1
 
 
 def get_extended_benchmark_problems(
