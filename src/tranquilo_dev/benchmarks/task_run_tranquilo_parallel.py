@@ -61,7 +61,6 @@ for batch_size in [2, 4, 8]:
                         n_cores=N_CORES,
                         max_criterion_evaluations=max_evals,  # noqa: B023
                         disable_convergence=False,
-                        error_handling="raise",
                     )
 
                     if COMPAT_MODE:
