@@ -38,7 +38,7 @@ X_RANGE = {
     "profile_plot": {
         "scalar_benchmark": (1, 50),
         "ls_benchmark": (1, 40),
-        "parallel_benchmark": (1,),
+        "parallel_benchmark": (1, 6),
         "noisy_benchmark": (1,),
         "scalar_vs_ls_benchmark": (1, 50),
     },
