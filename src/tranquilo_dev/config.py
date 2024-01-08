@@ -18,6 +18,7 @@ plotted against each other. Only combinations that are used in some plot will ac
 run.
 
 """
+import socket
 from pathlib import Path
 
 SRC = Path(__file__).parent.resolve()
@@ -45,7 +46,22 @@ def get_tranquilo_version(functype):
     return "tranquilo" if functype == "scalar" else "tranquilo_ls"
 
 
-N_CORES = 16
+def get_n_cores():
+    """Set the number of cores depending on the hostname."""
+    mapping = {
+        # Tim's thinkpad
+        "thinky": 16,
+        # Janos' thinkpad
+        "IZA-LAP479": 10,
+    }
+
+    hostname = socket.gethostname()
+
+    n_cores = mapping.get(hostname, 6)
+    return n_cores
+
+
+N_CORES = get_n_cores()
 
 PROBLEM_SETS = {
     "mw": {
