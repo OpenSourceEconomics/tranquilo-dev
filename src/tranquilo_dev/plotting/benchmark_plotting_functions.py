@@ -38,7 +38,7 @@ X_RANGE = {
     "profile_plot": {
         "scalar_benchmark": (1, 50),
         "ls_benchmark": (1, 40),
-        "parallel_benchmark": (1,),
+        "parallel_benchmark": (1, 6),
         "noisy_benchmark": (1,),
         "scalar_vs_ls_benchmark": (1, 50),
     },
@@ -181,7 +181,7 @@ matplotlib.rcParams["font.family"] = "sans-serif"
 
 
 def plot_benchmark(data, plot, benchmark):
-    """Create the base matplotlib figure.  # noqa: D406, D407, D400
+    """Create the base matplotlib figure.
 
     Args:
         data (dict): Dictionary containing the data to plot. Keys represent a single

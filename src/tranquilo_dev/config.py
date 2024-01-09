@@ -6,6 +6,9 @@ PROBLEM_SETS: This is a dictionary that defines the problems that can be used in
 benchmarks. The keys are names, the values are dictionaries with keyword arguments for
 `em.get_benchmark_problems`.
 
+BENCHMARK_PROBLEMS_INFO: This is a dictionary that defines how many additional problems
+are generated for each problem in PROBLEM_SETS. The keys are "n_draws" and "seed".
+
 COMPETITION: This is a dictionary that defines the optimizer configurations against
 which we want to compare tranquilo. The keys are the names of the optimizer
 configurations, the values are dictionaries with keyword arguments for the minimization.
@@ -15,6 +18,7 @@ plotted against each other. Only combinations that are used in some plot will ac
 run.
 
 """
+import socket
 from pathlib import Path
 
 SRC = Path(__file__).parent.resolve()
@@ -42,7 +46,22 @@ def get_tranquilo_version(functype):
     return "tranquilo" if functype == "scalar" else "tranquilo_ls"
 
 
-N_CORES = 10
+def get_n_cores():
+    """Set the number of cores depending on the hostname."""
+    mapping = {
+        # Tim's thinkpad
+        "thinky": 16,
+        # Janos' thinkpad
+        "IZA-LAP479": 10,
+    }
+
+    hostname = socket.gethostname()
+
+    n_cores = mapping.get(hostname, 6)
+    return n_cores
+
+
+N_CORES = get_n_cores()
 
 PROBLEM_SETS = {
     "mw": {
@@ -56,6 +75,16 @@ PROBLEM_SETS = {
         "additive_noise_options": {"distribution": "normal", "std": 1.2},
         "seed": 925408,
     },
+}
+
+
+BENCHMARK_PROBLEMS_INFO = {
+    # Number of additional draws per problem that are used to generate more problems.
+    # For each problems n_draws new start vectors are drawn in the vicinity of the
+    # original start vector, each defining a new problem.
+    "n_additional_draws": 4,
+    # Random number generator seed used to control the random draws.
+    "seed": 440219,
 }
 
 
@@ -167,7 +196,7 @@ _deterministic_plots = {
         "problem_name": "mw",
         "scenarios": [
             "tranquilo_ls_default",
-            "tranquilo_ls_experimental",
+            # "tranquilo_ls_experimental",
             "dfols",
         ],
         "profile_plot_options": {
@@ -271,26 +300,26 @@ _deterministic_plots = {
 }
 
 _noisy_plots = {
-    "competition_scalar_noisy": {
-        "problem_name": "mw_noisy",
-        "scenarios": [
-            "tranquilo_default",
-            "tranquilo_experimental",
-            "nag_bobyqa_noisy_5",
-        ],
-        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
-        "convergence_plot_options": {"n_cols": 6},
-    },
-    "competition_ls_noisy": {
-        "problem_name": "mw_noisy",
-        "scenarios": [
-            "tranquilo_ls_default",
-            "tranquilo_ls_experimental",
-            "dfols_noisy_5",
-        ],
-        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
-        "convergence_plot_options": {"n_cols": 6},
-    },
+    # "competition_scalar_noisy": {
+    #     "problem_name": "mw_noisy",
+    #     "scenarios": [
+    #         "tranquilo_default",
+    #         "tranquilo_experimental",
+    #         "nag_bobyqa_noisy_5",
+    #     ],
+    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},  # noqa: E501
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
+    # "competition_ls_noisy": {
+    #     "problem_name": "mw_noisy",
+    #     "scenarios": [
+    #         "tranquilo_ls_default",
+    #         "tranquilo_ls_experimental",
+    #         "dfols_noisy_5",
+    #     ],
+    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},  # noqa: E501
+    #     "convergence_plot_options": {"n_cols": 6},
+    # },
     "noisy_ls": {
         "problem_name": "mw_noisy",
         "scenarios": [

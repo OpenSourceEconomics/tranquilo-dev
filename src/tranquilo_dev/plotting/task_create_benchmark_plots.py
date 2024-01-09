@@ -1,12 +1,13 @@
 from copy import deepcopy
 
-import estimagic as em
 import pandas as pd
 import plotly.io as pio
 import pytask
 from estimagic import convergence_plot
 from estimagic import profile_plot
 from estimagic.visualization.deviation_plot import deviation_plot
+from tranquilo_dev.benchmarks.benchmark_problems import get_extended_benchmark_problems
+from tranquilo_dev.config import BENCHMARK_PROBLEMS_INFO
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import LABELS
 from tranquilo_dev.config import PLOT_CONFIG
@@ -97,7 +98,10 @@ for name, info in PLOT_CONFIG.items():
             for path in depends_on.values():
                 results = {**results, **pd.read_pickle(path)}
 
-            problems = em.get_benchmark_problems(**PROBLEM_SETS[info["problem_name"]])
+            problems = get_extended_benchmark_problems(
+                benchmark_kwargs=PROBLEM_SETS[info["problem_name"]],
+                **BENCHMARK_PROBLEMS_INFO,
+            )
 
             func_dict = {
                 "profile": profile_plot,

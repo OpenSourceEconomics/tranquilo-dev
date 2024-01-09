@@ -2,7 +2,9 @@ from copy import deepcopy
 
 import estimagic as em
 import pytask
+from tranquilo_dev.benchmarks.benchmark_problems import get_extended_benchmark_problems
 from tranquilo_dev.benchmarks.compat_mode import filter_tranquilo_benchmark
+from tranquilo_dev.config import BENCHMARK_PROBLEMS_INFO
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import COMPAT_MODE
 from tranquilo_dev.config import get_max_criterion_evaluations
@@ -17,7 +19,7 @@ from tranquilo_dev.config import TRANQUILO_CASES
 OUT = BLD / "benchmarks"
 
 for functype in ["scalar", "ls"]:
-    for problem_name, problem_kwargs in PROBLEM_SETS.items():
+    for problem_name in PROBLEM_SETS:
         algorithm = get_tranquilo_version(functype)
         scenario_name = f"{algorithm}_experimental"
         noisy = "noisy" in problem_name
@@ -40,7 +42,9 @@ for functype in ["scalar", "ls"]:
                     }
                 )
 
-            problems = em.get_benchmark_problems(**problem_kwargs)
+            problems = get_extended_benchmark_problems(
+                benchmark_kwargs=PROBLEM_SETS[problem_name], **BENCHMARK_PROBLEMS_INFO
+            )
 
             name = f"{problem_name}_{scenario_name}"
 

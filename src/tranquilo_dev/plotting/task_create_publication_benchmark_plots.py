@@ -1,8 +1,9 @@
-import estimagic as em
 import pandas as pd
 import pytask
 from estimagic import profile_plot
 from estimagic.visualization.deviation_plot import deviation_plot
+from tranquilo_dev.benchmarks.benchmark_problems import get_extended_benchmark_problems
+from tranquilo_dev.config import BENCHMARK_PROBLEMS_INFO
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import PLOT_CONFIG
 from tranquilo_dev.config import PROBLEM_SETS
@@ -27,6 +28,10 @@ for plot_type in ("profile_plot", "deviation_plot"):
         "noisy_benchmark",
         "scalar_vs_ls_benchmark",
     ):
+        # Skip task if benchmark is not specified in plotting config
+        if f"publication_{benchmark}" not in PLOT_CONFIG:
+            continue
+
         # Retrieve plotting info and function
         # ==============================================================================
         info = PLOT_CONFIG[f"publication_{benchmark}"]
@@ -39,7 +44,9 @@ for plot_type in ("profile_plot", "deviation_plot"):
             BLD.joinpath("benchmarks", f"{problem_name}_{scenario}.pkl")
             for scenario in info["scenarios"]
         ]
-        problems = em.get_benchmark_problems(**PROBLEM_SETS[problem_name])
+        problems = get_extended_benchmark_problems(
+            benchmark_kwargs=PROBLEM_SETS[problem_name], **BENCHMARK_PROBLEMS_INFO
+        )
 
         # Store variables in kwargs to pass to pytask
         # ==============================================================================
@@ -70,7 +77,7 @@ for plot_type in ("profile_plot", "deviation_plot"):
                 results = {**results, **pd.read_pickle(path)}
 
             plotly_fig = plot_func(problems=problems, results=results, **plot_kwargs)
-            plotting_data = get_data_from_plotly_figure(plotly_fig)
+            plotting_data = _get_data_from_plotly_figure(plotly_fig)
 
             fig = plot_benchmark(
                 plotting_data,
@@ -80,6 +87,6 @@ for plot_type in ("profile_plot", "deviation_plot"):
             fig.savefig(produces, bbox_inches="tight")
 
 
-def get_data_from_plotly_figure(fig):
+def _get_data_from_plotly_figure(fig):
     lines = fig.data
     return {line.name: {"x": line.x, "y": line.y} for line in lines}
