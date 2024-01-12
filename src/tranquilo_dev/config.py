@@ -35,6 +35,10 @@ RUN_PUBLICATION_CASES = True
 NOISY_Y_TOL = 0.01
 DETERMINISTIC_Y_TOL = 1e-3
 
+# Only the plot types specified here will be created. Plot types can be 'profile_plot',
+# 'deviation_plot', 'convergence_plot'.
+PLOT_TYPES = ("profile_plot",)
+
 
 def get_max_criterion_evaluations(noisy):
     return 5_000 if noisy else 2_000

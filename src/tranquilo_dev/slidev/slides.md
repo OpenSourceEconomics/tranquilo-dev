@@ -304,7 +304,7 @@ layout: center
 
 # Benchmark: Tranquilo vs. other optimizers
 
-<img src="bld_paper/profile_plots/scalar_and_ls.svg" class="rounded" width="700" />
+<img src="bld_paper/profile_plots/scalar_vs_ls_benchmark.svg" class="rounded" width="700" />
 
 
 ---
@@ -428,7 +428,7 @@ layout: center
 
 # Benchmark: Parallel tranquilo vs. DFO-LS
 
-<img src="bld_paper/profile_plots/parallelization_ls.svg" class="rounded" width="700" />
+<img src="bld_paper/profile_plots/parallel_benchmark.svg" class="rounded" width="700" />
 
 
 ---
@@ -588,7 +588,7 @@ layout: center
 
 # Benchmark: Noisy tranquilo vs. DFO-LS
 
-<img src="bld_paper/profile_plots/noisy_ls.svg" class="rounded" width="700" />
+<img src="bld_paper/profile_plots/noisy_benchmark.svg" class="rounded" width="700" />
 
 
 ---

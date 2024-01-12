@@ -7,6 +7,7 @@ from tranquilo_dev.benchmarks.benchmark_problems import get_extended_benchmark_p
 from tranquilo_dev.config import BENCHMARK_PROBLEMS_INFO
 from tranquilo_dev.config import BLD
 from tranquilo_dev.config import PLOT_CONFIG
+from tranquilo_dev.config import PLOT_TYPES
 from tranquilo_dev.config import PROBLEM_SETS
 from tranquilo_dev.plotting.benchmark_plotting_functions import plot_benchmark
 
@@ -25,7 +26,7 @@ ESTIMAGIC_PLOT_FUNCTIONS = {
 # Publication ready figures
 # ======================================================================================
 
-for plot_type in ("profile_plot", "deviation_plot", "convergence_plot"):
+for plot_type in PLOT_TYPES:
 
     plot_func = ESTIMAGIC_PLOT_FUNCTIONS[plot_type]
 
@@ -58,12 +59,18 @@ for plot_type in ("profile_plot", "deviation_plot", "convergence_plot"):
 
         task_id = f"{plot_type}_{benchmark}"
 
+        # We remove the prefix 'publication_' and 'development_' from the saved file
+        # name. Products are either a list with one (figures are saved only in pdf
+        # format) or two elements (figures are saved in pdf and svg format).
         if "publication_" in benchmark:
             _plot_name = benchmark.removeprefix("publication_")
-            produces = BLD_PAPER / f"{plot_type}s" / f"{_plot_name}.pdf"
+            produces = [
+                BLD_PAPER / f"{plot_type}s" / f"{_plot_name}.{suffix}"
+                for suffix in ("pdf", "svg")
+            ]
         elif "development_" in benchmark:
             _plot_name = benchmark.removeprefix("development_")
-            produces = BLD / "figures" / f"{plot_type}s" / f"{_plot_name}.pdf"
+            produces = [BLD / "figures" / f"{plot_type}s" / f"{_plot_name}.pdf"]
         else:
             raise ValueError(
                 f"Unknown plot: {benchmark}. Plots need to start with 'publication_' ",
@@ -94,7 +101,10 @@ for plot_type in ("profile_plot", "deviation_plot", "convergence_plot"):
                 plot=plot_type,
                 benchmark=benchmark,
             )
-            fig.savefig(produces, bbox_inches="tight")
+
+            # looping over potentially multiple file types
+            for path in list(produces.values()):
+                fig.savefig(path, bbox_inches="tight")
 
 
 def _get_data_from_plotly_figure(fig):
