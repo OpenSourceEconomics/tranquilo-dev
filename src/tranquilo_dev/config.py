@@ -196,7 +196,7 @@ _deterministic_plots = {
         "problem_name": "mw",
         "scenarios": [
             "tranquilo_ls_default",
-            # "tranquilo_ls_experimental",
+            "tranquilo_ls_experimental",
             "dfols",
         ],
         "profile_plot_options": {
@@ -226,6 +226,9 @@ _deterministic_plots = {
             "tranquilo_ls_parallel_2",
             "tranquilo_ls_parallel_4",
             "tranquilo_ls_parallel_8",
+            "tranquilo_ls_experimental_parallel_2",
+            "tranquilo_ls_experimental_parallel_4",
+            "tranquilo_ls_experimental_parallel_8",
             "dfols",
         ],
         "profile_plot_options": {
@@ -327,6 +330,7 @@ _noisy_plots = {
             "dfols_noisy_5",
             "dfols_noisy_10",
             "tranquilo_ls_default",
+            "tranquilo_ls_experimental",
         ],
         "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
         "convergence_plot_options": {"n_cols": 6},
