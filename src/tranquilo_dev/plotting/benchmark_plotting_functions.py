@@ -32,22 +32,51 @@ AXIS_LABELS = {
         "xlabel": "Computational budget",
         "ylabel": "Average distance to optimum (normalized)",
     },
+    "convergence_plot": {
+        "xlabel": "Computational budget",
+        "ylabel": "Criterion value",
+    },
 }
 
 X_RANGE = {
     "profile_plot": {
-        "scalar_benchmark": (1, 50),
-        "ls_benchmark": (1, 40),
-        "parallel_benchmark": (1, 6),
-        "noisy_benchmark": (1,),
-        "scalar_vs_ls_benchmark": (1, 50),
+        # Publication plots
+        "publication_scalar_benchmark": (1, 50),
+        "publication_ls_benchmark": (1, 40),
+        "publication_parallel_benchmark": (1, 6),
+        "publication_noisy_benchmark": (1, 50),
+        "publication_scalar_vs_ls_benchmark": (1, 50),
+        # Development plots
+        "development_competition_ls": (1,),
+        "development_competition_scalar": (1,),
+        "development_parallelization_ls": (1,),
+        "development_noisy_ls": (1,),
     },
     "deviation_plot": {
-        "scalar_benchmark": (0, 300),
-        "ls_benchmark": (0, 400),
-        "parallel_benchmark": (0, 50),
-        "noisy_benchmark": (0,),
-        "scalar_vs_ls_benchmark": (0, 500),
+        # Publication plots
+        "publication_scalar_benchmark": (0, 300),
+        "publication_ls_benchmark": (0, 400),
+        "publication_parallel_benchmark": (0, 50),
+        "publication_noisy_benchmark": (0, 5000),
+        "publication_scalar_vs_ls_benchmark": (0, 500),
+        # Development plots
+        "development_competition_ls": (0,),
+        "development_competition_scalar": (0,),
+        "development_parallelization_ls": (0,),
+        "development_noisy_ls": (0,),
+    },
+    "convergence_plot": {
+        # Publication plots
+        "publication_scalar_benchmark": (0,),
+        "publication_ls_benchmark": (0,),
+        "publication_parallel_benchmark": (0,),
+        "publication_noisy_benchmark": (0,),
+        "publication_scalar_vs_ls_benchmark": (0,),
+        # Development plots
+        "development_competition_ls": (0,),
+        "development_competition_scalar": (0,),
+        "development_parallelization_ls": (0,),
+        "development_noisy_ls": (0,),
     },
 }
 
@@ -77,6 +106,12 @@ TABLEAU_10_COLORS = {
     "blue-55": "#688ab1",
     "blue-35": "#3d5776",
     "blue-15": "#1a2532",
+    # Experimental tranquilo colors
+    "pink-70": "#ec7985",
+    "pink-60": "#e64d5c",
+    "pink-50": "#df2033",
+    "pink-40": "#b31929",
+    "pink-30": "#86131f",
 }
 
 
@@ -89,6 +124,9 @@ BASE_COLORS = {
     "NlOpt-Nelder-Mead": TABLEAU_10_COLORS["purple"],
     "SciPy-Nelder-Mead": TABLEAU_10_COLORS["brown"],
     "Pounders": TABLEAU_10_COLORS["gray"],
+    # Experimental tranquilo colors
+    "Tranquilo-Scalar (Experimental)": TABLEAU_10_COLORS["pink"],
+    "Tranquilo-LS (Experimental)": TABLEAU_10_COLORS["pink"],
 }
 
 PARALLEL_COLOR_UPDATES = {
@@ -96,6 +134,9 @@ PARALLEL_COLOR_UPDATES = {
     "Tranquilo-LS (2 cores)": TABLEAU_10_COLORS["blue-55"],
     "Tranquilo-LS (4 cores)": TABLEAU_10_COLORS["blue-35"],
     "Tranquilo-LS (8 cores)": TABLEAU_10_COLORS["blue-15"],
+    "Tranquilo-LS (Experimental, 2 cores)": TABLEAU_10_COLORS["pink-70"],
+    "Tranquilo-LS (Experimental, 4 cores)": TABLEAU_10_COLORS["pink-50"],
+    "Tranquilo-LS (Experimental, 8 cores)": TABLEAU_10_COLORS["pink-30"],
 }
 
 NOISY_COLOR_UPDATES = {
@@ -105,11 +146,17 @@ NOISY_COLOR_UPDATES = {
 }
 
 COLORS = {
-    "scalar_benchmark": BASE_COLORS,
-    "ls_benchmark": BASE_COLORS,
-    "parallel_benchmark": {**BASE_COLORS, **PARALLEL_COLOR_UPDATES},
-    "noisy_benchmark": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
-    "scalar_vs_ls_benchmark": BASE_COLORS,
+    # Publication plots
+    "publication_scalar_benchmark": BASE_COLORS,
+    "publication_ls_benchmark": BASE_COLORS,
+    "publication_parallel_benchmark": {**BASE_COLORS, **PARALLEL_COLOR_UPDATES},
+    "publication_noisy_benchmark": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
+    "publication_scalar_vs_ls_benchmark": BASE_COLORS,
+    # Development plots
+    "development_competition_ls": BASE_COLORS,
+    "development_competition_scalar": BASE_COLORS,
+    "development_parallelization_ls": {**BASE_COLORS, **PARALLEL_COLOR_UPDATES},
+    "development_noisy_ls": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
 }
 
 # Line width
@@ -117,14 +164,23 @@ COLORS = {
 DEFAULT_LINE_WIDTH = 1.5
 
 LINE_WIDTH_UPDATES = {
-    "parallel_benchmark": {
+    "publication_parallel_benchmark": {
         "Tranquilo-LS (2 cores)": 1.6,
         "Tranquilo-LS (4 cores)": 1.7,
         "Tranquilo-LS (8 cores)": 1.8,
     },
-    "noisy_benchmark": {
+    "publication_noisy_benchmark": {
         "DFO-LS (5 evals)": 1.6,
         "DFO-LS (10 evals)": 1.7,
+    },
+    "development_noisy_ls": {
+        "DFO-LS (5 evals)": 1.6,
+        "DFO-LS (10 evals)": 1.7,
+    },
+    "development_parallelization_ls": {
+        "Tranquilo-LS (Experimental, 2 cores)": 1.6,
+        "Tranquilo-LS (Experimental, 4 cores)": 1.7,
+        "Tranquilo-LS (Experimental, 8 cores)": 1.8,
     },
 }
 
@@ -132,38 +188,66 @@ LINE_WIDTH_UPDATES = {
 # ======================================================================================
 
 LEGEND_LABEL_ORDER = {
-    "scalar_benchmark": [
+    # Publication plots
+    "publication_scalar_benchmark": [
         "Tranquilo-Scalar",
         "NAG-BOBYQA",
         "NlOpt-BOBYQA",
         "NlOpt-Nelder-Mead",
         "SciPy-Nelder-Mead",
     ],
-    "ls_benchmark": [
+    "publication_ls_benchmark": [
         "Tranquilo-LS",
         "DFO-LS",
         "Pounders",
     ],
-    "parallel_benchmark": [
+    "publication_parallel_benchmark": [
         "Tranquilo-LS",
         "Tranquilo-LS (2 cores)",
         "Tranquilo-LS (4 cores)",
         "Tranquilo-LS (8 cores)",
         "DFO-LS",
     ],
-    "noisy_benchmark": [
+    "publication_noisy_benchmark": [
         "DFO-LS (3 evals)",
         "DFO-LS (5 evals)",
         "DFO-LS (10 evals)",
         "Tranquilo-LS",
     ],
-    "scalar_vs_ls_benchmark": [
+    "publication_scalar_vs_ls_benchmark": [
         "Tranquilo-LS",
         "DFO-LS",
         "Pounders",
         "Tranquilo-Scalar",
         "NlOpt-BOBYQA",
         "NlOpt-Nelder-Mead",
+    ],
+    # Development plots
+    "development_competition_ls": [
+        "Tranquilo-LS",
+        "Tranquilo-LS (Experimental)",
+        "DFO-LS",
+    ],
+    "development_competition_scalar": [
+        "Tranquilo-Scalar",
+        "Tranquilo-Scalar (Experimental)",
+        "NlOpt-BOBYQA",
+    ],
+    "development_parallelization_ls": [
+        "Tranquilo-LS (2 cores)",
+        "Tranquilo-LS (4 cores)",
+        "Tranquilo-LS (8 cores)",
+        "Tranquilo-LS (Experimental, 2 cores)",
+        "Tranquilo-LS (Experimental, 4 cores)",
+        "Tranquilo-LS (Experimental, 8 cores)",
+        "DFO-LS",
+    ],
+    "development_noisy_ls": [
+        "DFO-LS (3 evals)",
+        "DFO-LS (5 evals)",
+        "DFO-LS (10 evals)",
+        "Tranquilo-LS",
+        "Tranquilo-LS (Experimental)",
     ],
 }
 
@@ -187,7 +271,7 @@ def plot_benchmark(data, plot, benchmark):
         data (dict): Dictionary containing the data to plot. Keys represent a single
             line in the plot. The values are dictionaries with keys "x" and "y".
         plot (str): Name of the plot to create. Must be in {"deviation_plot",
-            "profile_plot"}.
+            "profile_plot", "convergence_plot"}.
         benchmark (str): Name of the benchmark.
 
     Returns:
@@ -241,7 +325,8 @@ def plot_benchmark(data, plot, benchmark):
     ax.xaxis.label.set_color(DARK_GRAY)
     ax.yaxis.label.set_color(DARK_GRAY)
     ax.set_xlim(*x_range)
-    ax.set_ylim(0, 1)
+    if plot != "convergence_plot":
+        ax.set_ylim(0, 1)
 
     return fig
 

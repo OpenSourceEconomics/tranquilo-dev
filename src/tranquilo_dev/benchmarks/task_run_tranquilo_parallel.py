@@ -3,10 +3,8 @@ from copy import deepcopy
 import estimagic as em
 import pytask
 from tranquilo_dev.benchmarks.benchmark_problems import get_extended_benchmark_problems
-from tranquilo_dev.benchmarks.compat_mode import filter_tranquilo_benchmark
 from tranquilo_dev.config import BENCHMARK_PROBLEMS_INFO
 from tranquilo_dev.config import BLD
-from tranquilo_dev.config import COMPAT_MODE
 from tranquilo_dev.config import get_max_criterion_evaluations
 from tranquilo_dev.config import get_max_iterations
 from tranquilo_dev.config import get_tranquilo_version
@@ -62,8 +60,5 @@ for batch_size in [2, 4, 8]:
                         max_criterion_evaluations=max_evals,  # noqa: B023
                         disable_convergence=False,
                     )
-
-                    if COMPAT_MODE:
-                        res = filter_tranquilo_benchmark(res)
 
                     em.utilities.to_pickle(res, produces)
