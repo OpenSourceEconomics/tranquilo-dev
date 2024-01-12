@@ -1,7 +1,4 @@
-from copy import deepcopy
-
 import pandas as pd
-import plotly.io as pio
 import pytask
 from estimagic import convergence_plot
 from estimagic import profile_plot
@@ -9,132 +6,107 @@ from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.benchmarks.benchmark_problems import get_extended_benchmark_problems
 from tranquilo_dev.config import BENCHMARK_PROBLEMS_INFO
 from tranquilo_dev.config import BLD
-from tranquilo_dev.config import LABELS
 from tranquilo_dev.config import PLOT_CONFIG
+from tranquilo_dev.config import PLOT_TYPES
 from tranquilo_dev.config import PROBLEM_SETS
-
-# Require a deepcopy since we will modify the labels
-LABELS = deepcopy(LABELS)
+from tranquilo_dev.plotting.benchmark_plotting_functions import plot_benchmark
 
 
-LINE_SETTINGS = {"parallelization_ls": {}, "noisy_ls": {}, "scalar_and_ls": {}}
+# We store all figures used in the paper in a specific folder that is then copied
+# entirely to the tranquilo-paper repository.
+BLD_PAPER = BLD.joinpath("bld_paper")
 
-tranquilo_scenarios = [
-    sc for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"] if "tranquilo" in sc
-]
-tranquilo_scenarios = sorted(tranquilo_scenarios, key=lambda x: int(x.split("_")[-1]))
-
-competitor = [
-    sc
-    for sc in PLOT_CONFIG["parallelization_ls"]["scenarios"]
-    if sc not in tranquilo_scenarios
-][0]
-LINE_SETTINGS["parallelization_ls"][competitor] = {
-    "line": {"color": "#e53935", "dash": "solid"},
+ESTIMAGIC_PLOT_FUNCTIONS = {
+    "profile_plot": profile_plot,
+    "deviation_plot": deviation_plot,
+    "convergence_plot": convergence_plot,
 }
 
-alphas = [0.38, 0.6, 1]
+# ======================================================================================
+# Publication ready figures
+# ======================================================================================
 
-for i, scenario in enumerate(tranquilo_scenarios):
-    LINE_SETTINGS["parallelization_ls"][scenario] = {
-        "line": {"color": "#014683", "dash": "solid"},
-        "opacity": alphas[i],
-    }
-    LABELS[scenario] = f"{LABELS['tranquilo']}-{scenario.split('_')[-1]}-Cores"
-dfols_scenarios = [sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if "dfols" in sc]
-dfols_scenarios = sorted(dfols_scenarios, key=lambda x: int(x.split("_")[-1]))
+for plot_type in PLOT_TYPES:
 
-tranquilo_noisy = [
-    sc for sc in PLOT_CONFIG["noisy_ls"]["scenarios"] if sc not in dfols_scenarios
-][0]
-LINE_SETTINGS["noisy_ls"][tranquilo_noisy] = {
-    "line": {"color": "#014683", "dash": "solid"},
-}
-LABELS[tranquilo_noisy] = LABELS[tranquilo_noisy]
+    plot_func = ESTIMAGIC_PLOT_FUNCTIONS[plot_type]
 
-for i, scenario in enumerate(dfols_scenarios):
-    LINE_SETTINGS["noisy_ls"][scenario] = {
-        "line": {"color": "#e53935", "dash": "solid"},
-        "opacity": alphas[i],
-    }
-    LABELS[scenario] = f"{LABELS['dfols']}-{scenario.split('_')[-1]}"
+    for benchmark, info in PLOT_CONFIG.items():
 
-LINE_SETTINGS["scalar_and_ls"]["dfols"] = {
-    "line": {"color": "#e53935", "dash": "solid"},
-}
+        # Retrieve plotting info and function
+        # ==============================================================================
+        problem_name = info["problem_name"]
+        plot_kwargs = info.get(f"{plot_type}_options", {})
 
-LINE_SETTINGS["scalar_and_ls"]["tranquilo_default"] = {
-    "line": {"color": "#014683", "dash": "solid"},
-    "opacity": 0.6,
-}
+        # Retrieve plotting data
+        # ==============================================================================
+        dependencies = [
+            BLD.joinpath("benchmarks", f"{problem_name}_{scenario}.pkl")
+            for scenario in info["scenarios"]
+        ]
+        problems = get_extended_benchmark_problems(
+            benchmark_kwargs=PROBLEM_SETS[problem_name], **BENCHMARK_PROBLEMS_INFO
+        )
 
-LINE_SETTINGS["scalar_and_ls"]["tranquilo_ls_default"] = {
-    "line": {"color": "#014683", "dash": "solid"},
-}
-LINE_SETTINGS["scalar_and_ls"]["nlopt_bobyqa"] = {
-    "line": {"color": "green", "dash": "solid"},
-}
-LINE_SETTINGS["scalar_and_ls"]["nlopt_neldermead"] = {
-    "line": {"color": "orange", "dash": "solid"},
-}
+        # Store variables in kwargs to pass to pytask
+        # ==============================================================================
+        kwargs = {
+            "plot_func": plot_func,
+            "plot_kwargs": plot_kwargs,
+            "problems": problems,
+            "plot_type": plot_type,
+            "benchmark": benchmark,
+        }
 
-for name, info in PLOT_CONFIG.items():
-    problem_name = info["problem_name"]
-    DEPS = {}
-    for scenario in info["scenarios"]:
-        DEPS[scenario] = BLD / "benchmarks" / f"{problem_name}_{scenario}.pkl"
+        task_id = f"{plot_type}_{benchmark}"
 
-    for plot_type in ["profile", "convergence", "deviation"]:
+        # We remove the prefix 'publication_' and 'development_' from the saved file
+        # name. Products are either a list with one (figures are saved only in pdf
+        # format) or two elements (figures are saved in pdf and svg format).
+        if "publication_" in benchmark:
+            _plot_name = benchmark.removeprefix("publication_")
+            produces = [
+                BLD_PAPER / f"{plot_type}s" / f"{_plot_name}.{suffix}"
+                for suffix in ("pdf", "svg")
+            ]
+        elif "development_" in benchmark:
+            _plot_name = benchmark.removeprefix("development_")
+            produces = [BLD / "figures" / f"{plot_type}s" / f"{_plot_name}.pdf"]
+        else:
+            raise ValueError(
+                f"Unknown plot: {benchmark}. Plots need to start with 'publication_' ",
+                "or 'development_'",
+            )
 
-        OUT = BLD / "figures" / f"{plot_type}_plots"
-
-        @pytask.mark.depends_on(DEPS)
-        @pytask.mark.produces(OUT / f"{name}.pdf")
-        @pytask.mark.task(id=f"{plot_type}_plot_{name}")
+        @pytask.mark.task(id=task_id, kwargs=kwargs)
+        @pytask.mark.depends_on(dependencies)
+        @pytask.mark.produces(produces)
         def task_create_benchmark_plots(
-            depends_on, produces, info=info, plot_type=plot_type, name=name
+            depends_on,
+            produces,
+            plot_func,
+            plot_kwargs,
+            problems,
+            plot_type,
+            benchmark,
         ):
             results = {}
             for path in depends_on.values():
                 results = {**results, **pd.read_pickle(path)}
 
-            problems = get_extended_benchmark_problems(
-                benchmark_kwargs=PROBLEM_SETS[info["problem_name"]],
-                **BENCHMARK_PROBLEMS_INFO,
+            plotly_fig = plot_func(problems=problems, results=results, **plot_kwargs)
+            plotting_data = _get_data_from_plotly_figure(plotly_fig)
+
+            fig = plot_benchmark(
+                plotting_data,
+                plot=plot_type,
+                benchmark=benchmark,
             )
 
-            func_dict = {
-                "profile": profile_plot,
-                "convergence": convergence_plot,
-                "deviation": deviation_plot,
-            }
+            # looping over potentially multiple file types
+            for path in list(produces.values()):
+                fig.savefig(path, bbox_inches="tight")
 
-            plot_func = func_dict[plot_type]
-            kwargs = info.get(f"{plot_type}_plot_options", {})
 
-            fig = plot_func(
-                problems=problems,
-                results=results,
-                **kwargs,
-            )
-            if plot_type == "profile":
-                if name in [
-                    "parallelization_ls",
-                    "noisy_ls",
-                    "scalar_and_ls",
-                ]:
-                    for trace_name, kwargs in LINE_SETTINGS[name].items():
-                        for trace in fig.data:
-                            if trace.name == trace_name:
-                                trace.update(kwargs)
-                                trace.update(name=LABELS[trace.name])
-                if name in ["competition_scalar", "competition_ls"]:
-                    for trace in fig.data:
-                        trace.update(name=LABELS[trace.name])
-
-                if name == "scalar_and_ls":
-                    fig.update_xaxes(range=[trace.x[0], trace.x[-8]])
-
-            # Deactivate warnings, that could otherwise be printed on the figure
-            pio.full_figure_for_development(fig, warn=False)
-            fig.write_image(produces)
+def _get_data_from_plotly_figure(fig):
+    lines = fig.data
+    return {line.name: {"x": line.x, "y": line.y} for line in lines}
