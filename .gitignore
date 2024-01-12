@@ -7,6 +7,11 @@
 bld/*
 bld/
 
+# slidev
+src/tranquilo_dev/slidev/node_modules/
+src/tranquilo_dev/slidev/public/bld_paper/*
+src/tranquilo_dev/slidev/public/bld_paper/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

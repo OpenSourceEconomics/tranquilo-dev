@@ -28,10 +28,16 @@ PUBLIC = BLD.joinpath("public").resolve()
 
 RUN_DETERMINISTIC = True
 RUN_NOISY = True
-COMPAT_MODE = False
+# `RUN_PUBLICATION` decides whether to run the benchmarks required for the publication
+# figures. Setting this to false can speed up the development process.
+RUN_PUBLICATION_CASES = True
 
 NOISY_Y_TOL = 0.01
 DETERMINISTIC_Y_TOL = 1e-3
+
+# Only the plot types specified here will be created. Plot types can be 'profile_plot',
+# 'deviation_plot', 'convergence_plot'.
+PLOT_TYPES = ("profile_plot",)
 
 
 def get_max_criterion_evaluations(noisy):
@@ -109,8 +115,11 @@ LABELS = {
     "tranquilo_ls_parallel_2": "Tranquilo-LS (2 cores)",
     "tranquilo_ls_parallel_4": "Tranquilo-LS (4 cores)",
     "tranquilo_ls_parallel_8": "Tranquilo-LS (8 cores)",
-    "tranquilo_experimental": "Tranquilo-Scalar-Experimental",
-    "tranquilo_ls_experimental": "Tranquilo-LS-Experimental",
+    "tranquilo_experimental": "Tranquilo-Scalar (Experimental)",
+    "tranquilo_ls_experimental": "Tranquilo-LS (Experimental)",
+    "tranquilo_ls_experimental_parallel_2": "Tranquilo-LS (Experimental, 2 cores)",
+    "tranquilo_ls_experimental_parallel_4": "Tranquilo-LS (Experimental, 4 cores)",
+    "tranquilo_ls_experimental_parallel_8": "Tranquilo-LS (Experimental, 8 cores)",
     # DFO-LS labels
     "dfols": "DFO-LS",
     "dfols_noisy_3": "DFO-LS (3 evals)",
@@ -179,12 +188,14 @@ COMPETITION = {
 }
 
 _deterministic_plots = {
-    "competition_scalar": {
+    # Development plots
+    # ==================================================================================
+    "development_competition_scalar": {
         "problem_name": "mw",
         "scenarios": [
             "tranquilo_default",
             "tranquilo_experimental",
-            "nag_bobyqa",
+            "nlopt_bobyqa",
         ],
         "profile_plot_options": {
             "y_precision": DETERMINISTIC_Y_TOL,
@@ -192,7 +203,7 @@ _deterministic_plots = {
         },
         "convergence_plot_options": {"n_cols": 6},
     },
-    "competition_ls": {
+    "development_competition_ls": {
         "problem_name": "mw",
         "scenarios": [
             "tranquilo_ls_default",
@@ -205,22 +216,7 @@ _deterministic_plots = {
         },
         "convergence_plot_options": {"n_cols": 6},
     },
-    "scalar_and_ls": {
-        "problem_name": "mw",
-        "scenarios": [
-            "dfols",
-            "tranquilo_ls_default",
-            "nlopt_bobyqa",
-            "tranquilo_default",
-            "nlopt_neldermead",
-        ],
-        "profile_plot_options": {
-            "y_precision": DETERMINISTIC_Y_TOL,
-            "normalize_runtime": True,
-        },
-        "convergence_plot_options": {"n_cols": 6},
-    },
-    "parallelization_ls": {
+    "development_parallelization_ls": {
         "problem_name": "mw",
         "scenarios": [
             "tranquilo_ls_parallel_2",
@@ -239,6 +235,8 @@ _deterministic_plots = {
         "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
         "deviation_plot_options": {"runtime_measure": "n_batches"},
     },
+    # Publication plots
+    # ==================================================================================
     "publication_scalar_benchmark": {
         "problem_name": "mw",
         "scenarios": [
@@ -303,7 +301,7 @@ _deterministic_plots = {
 }
 
 _noisy_plots = {
-    # "competition_scalar_noisy": {
+    # "development_competition_scalar_noisy": {
     #     "problem_name": "mw_noisy",
     #     "scenarios": [
     #         "tranquilo_default",
@@ -313,17 +311,7 @@ _noisy_plots = {
     #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},  # noqa: E501
     #     "convergence_plot_options": {"n_cols": 6},
     # },
-    # "competition_ls_noisy": {
-    #     "problem_name": "mw_noisy",
-    #     "scenarios": [
-    #         "tranquilo_ls_default",
-    #         "tranquilo_ls_experimental",
-    #         "dfols_noisy_5",
-    #     ],
-    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},  # noqa: E501
-    #     "convergence_plot_options": {"n_cols": 6},
-    # },
-    "noisy_ls": {
+    "development_noisy_ls": {
         "problem_name": "mw_noisy",
         "scenarios": [
             "dfols_noisy_3",
@@ -354,6 +342,12 @@ if RUN_DETERMINISTIC:
     PLOT_CONFIG.update(_deterministic_plots)
 if RUN_NOISY:
     PLOT_CONFIG.update(_noisy_plots)
+if not RUN_PUBLICATION_CASES:
+    PLOT_CONFIG = {
+        key: val
+        for key, val in PLOT_CONFIG.items()
+        if not key.startswith("publication_")
+    }
 
 
 UNUSED_PLOTS = {
