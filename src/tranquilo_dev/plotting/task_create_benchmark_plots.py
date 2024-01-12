@@ -64,6 +64,11 @@ for plot_type in ("profile_plot", "deviation_plot", "convergence_plot"):
         elif "development_" in benchmark:
             _plot_name = benchmark.removeprefix("development_")
             produces = BLD / "figures" / f"{plot_type}s" / f"{_plot_name}.pdf"
+        else:
+            raise ValueError(
+                f"Unknown plot: {benchmark}. Plots need to start with 'publication_' ",
+                "or 'development_'",
+            )
 
         @pytask.mark.task(id=task_id, kwargs=kwargs)
         @pytask.mark.depends_on(dependencies)

@@ -7,13 +7,19 @@ from tranquilo_dev.config import SRC
 
 PUBLIC = SRC / "slidev" / "public"
 
-for name in PLOT_CONFIG:
-    for plot_type in ["profile", "convergence", "deviation"]:
-        source_file = BLD / "figures" / f"{plot_type}_plots" / f"{name}.pdf"
-        dest_file = PUBLIC / "bld" / "figures" / f"{plot_type}_plots" / f"{name}.pdf"
+PUBLICATION_PLOTS = [name for name in PLOT_CONFIG if "publication_" in name]
+
+for plot_type in ("profile_plot", "deviation_plot", "convergence_plot"):
+
+    for plot_name in PUBLICATION_PLOTS:
+
+        _plot_name = plot_name.removeprefix("publication_")
+
+        source_file = BLD / "bld_paper" / f"{plot_type}s" / f"{_plot_name}.pdf"
+        dest_file = PUBLIC / "bld_paper" / f"{plot_type}_plots" / f"{_plot_name}.pdf"
 
         @pytask.mark.depends_on(source_file)
         @pytask.mark.produces(dest_file)
-        @pytask.mark.task(id=f"copy_{plot_type}_plot_{name}")
+        @pytask.mark.task(id=f"copy_{plot_type}_plot_{plot_name}")
         def task_copy_file(depends_on, produces):
             shutil.copyfile(depends_on, produces)
