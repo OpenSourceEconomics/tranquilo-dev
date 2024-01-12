@@ -30,7 +30,7 @@ RUN_DETERMINISTIC = True
 RUN_NOISY = True
 # `RUN_PUBLICATION` decides whether to run the benchmarks required for the publication
 # figures. Setting this to false can speed up the development process.
-RUN_PUBLICATION_CASES = False
+RUN_PUBLICATION_CASES = True
 
 NOISY_Y_TOL = 0.01
 DETERMINISTIC_Y_TOL = 1e-3
