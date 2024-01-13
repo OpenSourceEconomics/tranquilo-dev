@@ -60,6 +60,7 @@ for functype in ["scalar", "ls"]:
                     n_cores=N_CORES,
                     max_criterion_evaluations=max_evals,  # noqa: B023
                     disable_convergence=False,
+                    error_handling="raise",
                 )
 
                 em.utilities.to_pickle(res, produces)
