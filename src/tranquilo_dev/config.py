@@ -32,7 +32,7 @@ PUBLIC = BLD.joinpath("public").resolve()
 # Global Options
 # ======================================================================================
 @dataclass
-class _ProjectOptions:
+class ProjectOptions:
     """This class contains the global options of the project.
 
     The options are:
@@ -83,9 +83,9 @@ class _ProjectOptions:
         return hostnames_to_requested_cores.get(hostname, 1)
 
 
-# Set development options HERE not in the class above
+# Set development options HERE and not in the class above
 # ======================================================================================
-OPTIONS = _ProjectOptions(
+OPTIONS = ProjectOptions(
     PLOT_TYPES=("profile_plot",),
     PROBLEM_SETS=("more_wild",),
 )
@@ -111,27 +111,26 @@ TRANQUILO_BASE_OPTIONS = {
 }
 
 
-_BENCHMARK_PROBLEMS_INFO = {
-    "more_wild": {
-        # Number of additional draws per problem that are used to generate more
-        # problems. For each problems n_draws new start vectors are drawn in the
-        # vicinity of the original start vector, each defining a new problem.
-        "n_additional_draws": 0,
-        # Random number generator seed used to control the random draws.
-        "seed": 440219,
-    },
-    "cartis_roberts": {
-        "n_additional_draws": 0,
-        "seed": None,
-    },
-}
-
-
 def get_benchmark_problem_info(problem_set):
+    info = {
+        "more_wild": {
+            # Number of additional draws per problem that are used to generate more
+            # problems. For each problems n_draws new start vectors are drawn in the
+            # vicinity of the original start vector, each defining a new problem.
+            "n_additional_draws": 0,
+            # Random number generator seed used to control the random draws.
+            "seed": 440219,
+        },
+        "cartis_roberts": {
+            "n_additional_draws": 0,
+            "seed": None,
+        },
+    }
+
     if "mw" in problem_set:
-        out = _BENCHMARK_PROBLEMS_INFO["more_wild"]
+        out = info["more_wild"]
     elif "cr" in problem_set:
-        out = _BENCHMARK_PROBLEMS_INFO["cartis_roberts"]
+        out = info["cartis_roberts"]
     return out
 
 

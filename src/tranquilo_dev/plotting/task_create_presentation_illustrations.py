@@ -5,8 +5,10 @@ from tranquilo_dev.plotting.illustrations import create_other_illustration_plots
 
 BLD_SLIDEV = BLD.joinpath("bld_slidev")
 
+NOISE_PLOT_NAMES = [f"noise_plot_{k}.svg" for k in range(5)]
 
-@pytask.mark.produces({k: BLD_SLIDEV.joinpath(f"noise_plot_{k}.svg") for k in range(5)})
+
+@pytask.mark.produces([BLD_SLIDEV.joinpath(name) for name in NOISE_PLOT_NAMES])
 def task_create_noise_plots(produces):
     figures = create_noise_plots()
     for path, fig in zip(produces.values(), figures):
@@ -31,3 +33,6 @@ def task_create_other_illustration_plots(produces):
     figures = create_other_illustration_plots()
     for path in produces.values():
         figures[path.name].write_image(path)
+
+
+ILLUSTRATION_PLOT_NAMES = NOISE_PLOT_NAMES + OTHER_ILLUSTRATION_NAMES

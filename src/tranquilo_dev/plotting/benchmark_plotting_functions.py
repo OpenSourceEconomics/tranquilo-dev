@@ -109,6 +109,7 @@ LABELS = {
     "dfols_noisy_10": "DFO-LS (10 evals)",
     # Other labels
     "nag_bobyqa": "NAG-BOBYQA",
+    "nag_bobyqa_noisy_5": "NAG-BOBYQA (5 evals)",
     "nlopt_bobyqa": "NlOpt-BOBYQA",
     "nlopt_neldermead": "NlOpt-Nelder-Mead",
     "scipy_neldermead": "SciPy-Nelder-Mead",
@@ -179,6 +180,7 @@ NOISY_COLOR_UPDATES = {
     "DFO-LS (3 evals)": TABLEAU_10_COLORS["green-25"],
     "DFO-LS (5 evals)": TABLEAU_10_COLORS["green-50"],
     "DFO-LS (10 evals)": TABLEAU_10_COLORS["green-75"],
+    "NAG-BOBYQA (5 evals)": TABLEAU_10_COLORS["orange"],
 }
 
 COLORS = {
@@ -331,12 +333,13 @@ def plot_benchmark(data, plot_type, benchmark):
         matplotlib.figure.Figure: The matplotlib figure.
 
     """
-    # Split benchmark identifier into components
-    development_or_publication, _name = benchmark.split("_", 1)
-    benchmark_name, problem_name = _name.rsplit("_", 1)
+    dev_or_pub, problem_name, plot_name = _split_benchmark_id_in_components(benchmark)
 
     x_range = get_xrange(
-        plot_type, development_or_publication, problem_name, benchmark_name
+        plot_type=plot_type,
+        development_or_publication=dev_or_pub,
+        problem_name=problem_name,
+        plot_name=plot_name,
     )
     legend_label_order = LEGEND_LABEL_ORDER.get(benchmark, None)
 
@@ -348,12 +351,18 @@ def plot_benchmark(data, plot_type, benchmark):
         figsize=(_cm_to_inch(FIGURE_WIDTH_IN_CM), _cm_to_inch(FIGURE_HEIGHT_IN_CM))
     )
     for algo_name, line in data.items():
-        lw = get_linewidth(development_or_publication, benchmark_name, algo_name)
+
+        lw = get_linewidth(
+            development_or_publication=dev_or_pub,
+            plot_name=plot_name,
+            algo_name=algo_name,
+        )
+
         ax.plot(
             line["x"],
             line["y"],
             label=algo_name,
-            color=COLORS[development_or_publication][benchmark_name][algo_name],
+            color=COLORS[dev_or_pub][plot_name][algo_name],
             linewidth=lw,
         )
 
@@ -411,3 +420,24 @@ def _row_to_col_ordering(items, ncol):
 
     """
     return itertools.chain(*[items[i::ncol] for i in range(ncol)])
+
+
+def _split_benchmark_id_in_components(benchmark):
+    """Split the benchmark identifier into its components.
+
+    For noisy benchmark problems we remove the "_noisy" suffix of the problem set name,
+    because we treat noisy and regular problems as the same problem set.
+
+    Examples:
+    - publication_ls_benchmark_mw => (publication, ls_benchmark, mw)
+    - development_ls_benchmark_cr => (development, ls_benchmark, cr)
+    - development_noisy_benchmark_mw_noisy => (development, noisy_benchmark, mw)
+
+    """
+    development_or_publication, _other = benchmark.split("_", 1)
+    if _other.endswith("_noisy"):
+        plot_name, problem_name, _ = _other.rsplit("_", 2)
+    else:
+        plot_name, problem_name = _other.rsplit("_", 1)
+
+    return development_or_publication, problem_name, plot_name
