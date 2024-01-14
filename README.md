@@ -30,7 +30,7 @@ uncommented, i.e.
 
 Then continue to install the conda environment.
 
-> \[!TIP\] Check out
+> [!TIP] Check out
 > [this](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)
 > tutorial if you are new to conda, and if you need to install conda we recommend
 > installing [miniconda](https://docs.conda.io/projects/miniconda/en/latest/).
@@ -42,7 +42,7 @@ $ cd /into/tranquilo-dev/folder
 $ conda env create -f environment.yml
 ```
 
-> \[!IMPORTANT\] If you want to execute the code in this repository in parallel, open
+> [!IMPORTANT] If you want to execute the code in this repository in parallel, open
 > the file [`src/tranquilo_dev/config.py`](./src/tranquilo_dev/config.py) and set the
 > number of preferred cores when instantiating the project options like so:
 >
@@ -80,7 +80,7 @@ parent_folder
   - tranquilo-dev
 ```
 
-> \[!WARNING\] Do not alter the `environment.yml` file, as explained in Section
+> [!WARNING] Do not alter the `environment.yml` file, as explained in Section
 > [Reproducing the Results](#reproducing-the-results).
 
 Open a terminal and execute
