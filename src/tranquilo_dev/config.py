@@ -70,6 +70,8 @@ class ProjectOptions:
     PLOT_TYPES: tuple[str] = ("profile_plot", "convergence_plot", "deviation_plot")
     PROBLEM_SETS: tuple[str] = ("more_wild", "cartis_roberts")
 
+    N_CORES_DEFAULT: int = 1
+
     @property
     def n_cores(self):
         """Set the number of cores depending on the hostname."""
@@ -80,7 +82,7 @@ class ProjectOptions:
             "IZA-LAP479": 10,
         }
         hostname = socket.gethostname()
-        return hostnames_to_requested_cores.get(hostname, 1)
+        return hostnames_to_requested_cores.get(hostname, self.N_CORES_DEFAULT)
 
 
 # Set development options HERE and not in the class above
