@@ -239,7 +239,7 @@ layout: center
 transition: fade
 ---
 
-<img src="animation_0.svg" class="rounded" width="500" />
+<img src="bld_slidev/animation_0.svg" class="rounded" width="500" />
 
 
 ---
@@ -247,7 +247,7 @@ layout: center
 transition: fade
 ---
 
-<img src="animation_1.svg" class="rounded" width="500" />
+<img src="bld_slidev/animation_1.svg" class="rounded" width="500" />
 
 
 ---
@@ -255,7 +255,7 @@ layout: center
 transition: fade
 ---
 
-<img src="animation_2.svg" class="rounded" width="500" />
+<img src="bld_slidev/animation_2.svg" class="rounded" width="500" />
 
 
 ---
@@ -263,7 +263,7 @@ layout: center
 transition: fade
 ---
 
-<img src="animation_3.svg" class="rounded" width="500" />
+<img src="bld_slidev/animation_3.svg" class="rounded" width="500" />
 
 
 ---
@@ -271,7 +271,7 @@ layout: center
 transition: fade
 ---
 
-<img src="animation_4.svg" class="rounded" width="500" />
+<img src="bld_slidev/animation_4.svg" class="rounded" width="500" />
 
 
 ---
@@ -279,7 +279,7 @@ layout: center
 transition: fade
 ---
 
-<img src="animation_5.svg" class="rounded" width="500" />
+<img src="bld_slidev/animation_5.svg" class="rounded" width="500" />
 
 
 ---
@@ -304,7 +304,7 @@ layout: center
 
 # Benchmark: Tranquilo vs. other optimizers
 
-<img src="bld_paper/profile_plots/scalar_vs_ls_benchmark.svg" class="rounded" width="700" />
+<img src="bld_paper/profile_plots/scalar_vs_ls_benchmark_mw.svg" class="rounded" width="700" />
 
 
 ---
@@ -337,7 +337,7 @@ transition: fade
 
 # Idea 1: Parallel line search
 
-<img src="origin_plot.svg" class="rounded" width="400" />
+<img src="bld_slidev/origin_plot.svg" class="rounded" width="400" />
 
 
 ---
@@ -347,7 +347,7 @@ transition: fade
 
 # Idea 1: Parallel line search
 
-<img src="line_points_1.svg" class="rounded" width="400" />
+<img src="bld_slidev/line_points_1.svg" class="rounded" width="400" />
 
 
 ---
@@ -357,7 +357,7 @@ transition: fade
 
 # Idea 1: Parallel line search
 
-<img src="line_points_2.svg" class="rounded" width="400" />
+<img src="bld_slidev/line_points_2.svg" class="rounded" width="400" />
 
 
 ---
@@ -367,7 +367,7 @@ transition: fade
 
 # Idea 1: Parallel line search
 
-<img src="line_points_3.svg" class="rounded" width="400" />
+<img src="bld_slidev/line_points_3.svg" class="rounded" width="400" />
 
 
 ---
@@ -377,7 +377,7 @@ transition: fade
 
 # Idea 2: Speculative sampling
 
-<img src="origin_plot.svg" class="rounded" width="400" />
+<img src="bld_slidev/origin_plot.svg" class="rounded" width="400" />
 
 ---
 layout: center
@@ -386,7 +386,7 @@ transition: fade
 
 # Idea 2: Speculative sampling
 
-<img src="empty_speculative_trustregion_small_scale.svg" class="rounded" width="400" />
+<img src="bld_slidev/empty_speculative_trustregion_small_scale.svg" class="rounded" width="400" />
 
 
 ---
@@ -396,7 +396,7 @@ transition: fade
 
 # Idea 2: Speculative sampling
 
-<img src="sampled_speculative_trustregion_small_scale.svg" class="rounded" width="400" />
+<img src="bld_slidev/sampled_speculative_trustregion_small_scale.svg" class="rounded" width="400" />
 
 
 ---
@@ -419,7 +419,7 @@ layout: center
 
 # Line search + Speculation
 
-<img src="line_and_speculative_points.svg" class="rounded" width="400" />
+<img src="bld_slidev/line_and_speculative_points.svg" class="rounded" width="400" />
 
 
 ---
@@ -428,7 +428,7 @@ layout: center
 
 # Benchmark: Parallel tranquilo vs. DFO-LS
 
-<img src="bld_paper/profile_plots/parallel_benchmark.svg" class="rounded" width="700" />
+<img src="bld_paper/profile_plots/parallel_benchmark_mw.svg" class="rounded" width="700" />
 
 
 ---
@@ -471,7 +471,7 @@ transition: fade
 
 # Why is it hard to pick sample sizes?
 
-<img src="noise_plot_1.svg" class="rounded" width="450" />
+<img src="bld_slidev/noise_plot_1.svg" class="rounded" width="450" />
 
 ---
 layout: center
@@ -480,7 +480,7 @@ transition: fade
 
 # Why is it hard to pick sample sizes?
 
-<img src="noise_plot_2.svg" class="rounded" width="450" />
+<img src="bld_slidev/noise_plot_2.svg" class="rounded" width="450" />
 
 
 ---
@@ -490,7 +490,7 @@ transition: fade
 
 # Why is it hard to pick sample sizes?
 
-<img src="noise_plot_3.svg" class="rounded" width="450" />
+<img src="bld_slidev/noise_plot_3.svg" class="rounded" width="450" />
 
 
 ---
@@ -588,7 +588,7 @@ layout: center
 
 # Benchmark: Noisy tranquilo vs. DFO-LS
 
-<img src="bld_paper/profile_plots/noisy_benchmark.svg" class="rounded" width="700" />
+<img src="bld_paper/profile_plots/noisy_benchmark_mw_noisy.svg" class="rounded" width="700" />
 
 
 ---

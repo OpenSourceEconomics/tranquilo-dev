@@ -3,12 +3,12 @@ from copy import deepcopy
 import estimagic as em
 import pytask
 from tranquilo_dev.benchmarks.benchmark_problems import get_extended_benchmark_problems
-from tranquilo_dev.config import BENCHMARK_PROBLEMS_INFO
 from tranquilo_dev.config import BLD
+from tranquilo_dev.config import get_benchmark_problem_info
 from tranquilo_dev.config import get_max_criterion_evaluations
 from tranquilo_dev.config import get_max_iterations
 from tranquilo_dev.config import get_tranquilo_version
-from tranquilo_dev.config import N_CORES
+from tranquilo_dev.config import OPTIONS
 from tranquilo_dev.config import PROBLEM_SETS
 from tranquilo_dev.config import TRANQUILO_BASE_OPTIONS
 from tranquilo_dev.config import TRANQUILO_CASES
@@ -40,8 +40,10 @@ for functype in ["scalar", "ls"]:
                     }
                 )
 
+            benchmark_info = get_benchmark_problem_info(problem_name)
+
             problems = get_extended_benchmark_problems(
-                benchmark_kwargs=PROBLEM_SETS[problem_name], **BENCHMARK_PROBLEMS_INFO
+                benchmark_kwargs=PROBLEM_SETS[problem_name], **benchmark_info
             )
 
             name = f"{problem_name}_{scenario_name}"
@@ -57,7 +59,7 @@ for functype in ["scalar", "ls"]:
                 res = em.run_benchmark(
                     problems=problems,
                     optimize_options={scenario_name: optimize_options},
-                    n_cores=N_CORES,
+                    n_cores=OPTIONS.n_cores,
                     max_criterion_evaluations=max_evals,  # noqa: B023
                     disable_convergence=False,
                     error_handling="raise",

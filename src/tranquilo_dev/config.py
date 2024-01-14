@@ -6,9 +6,6 @@ PROBLEM_SETS: This is a dictionary that defines the problems that can be used in
 benchmarks. The keys are names, the values are dictionaries with keyword arguments for
 `em.get_benchmark_problems`.
 
-BENCHMARK_PROBLEMS_INFO: This is a dictionary that defines how many additional problems
-are generated for each problem in PROBLEM_SETS. The keys are "n_draws" and "seed".
-
 COMPETITION: This is a dictionary that defines the optimizer configurations against
 which we want to compare tranquilo. The keys are the names of the optimizer
 configurations, the values are dictionaries with keyword arguments for the minimization.
@@ -19,25 +16,81 @@ run.
 
 """
 import socket
+from dataclasses import dataclass
 from pathlib import Path
 
+# ======================================================================================
+# Paths
+# ======================================================================================
 SRC = Path(__file__).parent.resolve()
 ROOT = SRC.joinpath("..", "..").resolve()
 BLD = ROOT.joinpath("bld").resolve()
 PUBLIC = BLD.joinpath("public").resolve()
 
-RUN_DETERMINISTIC = True
-RUN_NOISY = True
-# `RUN_PUBLICATION` decides whether to run the benchmarks required for the publication
-# figures. Setting this to false can speed up the development process.
-RUN_PUBLICATION_CASES = True
 
-NOISY_Y_TOL = 0.01
-DETERMINISTIC_Y_TOL = 1e-3
+# ======================================================================================
+# Global Options
+# ======================================================================================
+@dataclass
+class ProjectOptions:
+    """This class contains the global options of the project.
 
-# Only the plot types specified here will be created. Plot types can be 'profile_plot',
-# 'deviation_plot', 'convergence_plot'.
-PLOT_TYPES = ("profile_plot",)
+    The options are:
+        - RUN_DETERMINISTIC (bool): Whether to run the deterministic benchmarks.
+        - RUN_NOISY (bool): Whether to run the noisy benchmarks.
+
+        - RUN_PUBLICATION_CASES (bool): Whether to run the benchmarks required for the
+        publication figures.
+        - RUN_DEVELOPMENT_CASES (bool): Whether to run the benchmarks required for the
+        development figures.
+
+        - DETERMINISTIC_Y_TOL (float): The tolerance for the deterministic benchmarks.
+        - NOISY_Y_TOL (float): The tolerance for the noisy benchmarks.
+
+        - PLOT_TYPES (tuple): The plot types that are being created. Must be an iterable
+        with entries from {"profile_plot", "convergence_plot", "deviation_plot"}.
+
+        - PROBLEM_SETS (tuple): The problem sets that are being used. Must be an
+        iterable with entries from {"more_wild", "cartis_roberts"}.
+
+    """
+
+    # Do not alter the default values of this class for development purposes. Instead
+    # set the options in the class instantiation below.
+
+    RUN_DETERMINISTIC: bool = True
+    RUN_NOISY: bool = True
+
+    RUN_PUBLICATION_CASES: bool = True
+    RUN_DEVELOPMENT_CASES: bool = True
+
+    DETERMINISTIC_Y_TOL: float = 1e-3
+    NOISY_Y_TOL: float = 0.01
+
+    PLOT_TYPES: tuple[str] = ("profile_plot", "convergence_plot", "deviation_plot")
+    PROBLEM_SETS: tuple[str] = ("more_wild", "cartis_roberts")
+
+    N_CORES_DEFAULT: int = 1
+
+    @property
+    def n_cores(self):
+        """Set the number of cores depending on the hostname."""
+        hostnames_to_requested_cores = {
+            # Tim's thinkpad
+            "thinky": 16,
+            # Janos' thinkpad
+            "IZA-LAP479": 10,
+        }
+        hostname = socket.gethostname()
+        return hostnames_to_requested_cores.get(hostname, self.N_CORES_DEFAULT)
+
+
+# Set development options HERE and not in the class above
+# ======================================================================================
+OPTIONS = ProjectOptions(
+    PLOT_TYPES=("profile_plot",),
+    PROBLEM_SETS=("more_wild",),
+)
 
 
 def get_max_criterion_evaluations(noisy):
@@ -52,22 +105,58 @@ def get_tranquilo_version(functype):
     return "tranquilo" if functype == "scalar" else "tranquilo_ls"
 
 
-def get_n_cores():
-    """Set the number of cores depending on the hostname."""
-    mapping = {
-        # Tim's thinkpad
-        "thinky": 16,
-        # Janos' thinkpad
-        "IZA-LAP479": 10,
+TRANQUILO_BASE_OPTIONS = {
+    "algo_options": {
+        "disable_convergence": False,
+        "silence_experimental_warning": True,
+    },
+}
+
+
+def get_benchmark_problem_info(problem_set):
+    info = {
+        "more_wild": {
+            # Number of additional draws per problem that are used to generate more
+            # problems. For each problems n_draws new start vectors are drawn in the
+            # vicinity of the original start vector, each defining a new problem.
+            "n_additional_draws": 4,
+            # Random number generator seed used to control the random draws.
+            "seed": 440219,
+        },
+        "cartis_roberts": {
+            "n_additional_draws": 0,
+            "seed": None,
+        },
     }
 
-    hostname = socket.gethostname()
+    if "mw" in problem_set:
+        out = info["more_wild"]
+    elif "cr" in problem_set:
+        out = info["cartis_roberts"]
+    return out
 
-    n_cores = mapping.get(hostname, 6)
-    return n_cores
 
+# ======================================================================================
+# Benchmark sets and configurations
+# ======================================================================================
 
-N_CORES = get_n_cores()
+# Exclude the following problems from the cartis_roberts set because their solution
+# is undefined. See the cartis_roberts.py module in estimagic for reference.
+_exlude_from_cartis_roberts = [
+    "artif",
+    "chandheq",
+    "chemrcta",
+    "drcavty1",
+    "flosp2hh",
+    "flosp2hl",
+    "flosp2hm",
+    "flosp2th",
+    "flosp2tl",
+    "flosp2tm",
+    "luksan12",
+    "luksan17",
+    "penalty_1",
+]
 
 PROBLEM_SETS = {
     "mw": {
@@ -76,24 +165,30 @@ PROBLEM_SETS = {
     },
     "mw_noisy": {
         "name": "more_wild",
-        "exclude": "brown_almost_linear_medium",
+        "exclude": ["brown_almost_linear_medium"],
+        "additive_noise": True,
+        "additive_noise_options": {"distribution": "normal", "std": 1.2},
+        "seed": 925408,
+    },
+    "cr": {
+        "name": "cartis_roberts",
+        "exclude": _exlude_from_cartis_roberts,
+    },
+    "cr_noisy": {
+        "name": "cartis_roberts",
+        "exclude": _exlude_from_cartis_roberts,
         "additive_noise": True,
         "additive_noise_options": {"distribution": "normal", "std": 1.2},
         "seed": 925408,
     },
 }
 
-
-BENCHMARK_PROBLEMS_INFO = {
-    # Number of additional draws per problem that are used to generate more problems.
-    # For each problems n_draws new start vectors are drawn in the vicinity of the
-    # original start vector, each defining a new problem.
-    "n_additional_draws": 4,
-    # Random number generator seed used to control the random draws.
-    "seed": 440219,
-}
+# ======================================================================================
+# Define competition. These are the optimizers against which tranquilo is compared.
+# ======================================================================================
 
 
+# Create evaluation functions for DFO-LS noisy cases
 def _n_evals_5(*args, **kwargs):  # noqa: U100
     return 5
 
@@ -104,35 +199,6 @@ def _n_evals_3(*args, **kwargs):  # noqa: U100
 
 def _n_evals_10(*args, **kwargs):  # noqa: U100
     return 10
-
-
-LABELS = {
-    # Tranquilo labels
-    "tranquilo": "Tranquilo-Scalar",
-    "tranquilo_default": "Tranquilo-Scalar",
-    "tranquilo_ls": "Tranquilo-LS",
-    "tranquilo_ls_default": "Tranquilo-LS",
-    "tranquilo_ls_parallel_2": "Tranquilo-LS (2 cores)",
-    "tranquilo_ls_parallel_4": "Tranquilo-LS (4 cores)",
-    "tranquilo_ls_parallel_8": "Tranquilo-LS (8 cores)",
-    "tranquilo_experimental": "Tranquilo-Scalar (Experimental)",
-    "tranquilo_ls_experimental": "Tranquilo-LS (Experimental)",
-    "tranquilo_ls_experimental_parallel_2": "Tranquilo-LS (Experimental, 2 cores)",
-    "tranquilo_ls_experimental_parallel_4": "Tranquilo-LS (Experimental, 4 cores)",
-    "tranquilo_ls_experimental_parallel_8": "Tranquilo-LS (Experimental, 8 cores)",
-    # DFO-LS labels
-    "dfols": "DFO-LS",
-    "dfols_noisy_3": "DFO-LS (3 evals)",
-    "dfols_noisy_5": "DFO-LS (5 evals)",
-    "dfols_noisy_10": "DFO-LS (10 evals)",
-    # Other labels
-    "nag_bobyqa": "NAG-BOBYQA",
-    "nlopt_bobyqa": "NlOpt-BOBYQA",
-    "nlopt_neldermead": "NlOpt-Nelder-Mead",
-    "scipy_neldermead": "SciPy-Nelder-Mead",
-    "tao_pounders": "TAO-Pounders",
-    "pounders": "Pounders",
-}
 
 
 COMPETITION = {
@@ -187,190 +253,247 @@ COMPETITION = {
     },
 }
 
+# ======================================================================================
+# Plotting configuration
+# --------------------------------------------------------------------------------------
+# Note that keys for each plot configuration must adhere to the convention that they
+# either start with "publication_" or "development_". Developments plots are stored
+# in bld/figures while publication plots are stored in bld/bld_paper. Running
+# experiments should be done with development plots.
+# ======================================================================================
+
 _deterministic_plots = {
-    # Development plots
+    # Development / Experimental cases
     # ==================================================================================
-    "development_competition_scalar": {
-        "problem_name": "mw",
-        "scenarios": [
-            "tranquilo_default",
-            "tranquilo_experimental",
-            "nlopt_bobyqa",
-        ],
-        "profile_plot_options": {
-            "y_precision": DETERMINISTIC_Y_TOL,
-            "normalize_runtime": True,
+    "development": {
+        "scalar_benchmark": {
+            "scenarios": [
+                "tranquilo_default",
+                "tranquilo_experimental",
+                "nlopt_bobyqa",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.DETERMINISTIC_Y_TOL,
+                "normalize_runtime": True,
+            },
+            "convergence_plot_options": {"n_cols": 6},
         },
-        "convergence_plot_options": {"n_cols": 6},
-    },
-    "development_competition_ls": {
-        "problem_name": "mw",
-        "scenarios": [
-            "tranquilo_ls_default",
-            "tranquilo_ls_experimental",
-            "dfols",
-        ],
-        "profile_plot_options": {
-            "y_precision": DETERMINISTIC_Y_TOL,
-            "normalize_runtime": True,
+        "ls_benchmark": {
+            "scenarios": [
+                "tranquilo_ls_default",
+                "tranquilo_ls_experimental",
+                "dfols",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.DETERMINISTIC_Y_TOL,
+                "normalize_runtime": True,
+            },
+            "convergence_plot_options": {"n_cols": 6},
         },
-        "convergence_plot_options": {"n_cols": 6},
-    },
-    "development_parallelization_ls": {
-        "problem_name": "mw",
-        "scenarios": [
-            "tranquilo_ls_parallel_2",
-            "tranquilo_ls_parallel_4",
-            "tranquilo_ls_parallel_8",
-            "tranquilo_ls_experimental_parallel_2",
-            "tranquilo_ls_experimental_parallel_4",
-            "tranquilo_ls_experimental_parallel_8",
-            "dfols",
-        ],
-        "profile_plot_options": {
-            "y_precision": DETERMINISTIC_Y_TOL,
-            "normalize_runtime": True,
-            "runtime_measure": "n_batches",
+        "parallel_benchmark": {
+            "scenarios": [
+                "tranquilo_ls_parallel_2",
+                "tranquilo_ls_parallel_4",
+                "tranquilo_ls_parallel_8",
+                "tranquilo_ls_experimental_parallel_2",
+                "tranquilo_ls_experimental_parallel_4",
+                "tranquilo_ls_experimental_parallel_8",
+                "dfols",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.DETERMINISTIC_Y_TOL,
+                "normalize_runtime": True,
+                "runtime_measure": "n_batches",
+            },
+            "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
+            "deviation_plot_options": {"runtime_measure": "n_batches"},
         },
-        "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
-        "deviation_plot_options": {"runtime_measure": "n_batches"},
     },
-    # Publication plots
+    # Publication / Presentation cases
     # ==================================================================================
-    "publication_scalar_benchmark": {
-        "problem_name": "mw",
-        "scenarios": [
-            "tranquilo_default",
-            "nag_bobyqa",
-            "nlopt_bobyqa",
-            "nlopt_neldermead",
-            "scipy_neldermead",
-        ],
-        "profile_plot_options": {
-            "y_precision": DETERMINISTIC_Y_TOL,
-            "normalize_runtime": True,
+    "publication": {
+        "scalar_benchmark": {
+            "scenarios": [
+                "tranquilo_default",
+                "nag_bobyqa",
+                "nlopt_bobyqa",
+                "nlopt_neldermead",
+                "scipy_neldermead",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.DETERMINISTIC_Y_TOL,
+                "normalize_runtime": True,
+            },
+            "convergence_plot_options": {"n_cols": 6},
         },
-        "convergence_plot_options": {"n_cols": 6},
-    },
-    "publication_ls_benchmark": {
-        "problem_name": "mw",
-        "scenarios": [
-            "tranquilo_ls_default",
-            "dfols",
-            "pounders",
-        ],
-        "profile_plot_options": {
-            "y_precision": DETERMINISTIC_Y_TOL,
-            "normalize_runtime": True,
+        "ls_benchmark": {
+            "scenarios": [
+                "tranquilo_ls_default",
+                "dfols",
+                "pounders",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.DETERMINISTIC_Y_TOL,
+                "normalize_runtime": True,
+            },
+            "convergence_plot_options": {"n_cols": 6},
         },
-        "convergence_plot_options": {"n_cols": 6},
-    },
-    "publication_parallel_benchmark": {
-        "problem_name": "mw",
-        "scenarios": [
-            "tranquilo_ls_default",
-            "tranquilo_ls_parallel_2",
-            "tranquilo_ls_parallel_4",
-            "tranquilo_ls_parallel_8",
-            "dfols",
-        ],
-        "profile_plot_options": {
-            "y_precision": DETERMINISTIC_Y_TOL,
-            "normalize_runtime": True,
-            "runtime_measure": "n_batches",
+        "parallel_benchmark": {
+            "scenarios": [
+                "tranquilo_ls_default",
+                "tranquilo_ls_parallel_2",
+                "tranquilo_ls_parallel_4",
+                "tranquilo_ls_parallel_8",
+                "dfols",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.DETERMINISTIC_Y_TOL,
+                "normalize_runtime": True,
+                "runtime_measure": "n_batches",
+            },
+            "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
+            "deviation_plot_options": {"runtime_measure": "n_batches"},
         },
-        "convergence_plot_options": {"n_cols": 6, "runtime_measure": "n_batches"},
-        "deviation_plot_options": {"runtime_measure": "n_batches"},
-    },
-    "publication_scalar_vs_ls_benchmark": {
-        "problem_name": "mw",
-        "scenarios": [
-            "dfols",
-            "tranquilo_default",
-            "tranquilo_ls_default",
-            "nlopt_bobyqa",
-            "nlopt_neldermead",
-            "pounders",
-        ],
-        "profile_plot_options": {
-            "y_precision": DETERMINISTIC_Y_TOL,
-            "normalize_runtime": True,
+        "scalar_vs_ls_benchmark": {
+            "scenarios": [
+                "dfols",
+                "tranquilo_default",
+                "tranquilo_ls_default",
+                "nlopt_bobyqa",
+                "nlopt_neldermead",
+                "pounders",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.DETERMINISTIC_Y_TOL,
+                "normalize_runtime": True,
+            },
+            "convergence_plot_options": {"n_cols": 6},
         },
-        "convergence_plot_options": {"n_cols": 6},
     },
 }
 
 _noisy_plots = {
-    # "development_competition_scalar_noisy": {
-    #     "problem_name": "mw_noisy",
-    #     "scenarios": [
-    #         "tranquilo_default",
-    #         "tranquilo_experimental",
-    #         "nag_bobyqa_noisy_5",
-    #     ],
-    #     "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},  # noqa: E501
-    #     "convergence_plot_options": {"n_cols": 6},
-    # },
-    "development_noisy_ls": {
-        "problem_name": "mw_noisy",
-        "scenarios": [
-            "dfols_noisy_3",
-            "dfols_noisy_5",
-            "dfols_noisy_10",
-            "tranquilo_ls_default",
-            "tranquilo_ls_experimental",
-        ],
-        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
-        "convergence_plot_options": {"n_cols": 6},
+    # Development / Experimental cases
+    # ==================================================================================
+    "development": {
+        "noisy_scalar_benchmark": {
+            "scenarios": [
+                "tranquilo_default",
+                "tranquilo_experimental",
+                "nag_bobyqa_noisy_5",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.NOISY_Y_TOL,
+                "normalize_runtime": True,
+            },
+            "convergence_plot_options": {"n_cols": 6},
+        },
+        "noisy_benchmark": {
+            "scenarios": [
+                "dfols_noisy_3",
+                "dfols_noisy_5",
+                "dfols_noisy_10",
+                "tranquilo_ls_default",
+                "tranquilo_ls_experimental",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.NOISY_Y_TOL,
+                "normalize_runtime": True,
+            },
+            "convergence_plot_options": {"n_cols": 6},
+        },
     },
-    "publication_noisy_benchmark": {
-        "problem_name": "mw_noisy",
-        "scenarios": [
-            "dfols_noisy_3",
-            "dfols_noisy_5",
-            "dfols_noisy_10",
-            "tranquilo_ls_default",
-        ],
-        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
-        "convergence_plot_options": {"n_cols": 6},
+    # Publication / Presentation cases
+    # ==================================================================================
+    "publication": {
+        "noisy_benchmark": {
+            "scenarios": [
+                "dfols_noisy_3",
+                "dfols_noisy_5",
+                "dfols_noisy_10",
+                "tranquilo_ls_default",
+            ],
+            "profile_plot_options": {
+                "y_precision": OPTIONS.NOISY_Y_TOL,
+                "normalize_runtime": True,
+            },
+            "convergence_plot_options": {"n_cols": 6},
+        },
     },
 }
 
 
-PLOT_CONFIG = {}
-if RUN_DETERMINISTIC:
-    PLOT_CONFIG.update(_deterministic_plots)
-if RUN_NOISY:
-    PLOT_CONFIG.update(_noisy_plots)
-if not RUN_PUBLICATION_CASES:
-    PLOT_CONFIG = {
-        key: val
-        for key, val in PLOT_CONFIG.items()
-        if not key.startswith("publication_")
+# ======================================================================================
+# Consolidate configuration
+# ======================================================================================
+def _add_problem_name_to_configs(plot_config, problem_name, development_or_publication):
+    """Add id of the problem set to the plot configuration.
+
+    New name of a plot configuration would look like:
+
+    - "development_scalar_benchmark_mw"
+    - "publication_ls_benchmark_mw"
+    - "development_scalar_benchmark_mw_noisy"
+    - ...
+
+    """
+    updated = {}
+    for plot_name, info in plot_config.items():
+        name = f"{development_or_publication}_{plot_name}_{problem_name}"
+        updated[name] = {**info, "problem_name": problem_name}
+    return updated
+
+
+def _get_problem_name(problem_set, noisy):
+    mapping = {
+        "more_wild": "mw",
+        "cartis_roberts": "cr",
     }
+    name = mapping[problem_set]
+    return f"{name}_noisy" if noisy else name
 
 
-UNUSED_PLOTS = {
-    "noisy": {
-        "problem_name": "mw_noisy",
-        "scenarios": [
-            "nag_bobyqa_noisy_3",
-            "nag_bobyqa_noisy_5",
-            "nag_bobyqa_noisy_10",
-            "tranquilo_default",
-        ],
-        "profile_plot_options": {"y_precision": NOISY_Y_TOL, "normalize_runtime": True},
-        "convergence_plot_options": {"n_cols": 6},
-    },
-}
+# Collect all plots that we actually want to run
+# ======================================================================================
+PLOT_CONFIG = {}
 
+for problem_set in OPTIONS.PROBLEM_SETS:
 
-TRANQUILO_BASE_OPTIONS = {
-    "algo_options": {
-        "disable_convergence": False,
-        "silence_experimental_warning": True,
-    },
-}
+    if OPTIONS.RUN_DETERMINISTIC:
+
+        if OPTIONS.RUN_PUBLICATION_CASES:
+            _updated_configs = _add_problem_name_to_configs(
+                _deterministic_plots["publication"],
+                problem_name=_get_problem_name(problem_set, noisy=False),
+                development_or_publication="publication",
+            )
+            PLOT_CONFIG.update(_updated_configs)
+
+        if OPTIONS.RUN_DEVELOPMENT_CASES:
+            _updated_configs = _add_problem_name_to_configs(
+                _deterministic_plots["development"],
+                problem_name=_get_problem_name(problem_set, noisy=False),
+                development_or_publication="development",
+            )
+            PLOT_CONFIG.update(_updated_configs)
+
+    if OPTIONS.RUN_NOISY:
+
+        if OPTIONS.RUN_PUBLICATION_CASES:
+            _updated_configs = _add_problem_name_to_configs(
+                _noisy_plots["publication"],
+                problem_name=_get_problem_name(problem_set, noisy=True),
+                development_or_publication="publication",
+            )
+            PLOT_CONFIG.update(_updated_configs)
+
+        if OPTIONS.RUN_DEVELOPMENT_CASES:
+            _updated_configs = _add_problem_name_to_configs(
+                _noisy_plots["development"],
+                problem_name=_get_problem_name(problem_set, noisy=True),
+                development_or_publication="development",
+            )
+            PLOT_CONFIG.update(_updated_configs)
 
 
 BENCHMARK_CASES = []
