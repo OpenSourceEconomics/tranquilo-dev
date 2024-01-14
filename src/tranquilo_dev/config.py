@@ -67,8 +67,8 @@ class _ProjectOptions:
     DETERMINISTIC_Y_TOL: float = 1e-3
     NOISY_Y_TOL: float = 0.01
 
-    PLOT_TYPES: tuple[str] = ("profile_plot",)
-    PROBLEM_SETS: tuple[str] = ("more_wild",)
+    PLOT_TYPES: tuple[str] = ("profile_plot", "convergence_plot", "deviation_plot")
+    PROBLEM_SETS: tuple[str] = ("more_wild", "cartis_roberts")
 
     @property
     def n_cores(self):
@@ -85,7 +85,10 @@ class _ProjectOptions:
 
 # Set development options HERE not in the class above
 # ======================================================================================
-OPTIONS = _ProjectOptions(RUN_NOISY=False, RUN_DEVELOPMENT_CASES=False)
+OPTIONS = _ProjectOptions(
+    PLOT_TYPES=("profile_plot",),
+    PROBLEM_SETS=("more_wild",),
+)
 
 
 def get_max_criterion_evaluations(noisy):
@@ -262,7 +265,7 @@ _deterministic_plots = {
     # Development / Experimental cases
     # ==================================================================================
     "development": {
-        "competition_scalar": {
+        "scalar_benchmark": {
             "scenarios": [
                 "tranquilo_default",
                 "tranquilo_experimental",
@@ -274,7 +277,7 @@ _deterministic_plots = {
             },
             "convergence_plot_options": {"n_cols": 6},
         },
-        "competition_ls": {
+        "ls_benchmark": {
             "scenarios": [
                 "tranquilo_ls_default",
                 "tranquilo_ls_experimental",
@@ -286,7 +289,7 @@ _deterministic_plots = {
             },
             "convergence_plot_options": {"n_cols": 6},
         },
-        "parallelization_ls": {
+        "parallel_benchmark": {
             "scenarios": [
                 "tranquilo_ls_parallel_2",
                 "tranquilo_ls_parallel_4",
@@ -372,7 +375,7 @@ _noisy_plots = {
     # Development / Experimental cases
     # ==================================================================================
     "development": {
-        "competition_scalar_noisy": {
+        "noisy_scalar_benchmark": {
             "scenarios": [
                 "tranquilo_default",
                 "tranquilo_experimental",
@@ -384,7 +387,7 @@ _noisy_plots = {
             },
             "convergence_plot_options": {"n_cols": 6},
         },
-        "noisy_ls": {
+        "noisy_benchmark": {
             "scenarios": [
                 "dfols_noisy_3",
                 "dfols_noisy_5",

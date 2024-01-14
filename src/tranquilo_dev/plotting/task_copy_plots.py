@@ -2,15 +2,15 @@ import shutil
 
 import pytask
 from tranquilo_dev.config import BLD
+from tranquilo_dev.config import OPTIONS
 from tranquilo_dev.config import PLOT_CONFIG
-from tranquilo_dev.config import PLOT_TYPES
 from tranquilo_dev.config import SRC
 
 PUBLIC = SRC / "slidev" / "public"
 
 PUBLICATION_PLOTS = [name for name in PLOT_CONFIG if "publication_" in name]
 
-for plot_type in PLOT_TYPES:
+for plot_type in OPTIONS.PLOT_TYPES:
 
     for plot_name in PUBLICATION_PLOTS:
 
