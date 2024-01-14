@@ -40,16 +40,16 @@ AXIS_LABELS = {
 X_RANGE_UPDATES = {
     "profile_plot": {
         "publication": {
-            "mr": {
+            "mw": {
                 "scalar_benchmark": (1, 50),
                 "ls_benchmark": (1, 40),
                 "parallel_benchmark": (1, 6),
-                "noisy_benchmark": (1, 50),
+                "noisy_benchmark": (1, 30),
                 "scalar_vs_ls_benchmark": (1, 50),
             },
         },
         "development": {
-            "mr": {
+            "mw": {
                 "competition_ls": (1,),
                 "competition_scalar": (1,),
                 "parallelization_ls": (1,),
@@ -59,7 +59,7 @@ X_RANGE_UPDATES = {
     },
     "deviation_plot": {
         "publication": {
-            "mr": {
+            "mw": {
                 "scalar_benchmark": (0, 300),
                 "ls_benchmark": (0, 400),
                 "parallel_benchmark": (0, 50),
