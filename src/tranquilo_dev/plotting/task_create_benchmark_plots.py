@@ -13,8 +13,10 @@ from tranquilo_dev.plotting.benchmark_plotting_functions import plot_benchmark
 
 
 # We store all figures used in the paper in a specific folder that is then copied
-# entirely to the tranquilo-paper repository.
+# entirely to the tranquilo-paper repository. Similarly, we do the same for the
+# presentation
 BLD_PAPER = BLD.joinpath("bld_paper")
+BLD_SLIDEV = BLD.joinpath("bld_slidev")
 
 ESTIMAGIC_PLOT_FUNCTIONS = {
     "profile_plot": profile_plot,
@@ -66,8 +68,8 @@ for plot_type in OPTIONS.PLOT_TYPES:
         if "publication_" in benchmark:
             _plot_name = benchmark.removeprefix("publication_")
             produces = [
-                BLD_PAPER / f"{plot_type}s" / f"{_plot_name}.{suffix}"
-                for suffix in ("pdf", "svg")
+                BLD_PAPER / f"{plot_type}s" / f"{_plot_name}.pdf",
+                BLD_SLIDEV / f"{plot_type}s" / f"{_plot_name}.svg",
             ]
         elif "development_" in benchmark:
             _plot_name = benchmark.removeprefix("development_")
