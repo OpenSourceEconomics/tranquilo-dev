@@ -16,8 +16,8 @@ run.
 
 """
 import socket
-from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 # ======================================================================================
 # Paths
@@ -31,8 +31,7 @@ PUBLIC = BLD.joinpath("public").resolve()
 # ======================================================================================
 # Global Options
 # ======================================================================================
-@dataclass
-class ProjectOptions:
+class ProjectOptions(NamedTuple):
     """This class contains the global options of the project.
 
     The options are:
@@ -90,7 +89,6 @@ class ProjectOptions:
 OPTIONS = ProjectOptions(
     PLOT_TYPES=("profile_plot",),
     PROBLEM_SETS=("more_wild",),
-    RUN_PUBLICATION_CASES=False,
 )
 
 

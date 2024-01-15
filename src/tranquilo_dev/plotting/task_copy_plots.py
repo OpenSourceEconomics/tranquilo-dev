@@ -22,10 +22,8 @@ DEST_FILES = []
 for plot_type in OPTIONS.PLOT_TYPES:
     for plot_name in PUBLICATION_PLOTS:
         _plot_name = plot_name.removeprefix("publication_")
-
-        SOURC_FILES.append(BLD / "bld_paper" / f"{plot_type}s" / f"{_plot_name}.svg")
-        DEST_FILES.append(PUBLIC / "bld_paper" / f"{plot_type}s" / f"{_plot_name}.svg")
-
+        SOURC_FILES.append(BLD / "bld_slidev" / f"{plot_type}s" / f"{_plot_name}.svg")
+        DEST_FILES.append(PUBLIC / "bld_slidev" / f"{plot_type}s" / f"{_plot_name}.svg")
 
 for plot_name in ILLUSTRATION_PLOT_NAMES:
     SOURC_FILES.append(BLD / "bld_slidev" / plot_name)
