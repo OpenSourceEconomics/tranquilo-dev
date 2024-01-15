@@ -90,6 +90,7 @@ class ProjectOptions:
 OPTIONS = ProjectOptions(
     PLOT_TYPES=("profile_plot",),
     PROBLEM_SETS=("more_wild",),
+    RUN_PUBLICATION_CASES=False,
 )
 
 
@@ -376,18 +377,6 @@ _noisy_plots = {
     # Development / Experimental cases
     # ==================================================================================
     "development": {
-        "noisy_scalar_benchmark": {
-            "scenarios": [
-                "tranquilo_default",
-                "tranquilo_experimental",
-                "nag_bobyqa_noisy_5",
-            ],
-            "profile_plot_options": {
-                "y_precision": OPTIONS.NOISY_Y_TOL,
-                "normalize_runtime": True,
-            },
-            "convergence_plot_options": {"n_cols": 6},
-        },
         "noisy_benchmark": {
             "scenarios": [
                 "dfols_noisy_3",
