@@ -13,7 +13,6 @@ import itertools
 
 import matplotlib
 import matplotlib.pyplot as plt
-from tranquilo_dev.config import LABELS
 
 
 # ======================================================================================
@@ -38,51 +37,89 @@ AXIS_LABELS = {
     },
 }
 
-X_RANGE = {
+X_RANGE_UPDATES = {
     "profile_plot": {
-        # Publication plots
-        "publication_scalar_benchmark": (1, 50),
-        "publication_ls_benchmark": (1, 40),
-        "publication_parallel_benchmark": (1, 6),
-        "publication_noisy_benchmark": (1, 50),
-        "publication_scalar_vs_ls_benchmark": (1, 50),
-        # Development plots
-        "development_competition_ls": (1,),
-        "development_competition_scalar": (1,),
-        "development_parallelization_ls": (1,),
-        "development_noisy_ls": (1,),
+        "publication": {
+            "mw": {
+                "scalar_benchmark": (1, 50),
+                "ls_benchmark": (1, 40),
+                "parallel_benchmark": (1, 6),
+                "noisy_benchmark": (1, 30),
+                "scalar_vs_ls_benchmark": (1, 50),
+            },
+        },
+        "development": {
+            "mw": {
+                "competition_ls": (1,),
+                "competition_scalar": (1,),
+                "parallelization_ls": (1,),
+                "noisy_ls": (1,),
+            }
+        },
     },
     "deviation_plot": {
-        # Publication plots
-        "publication_scalar_benchmark": (0, 300),
-        "publication_ls_benchmark": (0, 400),
-        "publication_parallel_benchmark": (0, 50),
-        "publication_noisy_benchmark": (0, 5000),
-        "publication_scalar_vs_ls_benchmark": (0, 500),
-        # Development plots
-        "development_competition_ls": (0,),
-        "development_competition_scalar": (0,),
-        "development_parallelization_ls": (0,),
-        "development_noisy_ls": (0,),
+        "publication": {
+            "mw": {
+                "scalar_benchmark": (0, 300),
+                "ls_benchmark": (0, 400),
+                "parallel_benchmark": (0, 50),
+                "noisy_benchmark": (0, 5000),
+                "scalar_vs_ls_benchmark": (0, 500),
+            }
+        },
     },
-    "convergence_plot": {
-        # Publication plots
-        "publication_scalar_benchmark": (0,),
-        "publication_ls_benchmark": (0,),
-        "publication_parallel_benchmark": (0,),
-        "publication_noisy_benchmark": (0,),
-        "publication_scalar_vs_ls_benchmark": (0,),
-        # Development plots
-        "development_competition_ls": (0,),
-        "development_competition_scalar": (0,),
-        "development_parallelization_ls": (0,),
-        "development_noisy_ls": (0,),
-    },
+    "convergence_plot": {},
 }
+
+
+def get_xrange(plot_type, development_or_publication, problem_name, plot_name):
+    default_xrange = {
+        "profile_plot": (1,),
+        "deviation_plot": (0,),
+        "convergence_plot": (0,),
+    }
+    return (
+        X_RANGE_UPDATES[plot_type]
+        .get(development_or_publication, {})
+        .get(problem_name, {})
+        .get(plot_name, default_xrange[plot_type])
+    )
+
 
 # Colors
 # ======================================================================================
+LABELS = {
+    # Tranquilo labels
+    "tranquilo": "Tranquilo-Scalar",
+    "tranquilo_default": "Tranquilo-Scalar",
+    "tranquilo_ls": "Tranquilo-LS",
+    "tranquilo_ls_default": "Tranquilo-LS",
+    "tranquilo_ls_parallel_2": "Tranquilo-LS (2 cores)",
+    "tranquilo_ls_parallel_4": "Tranquilo-LS (4 cores)",
+    "tranquilo_ls_parallel_8": "Tranquilo-LS (8 cores)",
+    "tranquilo_experimental": "Tranquilo-Scalar (Experimental)",
+    "tranquilo_ls_experimental": "Tranquilo-LS (Experimental)",
+    "tranquilo_ls_experimental_parallel_2": "Tranquilo-LS (Experimental, 2 cores)",
+    "tranquilo_ls_experimental_parallel_4": "Tranquilo-LS (Experimental, 4 cores)",
+    "tranquilo_ls_experimental_parallel_8": "Tranquilo-LS (Experimental, 8 cores)",
+    # DFO-LS labels
+    "dfols": "DFO-LS",
+    "dfols_noisy_3": "DFO-LS (3 evals)",
+    "dfols_noisy_5": "DFO-LS (5 evals)",
+    "dfols_noisy_10": "DFO-LS (10 evals)",
+    # Other labels
+    "nag_bobyqa": "NAG-BOBYQA",
+    "nag_bobyqa_noisy_5": "NAG-BOBYQA (5 evals)",
+    "nlopt_bobyqa": "NlOpt-BOBYQA",
+    "nlopt_neldermead": "NlOpt-Nelder-Mead",
+    "scipy_neldermead": "SciPy-Nelder-Mead",
+    "tao_pounders": "TAO-Pounders",
+    "pounders": "Pounders",
+}
 
+
+# Colors
+# ======================================================================================
 DARK_GRAY = "#534a46"
 
 TABLEAU_10_COLORS = {
@@ -143,112 +180,130 @@ NOISY_COLOR_UPDATES = {
     "DFO-LS (3 evals)": TABLEAU_10_COLORS["green-25"],
     "DFO-LS (5 evals)": TABLEAU_10_COLORS["green-50"],
     "DFO-LS (10 evals)": TABLEAU_10_COLORS["green-75"],
+    "NAG-BOBYQA (5 evals)": TABLEAU_10_COLORS["orange"],
 }
 
 COLORS = {
-    # Publication plots
-    "publication_scalar_benchmark": BASE_COLORS,
-    "publication_ls_benchmark": BASE_COLORS,
-    "publication_parallel_benchmark": {**BASE_COLORS, **PARALLEL_COLOR_UPDATES},
-    "publication_noisy_benchmark": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
-    "publication_scalar_vs_ls_benchmark": BASE_COLORS,
-    # Development plots
-    "development_competition_ls": BASE_COLORS,
-    "development_competition_scalar": BASE_COLORS,
-    "development_parallelization_ls": {**BASE_COLORS, **PARALLEL_COLOR_UPDATES},
-    "development_noisy_ls": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
+    "publication": {
+        "scalar_benchmark": BASE_COLORS,
+        "ls_benchmark": BASE_COLORS,
+        "parallel_benchmark": {**BASE_COLORS, **PARALLEL_COLOR_UPDATES},
+        "noisy_benchmark": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
+        "scalar_vs_ls_benchmark": BASE_COLORS,
+    },
+    "development": {
+        "scalar_benchmark": BASE_COLORS,
+        "ls_benchmark": BASE_COLORS,
+        "parallel_benchmark": {**BASE_COLORS, **PARALLEL_COLOR_UPDATES},
+        "noisy_benchmark": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
+        "noisy_scalar_benchmark": {**BASE_COLORS, **NOISY_COLOR_UPDATES},
+        "scalar_vs_ls_benchmark": BASE_COLORS,
+    },
 }
 
 # Line width
 # ======================================================================================
-DEFAULT_LINE_WIDTH = 1.5
-
 LINE_WIDTH_UPDATES = {
-    "publication_parallel_benchmark": {
-        "Tranquilo-LS (2 cores)": 1.6,
-        "Tranquilo-LS (4 cores)": 1.7,
-        "Tranquilo-LS (8 cores)": 1.8,
+    "publication": {
+        "parallel_benchmark": {
+            "Tranquilo-LS (2 cores)": 1.6,
+            "Tranquilo-LS (4 cores)": 1.7,
+            "Tranquilo-LS (8 cores)": 1.8,
+        },
+        "noisy_benchmark": {
+            "DFO-LS (5 evals)": 1.6,
+            "DFO-LS (10 evals)": 1.7,
+        },
     },
-    "publication_noisy_benchmark": {
-        "DFO-LS (5 evals)": 1.6,
-        "DFO-LS (10 evals)": 1.7,
-    },
-    "development_noisy_ls": {
-        "DFO-LS (5 evals)": 1.6,
-        "DFO-LS (10 evals)": 1.7,
-    },
-    "development_parallelization_ls": {
-        "Tranquilo-LS (Experimental, 2 cores)": 1.6,
-        "Tranquilo-LS (Experimental, 4 cores)": 1.7,
-        "Tranquilo-LS (Experimental, 8 cores)": 1.8,
+    "development": {
+        "noisy_ls": {
+            "DFO-LS (5 evals)": 1.6,
+            "DFO-LS (10 evals)": 1.7,
+        },
+        "parallelization_ls": {
+            "Tranquilo-LS (Experimental, 2 cores)": 1.6,
+            "Tranquilo-LS (Experimental, 4 cores)": 1.7,
+            "Tranquilo-LS (Experimental, 8 cores)": 1.8,
+        },
     },
 }
 
+
+def get_linewidth(development_or_publication, plot_name, algo_name):
+    default_line_width = 1.5
+    return (
+        LINE_WIDTH_UPDATES[development_or_publication]
+        .get(plot_name, {})
+        .get(algo_name, default_line_width)
+    )
+
+
 # Legend
 # ======================================================================================
-
 LEGEND_LABEL_ORDER = {
-    # Publication plots
-    "publication_scalar_benchmark": [
-        "Tranquilo-Scalar",
-        "NAG-BOBYQA",
-        "NlOpt-BOBYQA",
-        "NlOpt-Nelder-Mead",
-        "SciPy-Nelder-Mead",
-    ],
-    "publication_ls_benchmark": [
-        "Tranquilo-LS",
-        "DFO-LS",
-        "Pounders",
-    ],
-    "publication_parallel_benchmark": [
-        "Tranquilo-LS",
-        "Tranquilo-LS (2 cores)",
-        "Tranquilo-LS (4 cores)",
-        "Tranquilo-LS (8 cores)",
-        "DFO-LS",
-    ],
-    "publication_noisy_benchmark": [
-        "DFO-LS (3 evals)",
-        "DFO-LS (5 evals)",
-        "DFO-LS (10 evals)",
-        "Tranquilo-LS",
-    ],
-    "publication_scalar_vs_ls_benchmark": [
-        "Tranquilo-LS",
-        "DFO-LS",
-        "Pounders",
-        "Tranquilo-Scalar",
-        "NlOpt-BOBYQA",
-        "NlOpt-Nelder-Mead",
-    ],
-    # Development plots
-    "development_competition_ls": [
-        "Tranquilo-LS",
-        "Tranquilo-LS (Experimental)",
-        "DFO-LS",
-    ],
-    "development_competition_scalar": [
-        "Tranquilo-Scalar",
-        "Tranquilo-Scalar (Experimental)",
-        "NlOpt-BOBYQA",
-    ],
-    "development_parallelization_ls": [
-        "Tranquilo-LS (2 cores)",
-        "Tranquilo-LS (4 cores)",
-        "Tranquilo-LS (8 cores)",
-        "Tranquilo-LS (Experimental, 2 cores)",
-        "Tranquilo-LS (Experimental, 4 cores)",
-        "Tranquilo-LS (Experimental, 8 cores)",
-        "DFO-LS",
-    ],
-    "development_noisy_ls": [
-        "DFO-LS (3 evals)",
-        "DFO-LS (5 evals)",
-        "DFO-LS (10 evals)",
-        "Tranquilo-LS",
-        "Tranquilo-LS (Experimental)",
-    ],
+    "publication": {
+        "scalar_benchmark": [
+            "Tranquilo-Scalar",
+            "NAG-BOBYQA",
+            "NlOpt-BOBYQA",
+            "NlOpt-Nelder-Mead",
+            "SciPy-Nelder-Mead",
+        ],
+        "ls_benchmark": [
+            "Tranquilo-LS",
+            "DFO-LS",
+            "Pounders",
+        ],
+        "parallel_benchmark": [
+            "Tranquilo-LS",
+            "Tranquilo-LS (2 cores)",
+            "Tranquilo-LS (4 cores)",
+            "Tranquilo-LS (8 cores)",
+            "DFO-LS",
+        ],
+        "noisy_benchmark": [
+            "DFO-LS (3 evals)",
+            "DFO-LS (5 evals)",
+            "DFO-LS (10 evals)",
+            "Tranquilo-LS",
+        ],
+        "scalar_vs_ls_benchmark": [
+            "Tranquilo-LS",
+            "DFO-LS",
+            "Pounders",
+            "Tranquilo-Scalar",
+            "NlOpt-BOBYQA",
+            "NlOpt-Nelder-Mead",
+        ],
+    },
+    "development": {
+        "scalar_benchmark": [
+            "Tranquilo-Scalar",
+            "Tranquilo-Scalar (Experimental)",
+            "NlOpt-BOBYQA",
+        ],
+        "ls_benchmark": [
+            "Tranquilo-LS",
+            "Tranquilo-LS (Experimental)",
+            "DFO-LS",
+        ],
+        "parallel_benchmark": [
+            "Tranquilo-LS (2 cores)",
+            "Tranquilo-LS (4 cores)",
+            "Tranquilo-LS (8 cores)",
+            "Tranquilo-LS (Experimental, 2 cores)",
+            "Tranquilo-LS (Experimental, 4 cores)",
+            "Tranquilo-LS (Experimental, 8 cores)",
+            "DFO-LS",
+        ],
+        "noisy_benchmark": [
+            "DFO-LS (3 evals)",
+            "DFO-LS (5 evals)",
+            "DFO-LS (10 evals)",
+            "Tranquilo-LS",
+            "Tranquilo-LS (Experimental)",
+        ],
+    },
 }
 
 # Font
@@ -264,13 +319,13 @@ matplotlib.rcParams["font.family"] = "sans-serif"
 # ======================================================================================
 
 
-def plot_benchmark(data, plot, benchmark):
+def plot_benchmark(data, plot_type, benchmark):
     """Create the base matplotlib figure.
 
     Args:
         data (dict): Dictionary containing the data to plot. Keys represent a single
             line in the plot. The values are dictionaries with keys "x" and "y".
-        plot (str): Name of the plot to create. Must be in {"deviation_plot",
+        plot_type (str): Name of the plot to create. Must be in {"deviation_plot",
             "profile_plot", "convergence_plot"}.
         benchmark (str): Name of the benchmark.
 
@@ -278,8 +333,15 @@ def plot_benchmark(data, plot, benchmark):
         matplotlib.figure.Figure: The matplotlib figure.
 
     """
-    x_range = X_RANGE[plot][benchmark]
-    legend_label_order = LEGEND_LABEL_ORDER[benchmark]
+    dev_or_pub, problem_name, plot_name = _split_benchmark_id_in_components(benchmark)
+
+    x_range = get_xrange(
+        plot_type=plot_type,
+        development_or_publication=dev_or_pub,
+        problem_name=problem_name,
+        plot_name=plot_name,
+    )
+    legend_label_order = LEGEND_LABEL_ORDER.get(benchmark, None)
 
     # Update label names
     data = {LABELS[name]: line for name, line in data.items()}
@@ -288,13 +350,19 @@ def plot_benchmark(data, plot, benchmark):
     fig, ax = plt.subplots(
         figsize=(_cm_to_inch(FIGURE_WIDTH_IN_CM), _cm_to_inch(FIGURE_HEIGHT_IN_CM))
     )
-    for name, line in data.items():
-        lw = LINE_WIDTH_UPDATES.get(benchmark, {}).get(name, DEFAULT_LINE_WIDTH)
+    for algo_name, line in data.items():
+
+        lw = get_linewidth(
+            development_or_publication=dev_or_pub,
+            plot_name=plot_name,
+            algo_name=algo_name,
+        )
+
         ax.plot(
             line["x"],
             line["y"],
-            label=name,
-            color=COLORS[benchmark][name],
+            label=algo_name,
+            color=COLORS[dev_or_pub][plot_name][algo_name],
             linewidth=lw,
         )
 
@@ -320,12 +388,12 @@ def plot_benchmark(data, plot, benchmark):
     )
 
     # Update axes
-    ax.set_xlabel(AXIS_LABELS[plot]["xlabel"], color=DARK_GRAY)
-    ax.set_ylabel(AXIS_LABELS[plot]["ylabel"], color=DARK_GRAY)
+    ax.set_xlabel(AXIS_LABELS[plot_type]["xlabel"], color=DARK_GRAY)
+    ax.set_ylabel(AXIS_LABELS[plot_type]["ylabel"], color=DARK_GRAY)
     ax.xaxis.label.set_color(DARK_GRAY)
     ax.yaxis.label.set_color(DARK_GRAY)
     ax.set_xlim(*x_range)
-    if plot != "convergence_plot":
+    if plot_type != "convergence_plot":
         ax.set_ylim(0, 1)
 
     return fig
@@ -352,3 +420,24 @@ def _row_to_col_ordering(items, ncol):
 
     """
     return itertools.chain(*[items[i::ncol] for i in range(ncol)])
+
+
+def _split_benchmark_id_in_components(benchmark):
+    """Split the benchmark identifier into its components.
+
+    For noisy benchmark problems we remove the "_noisy" suffix of the problem set name,
+    because we treat noisy and regular problems as the same problem set.
+
+    Examples:
+    - publication_ls_benchmark_mw => (publication, ls_benchmark, mw)
+    - development_ls_benchmark_cr => (development, ls_benchmark, cr)
+    - development_noisy_benchmark_mw_noisy => (development, noisy_benchmark, mw)
+
+    """
+    development_or_publication, _other = benchmark.split("_", 1)
+    if _other.endswith("_noisy"):
+        plot_name, problem_name, _ = _other.rsplit("_", 2)
+    else:
+        plot_name, problem_name = _other.rsplit("_", 1)
+
+    return development_or_publication, problem_name, plot_name

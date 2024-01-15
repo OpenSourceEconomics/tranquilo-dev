@@ -4,17 +4,19 @@ from estimagic import convergence_plot
 from estimagic import profile_plot
 from estimagic.visualization.deviation_plot import deviation_plot
 from tranquilo_dev.benchmarks.benchmark_problems import get_extended_benchmark_problems
-from tranquilo_dev.config import BENCHMARK_PROBLEMS_INFO
 from tranquilo_dev.config import BLD
+from tranquilo_dev.config import get_benchmark_problem_info
+from tranquilo_dev.config import OPTIONS
 from tranquilo_dev.config import PLOT_CONFIG
-from tranquilo_dev.config import PLOT_TYPES
 from tranquilo_dev.config import PROBLEM_SETS
 from tranquilo_dev.plotting.benchmark_plotting_functions import plot_benchmark
 
 
 # We store all figures used in the paper in a specific folder that is then copied
-# entirely to the tranquilo-paper repository.
+# entirely to the tranquilo-paper repository. Similarly, we do the same for the
+# presentation
 BLD_PAPER = BLD.joinpath("bld_paper")
+BLD_SLIDEV = BLD.joinpath("bld_slidev")
 
 ESTIMAGIC_PLOT_FUNCTIONS = {
     "profile_plot": profile_plot,
@@ -26,7 +28,7 @@ ESTIMAGIC_PLOT_FUNCTIONS = {
 # Publication ready figures
 # ======================================================================================
 
-for plot_type in PLOT_TYPES:
+for plot_type in OPTIONS.PLOT_TYPES:
 
     plot_func = ESTIMAGIC_PLOT_FUNCTIONS[plot_type]
 
@@ -43,8 +45,9 @@ for plot_type in PLOT_TYPES:
             BLD.joinpath("benchmarks", f"{problem_name}_{scenario}.pkl")
             for scenario in info["scenarios"]
         ]
+        benchmark_info = get_benchmark_problem_info(problem_name)
         problems = get_extended_benchmark_problems(
-            benchmark_kwargs=PROBLEM_SETS[problem_name], **BENCHMARK_PROBLEMS_INFO
+            benchmark_kwargs=PROBLEM_SETS[problem_name], **benchmark_info
         )
 
         # Store variables in kwargs to pass to pytask
@@ -65,8 +68,8 @@ for plot_type in PLOT_TYPES:
         if "publication_" in benchmark:
             _plot_name = benchmark.removeprefix("publication_")
             produces = [
-                BLD_PAPER / f"{plot_type}s" / f"{_plot_name}.{suffix}"
-                for suffix in ("pdf", "svg")
+                BLD_PAPER / f"{plot_type}s" / f"{_plot_name}.pdf",
+                BLD_SLIDEV / f"{plot_type}s" / f"{_plot_name}.svg",
             ]
         elif "development_" in benchmark:
             _plot_name = benchmark.removeprefix("development_")
@@ -98,7 +101,7 @@ for plot_type in PLOT_TYPES:
 
             fig = plot_benchmark(
                 plotting_data,
-                plot=plot_type,
+                plot_type=plot_type,
                 benchmark=benchmark,
             )
 

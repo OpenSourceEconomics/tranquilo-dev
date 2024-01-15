@@ -44,9 +44,18 @@ dependencies:
     - blackcellmagic
     - kaleido
 
-    # local installations
+    # install this project locally
     - -e .
-    - -e ../estimagic
-    - -e ../dfols
-    - -e ../pybobyqa
+
+    # either install the most recent version of tranquilo from github, or clone the
+    # repository to the parent folder and install in editable mode
     - -e ../tranquilo
+    # - git+https://github.com/OpenSourceEconomics/tranquilo
+
+    # install most recent versions of estimagic
+    - git+https://github.com/OpenSourceEconomics/estimagic
+
+    # install altered version of dfols and pybobyqa that allows us to capture benchmark
+    # results
+    - git+https://github.com/mpetrosian/dfols
+    - git+https://github.com/mpetrosian/pybobyqa

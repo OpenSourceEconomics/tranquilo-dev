@@ -11,6 +11,8 @@ bld/
 src/tranquilo_dev/slidev/node_modules/
 src/tranquilo_dev/slidev/public/bld_paper/*
 src/tranquilo_dev/slidev/public/bld_paper/
+src/tranquilo_dev/slidev/public/bld_slidev/*
+src/tranquilo_dev/slidev/public/bld_slidev/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
