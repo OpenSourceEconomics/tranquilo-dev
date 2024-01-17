@@ -25,45 +25,109 @@ transition: slide-left
 css: unocss
 ---
 
-<p style="font-size: 3em;">Tranquilo</p>
+<p style="font-size: 2.5em;text-align:left;">Tranquilo</p>
 
-## A trustregion optimizer for economists by economists
+<p style="font-size: 1.15em;text-align:left;">An Optimizer for the Method of Simulated Moments</p>
 
-Janoś Gabler, University of Bonn
+<br>
 
-Sebastian Gsell, LMU Munich
+<p style="text-align:left">
 
-Tim Mensinger, University of Bonn
+Janoś Gabler*
 
-Mariam Petrosyan, University of Bonn
+Sebastian Gsell<sup>+</sup>
+
+<p style="color:#04539C;font-size:1.15em;"><b>Tim Mensinger*</b></p>
+
+Mariam Petrosyan*
+
+</p>
+
+<hr>
+<p style="text-align:left">
+*University of Bonn <span style="float:right;">BGSE Applied Microeconomics Workshop</span><br>
+<sup>+</sup>LMU Munich <span style="float:right;">January 19th 2024</span>
+</p>
+
+---
+layout:center
+---
+
+# Motivation
+
+<div style="display:flex;justify-content:center;align-items:center;height:25vh;">
+<img src="motivation/front_page.png" class="image" width="700" style="border: 2px solid black;"/>
+</div>
+
+
+
+---
+layout:center
+---
+
+<div style="display:flex;justify-content:center;align-items:center;height:25vh;">
+<img src="motivation/outline.png" class="image" width="700" style="border: 2px solid black;"/>
+</div>
+
+---
+layout:center
+---
+
+<div style="display:flex;justify-content:center;align-items:center;height:25vh;">
+<img src="motivation/model.png" class="image" width="700" style="border: 2px solid black;"/>
+</div>
+
+---
+layout:center
+---
+
+<div style="display:flex;justify-content:center;align-items:center;height:25vh;">
+<img src="motivation/parameter_example.png" class="image" width="700" style="border: 2px solid black;"/>
+</div>
+
+---
+layout:center
+---
+
+<div style="display:flex;justify-content:center;align-items:center;height:25vh;">
+<img src="motivation/estimation.png" class="image" width="700" style="border: 2px solid black;"/>
+</div>
+
 
 
 ---
 layout: center
 ---
 
-# Prototypical optimization problem
+# Prototypical problem
 
 
-- Discrete choice dynamic programming model
-- Fit simulated choices to data
-- Backwards induction is hard to parallelize
-- Simulated choices are noisy
-- 10 to 50 parameters
-- Each simulation run takes a few minutes
+- Example as before: discrete choice dynamic programming model
 
+- For each parameter $\theta$<br>1. Solve model (backwards induction)<br>2. Simulate from solved model ($\implies m(\theta)$)
+- Fit simulated choices to data (make $\|m(\theta) - m^{data}\|_W$ small)
+- *Problem:* Solution is slow and backwards induction is hard to parallelize<br>
+  (Single evaluation of $m(\theta)$ can take a few minutes)
+- *Problem:* Simulated choices are noisy<br>
+  ($m(\theta, seed=12345) \neq m(\theta, seed=54321)$)
+- *Constraint:* Derivative of $m(\theta)$ is not available
 
 ---
 layout: center
 ---
 
-# Goals for an optimizer
+# Goals for an Optimizer
 
 - Robust to noise
-- Parallel function evaluations
-- Suitable for data fitting problems
-- Designed for non-expert users
-- Assumption: Criterion function is expensive!
+
+- Parallel function evaluations<br>
+  ($m(\theta_1)$ and $m(\theta_2)$ can be evaluated at the same time)
+- Suitable for data fitting problems<br>
+  (Non-linear least squares)
+- Designed for non-expert users<br>
+  (Adaptive option handling)
+- **Key assumption:** Criterion function is expensive!<br>
+  Evaluating $m(\theta)$ takes at least a few seconds
 
 ---
 layout: center
@@ -102,16 +166,57 @@ $\text{min}_{l \leq x \leq u} \mathbb{E} F(x, \epsilon) = \mathbb{E} \sum_{i} f_
 layout: center
 ---
 
-# Existing optimizers
+# What do we need for MSM Problems?
+
+- Let $\bar{m}(\theta) = m(\theta) - m^{data}$
+
+- MSM objective function: $g(\theta) = \bar{m}(\theta)^\top W \bar{m}(\theta)$
+- Cholesky Decomposition: $W = L L^\top$
+- Define $r(\theta) = L^\top \bar{m}(\theta)$
+- $g(\theta) = r(\theta)^\top r(\theta) = \sum_j r_j(\theta)^2$<br>
+  $\implies g$ has a least-squares structure
+- And, in fact we want to erradicate simulation noise, i.e.<br>
+  $g^\ast(\theta) = \mathbb{E}\left[g(\theta)\right]$
+
+---
+layout: center
+---
+
+# Existing Optimizers
 
 |              | Nelder-Mead| Bobyqa     | PyBobyqa   |DFO-LS       |POUNDERS     | Parallel NM |
 |--------------|------------|------------|------------|-------------|-------------|-------------|
 | Library      | Nlopt      | Nlopt      | NAG        | NAG         | TAO         | (estimagic) |
-| Class        | simplex    | trustregion| trustregion| trustregion | trustregion | simplex     |
+| Class        | Simplex    | TR         | TR         | TR          | TR          | Simplex     |
 | Noisy        | (yes)      | no         | yes        | yes         | no          | (yes)       |
 | Parallel     | no         | no         | (yes)      | (yes)       | no          | yes         |
 | Least-squares| no         | no         | no         | yes         | yes         | no          |
 
+
+
+---
+layout: center
+---
+
+# How to Compare Optimizers
+
+- Benchmark set (Moré-Wild)
+
+- 52 least-squares problems with 2 to 12 parameters
+- Used in POUNDERS, PyBobyqa and DFO-LS papers
+- Differentiable (but we don't use derivatives)
+- **Visualize:** Performance profile plots
+  - Y-axis: Share of solved problems
+  - X-axis: Computational budget<br>
+    For each problem, budget is standardized by the cost of the best optimizer
+
+---
+layout: center
+---
+
+# Least-square vs. scalar
+
+<img src="bld_slidev/profile_plots/scalar_vs_ls_benchmark_mw.svg" class="rounded" width="700" />
 
 ---
 layout: fact
@@ -286,23 +391,7 @@ transition: fade
 layout: center
 ---
 
-# Benchmarking
-
-- Moré-Wild Benchmark set
-- 52 leasts-squares problems with 2 to 12 parameters
-- Used in POUNDERS, PyBobyqa and DFO-LS papers
-- Differentiable (but we don't use derivatives)
-- Profile plots
-  - Y-axis: share of solved problems
-  - X-axis: computational cost in function evaluations
-  - For each problem, cost is standardized by the cost of the best optimizer
-
-
----
-layout: center
----
-
-# Benchmark: Tranquilo vs. other optimizers
+# Tranquilo vs. other optimizers
 
 <img src="bld_slidev/profile_plots/scalar_vs_ls_benchmark_mw.svg" class="rounded" width="700" />
 
@@ -311,7 +400,7 @@ layout: center
 layout: fact
 ---
 
-<p style="font-size: 3em;">Parallel case</p>
+<p style="font-size: 3em;">Parallel Case</p>
 
 
 ---

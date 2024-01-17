@@ -3,7 +3,7 @@
     font-size: 1.25rem;
 
     h1 {
-        @apply text-5xl;
+        @apply text-4xl;
         position: absolute;
         top: 1em;
         left: 1em;

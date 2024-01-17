@@ -1,4 +1,4 @@
-name: tranquilo-dev
+name: tranquilo-pres
 
 channels:
   - conda-forge
@@ -49,7 +49,7 @@ dependencies:
 
     # either install the most recent version of tranquilo from github, or clone the
     # repository to the parent folder and install in editable mode
-    - -e ../tranquilo
+    - -e ../../tranquilo
     # - git+https://github.com/OpenSourceEconomics/tranquilo
 
     # install most recent versions of estimagic
