@@ -61,7 +61,7 @@ for batch_size in [2, 4, 8]:
                         n_cores=OPTIONS.n_cores,
                         max_criterion_evaluations=max_evals,  # noqa: B023
                         disable_convergence=False,
-                        error_handling="continue",
+                        error_handling="raise",
                     )
 
                     em.utilities.to_pickle(res, produces)
