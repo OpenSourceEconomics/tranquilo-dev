@@ -4,4 +4,5 @@ In this PR, I...
 
 > [!CAUTION]
 > ### Final Checks:
+> - [ ] Remove extra arguments from `OPTIONS = ProjectOptions()`
 > - [ ] Delete the `bld` folder and run `pytask`

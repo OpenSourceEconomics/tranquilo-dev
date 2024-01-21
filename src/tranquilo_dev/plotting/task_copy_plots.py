@@ -25,7 +25,6 @@ for plot_type in OPTIONS.PLOT_TYPES:
         SOURC_FILES.append(BLD / "bld_slidev" / f"{plot_type}s" / f"{_plot_name}.svg")
         DEST_FILES.append(PUBLIC / "bld_slidev" / f"{plot_type}s" / f"{_plot_name}.svg")
 
-
 for plot_name in ILLUSTRATION_PLOT_NAMES:
     SOURC_FILES.append(BLD / "bld_slidev" / plot_name)
     DEST_FILES.append(PUBLIC / "bld_slidev" / plot_name)

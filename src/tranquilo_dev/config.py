@@ -118,7 +118,7 @@ def get_benchmark_problem_info(problem_set):
             # Number of additional draws per problem that are used to generate more
             # problems. For each problems n_draws new start vectors are drawn in the
             # vicinity of the original start vector, each defining a new problem.
-            "n_additional_draws": 0,
+            "n_additional_draws": 4,
             # Random number generator seed used to control the random draws.
             "seed": 440219,
         },
@@ -375,18 +375,6 @@ _noisy_plots = {
     # Development / Experimental cases
     # ==================================================================================
     "development": {
-        "noisy_scalar_benchmark": {
-            "scenarios": [
-                "tranquilo_default",
-                "tranquilo_experimental",
-                "nag_bobyqa_noisy_5",
-            ],
-            "profile_plot_options": {
-                "y_precision": OPTIONS.NOISY_Y_TOL,
-                "normalize_runtime": True,
-            },
-            "convergence_plot_options": {"n_cols": 6},
-        },
         "noisy_benchmark": {
             "scenarios": [
                 "dfols_noisy_3",
