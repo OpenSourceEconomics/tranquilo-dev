@@ -41,10 +41,10 @@ X_RANGE_UPDATES = {
     "profile_plot": {
         "publication": {
             "mw": {
-                "scalar_benchmark": (1, 50),
-                "ls_benchmark": (1, 40),
+                "scalar_benchmark": (1, 25),
+                "ls_benchmark": (1, 25),
                 "parallel_benchmark": (1, 6),
-                "noisy_benchmark": (1, 30),
+                "noisy_benchmark": (1, 25),
                 "scalar_vs_ls_benchmark": (1, 50),
             },
         },
@@ -250,16 +250,16 @@ LEGEND_LABEL_ORDER = {
             "SciPy-Nelder-Mead",
         ],
         "ls_benchmark": [
-            "Tranquilo-LS",
             "DFO-LS",
+            "Tranquilo-LS",
             "Pounders",
         ],
         "parallel_benchmark": [
-            "Tranquilo-LS",
             "Tranquilo-LS (2 cores)",
             "Tranquilo-LS (4 cores)",
             "Tranquilo-LS (8 cores)",
             "DFO-LS",
+            "Tranquilo-LS",
         ],
         "noisy_benchmark": [
             "DFO-LS (3 evals)",
@@ -268,8 +268,8 @@ LEGEND_LABEL_ORDER = {
             "Tranquilo-LS",
         ],
         "scalar_vs_ls_benchmark": [
-            "Tranquilo-LS",
             "DFO-LS",
+            "Tranquilo-LS",
             "Pounders",
             "Tranquilo-Scalar",
             "NlOpt-BOBYQA",
@@ -341,7 +341,7 @@ def plot_benchmark(data, plot_type, benchmark):
         problem_name=problem_name,
         plot_name=plot_name,
     )
-    legend_label_order = LEGEND_LABEL_ORDER.get(benchmark, None)
+    legend_label_order = LEGEND_LABEL_ORDER[dev_or_pub].get(plot_name, None)
 
     # Update label names
     data = {LABELS[name]: line for name, line in data.items()}

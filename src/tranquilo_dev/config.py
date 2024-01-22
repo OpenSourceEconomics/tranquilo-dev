@@ -87,7 +87,7 @@ class ProjectOptions(NamedTuple):
 # Set development options HERE and not in the class above
 # ======================================================================================
 OPTIONS = ProjectOptions(
-    PLOT_TYPES=("profile_plot",),
+    PLOT_TYPES=("profile_plot", "deviation_plot"),
     PROBLEM_SETS=("more_wild",),
 )
 

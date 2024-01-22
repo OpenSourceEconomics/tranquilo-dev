@@ -21,7 +21,7 @@ COLORS = {
     "gray": "#b8b0ac",
 }
 
-PRODUCT = BLD / "bld_paper" / "optimal_sphere_samples.pdf"
+PRODUCT = BLD / "bld_paper" / "illustrations" / "optimal_sphere_samples.pdf"
 
 
 @pytask.mark.produces(PRODUCT)

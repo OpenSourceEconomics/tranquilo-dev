@@ -7,9 +7,15 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from tranquilo.visualize import _clean_legend_duplicates
 from tranquilo.visualize import _get_sample_points
+from tranquilo_dev.plotting.benchmark_plotting_functions import DARK_GRAY
+from tranquilo_dev.plotting.benchmark_plotting_functions import TABLEAU_10_COLORS
 
 
 def create_noise_plots():
+
+    HEIGHT = 500
+    WIDTH = 600
+
     out = []
 
     def func(x):
@@ -24,6 +30,7 @@ def create_noise_plots():
     noise_x_grid = np.linspace(-2, 1.5, 40)
     noise_y = rng.normal(loc=func(noise_x_grid), scale=1.5)
     fig = px.line(x=x_grid, y=y)
+    fig.update_traces(line_color=TABLEAU_10_COLORS["blue"])
     fig.data[0].name = "criterion function"
     fig.data[0].showlegend = True
     layout = go.Layout(
@@ -35,19 +42,19 @@ def create_noise_plots():
         )
     )
     fig.update_layout(layout)
-    fig.update_layout(height=500, width=600, template="plotly_white", showlegend=True)
+    fig.update_layout(height=HEIGHT, width=WIDTH, template="plotly_white")
     fig.update_yaxes(
         showgrid=False,
         showline=True,
         linewidth=1,
-        linecolor="black",
+        linecolor=DARK_GRAY,
         zeroline=False,
     )
     fig.update_xaxes(
         showgrid=False,
         showline=True,
         linewidth=1,
-        linecolor="black",
+        linecolor=DARK_GRAY,
         zeroline=False,
     )
     fig.update_layout(
@@ -68,7 +75,7 @@ def create_noise_plots():
             x=noise_x_grid,
             y=noise_y,
             mode="markers",
-            marker_color="rgb(0,0,255)",
+            marker_color=TABLEAU_10_COLORS["blue"],
             opacity=0.3,
             showlegend=False,
         )
@@ -100,18 +107,9 @@ def create_noise_plots():
                 x=xs,
                 y=ys,
                 mode="markers",
-                marker_color="rgb(0,0,255)",
+                marker_color=TABLEAU_10_COLORS["blue"],
                 showlegend=False,
                 opacity=0.3,
-            )
-        )
-        fig2.add_trace(
-            go.Scatter(
-                x=sample_xs,
-                y=sample_ys,
-                mode="markers",
-                marker_color="rgb(0,0,255)",
-                showlegend=False,
             )
         )
         fig2.add_trace(
@@ -120,12 +118,21 @@ def create_noise_plots():
                 y=model_ys,
                 mode="lines",
                 name="model",
-                line_color="#F98900",
+                line_color=TABLEAU_10_COLORS["orange"],
+            )
+        )
+        fig2.add_trace(
+            go.Scatter(
+                x=sample_xs,
+                y=sample_ys,
+                mode="markers",
+                marker_color=TABLEAU_10_COLORS["blue-35"],
+                showlegend=False,
             )
         )
         for x in trustregion:
-            fig2.add_vline(x=x, line_color="grey", line_width=1)
-        fig2.update_layout(width=600)
+            fig2.add_vline(x=x, line_color=DARK_GRAY, line_width=1)
+        fig2.update_layout(width=WIDTH)
 
         plotting_data.append(fig2.data)
         out.append(fig2)  # fig2.write_image(f'noise_plot_{i+2}.svg')
@@ -138,22 +145,29 @@ def create_noise_plots():
     fig3.update_layout(
         legend={"yanchor": "bottom", "y": -0.2, "xanchor": "center", "x": 0.5}
     )
-    fig3.update_layout(height=700, width=800, template="plotly_white")
+    fig3.update_layout(height=HEIGHT, width=1.8 * WIDTH, template="plotly_white")
     fig3.update_yaxes(
         showgrid=False,
         showline=True,
         linewidth=1,
-        linecolor="black",
+        linecolor=DARK_GRAY,
         zeroline=False,
     )
     fig3.update_xaxes(
         showgrid=False,
         showline=True,
         linewidth=1,
-        linecolor="black",
+        linecolor=DARK_GRAY,
         zeroline=False,
     )
     out.append(fig3)
+
+    # Remove axis titles for all plots
+    out = [fig.update_layout(yaxis_title="", xaxis_title="") for fig in out]
+    # Remove legend
+    out = [fig.update_layout(showlegend=False) for fig in out]
+    # Set y axis limits
+    out = [fig.update_layout(yaxis_range=[-5, 25]) for fig in out]
     return out
 
 
