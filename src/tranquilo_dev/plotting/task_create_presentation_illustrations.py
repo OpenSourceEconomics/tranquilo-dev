@@ -1,17 +1,29 @@
+import plotly.io as pio
 import pytask
 from tranquilo_dev.config import BLD
 from tranquilo_dev.plotting.illustrations import create_noise_plots
 from tranquilo_dev.plotting.illustrations import create_other_illustration_plots
 
+pio.kaleido.scope.mathjax = None
+
+
 BLD_SLIDEV = BLD.joinpath("bld_slidev")
+BLD_PAPER = BLD.joinpath("bld_paper")
 
 NOISE_PLOT_NAMES = [f"noise_plot_{k}.svg" for k in range(5)]
 
+NOISE_PLOT_PRODUCES = []
+for folder, suffix in ((BLD_SLIDEV, ".svg"), (BLD_PAPER / "illustrations", ".pdf")):
+    for name in NOISE_PLOT_NAMES:
+        NOISE_PLOT_PRODUCES.append(folder.joinpath(f"{name}").with_suffix(suffix))
 
-@pytask.mark.produces([BLD_SLIDEV.joinpath(name) for name in NOISE_PLOT_NAMES])
+
+@pytask.mark.produces(NOISE_PLOT_PRODUCES)
 def task_create_noise_plots(produces):
     figures = create_noise_plots()
-    for path, fig in zip(produces.values(), figures):
+    # loop over (*figures, *figures) to write the same figure twice for svg and pdf
+    for path, fig in zip(produces.values(), (*figures, *figures)):
+        pio.full_figure_for_development(fig, warn=False)
         fig.write_image(path)
 
 
