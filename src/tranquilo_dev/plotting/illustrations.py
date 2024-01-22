@@ -10,6 +10,10 @@ from tranquilo.visualize import _get_sample_points
 
 
 def create_noise_plots():
+
+    HEIGHT = 500
+    WIDTH = 600
+
     out = []
 
     def func(x):
@@ -35,7 +39,9 @@ def create_noise_plots():
         )
     )
     fig.update_layout(layout)
-    fig.update_layout(height=500, width=600, template="plotly_white", showlegend=True)
+    fig.update_layout(
+        height=HEIGHT, width=WIDTH, template="plotly_white", showlegend=True
+    )
     fig.update_yaxes(
         showgrid=False,
         showline=True,
@@ -125,7 +131,7 @@ def create_noise_plots():
         )
         for x in trustregion:
             fig2.add_vline(x=x, line_color="grey", line_width=1)
-        fig2.update_layout(width=600)
+        fig2.update_layout(width=WIDTH)
 
         plotting_data.append(fig2.data)
         out.append(fig2)  # fig2.write_image(f'noise_plot_{i+2}.svg')
@@ -138,7 +144,7 @@ def create_noise_plots():
     fig3.update_layout(
         legend={"yanchor": "bottom", "y": -0.2, "xanchor": "center", "x": 0.5}
     )
-    fig3.update_layout(height=700, width=800, template="plotly_white")
+    fig3.update_layout(height=HEIGHT, width=1.8 * WIDTH, template="plotly_white")
     fig3.update_yaxes(
         showgrid=False,
         showline=True,
@@ -154,6 +160,11 @@ def create_noise_plots():
         zeroline=False,
     )
     out.append(fig3)
+
+    # Remove axis titles for all plots
+    out = [fig.update_layout(yaxis_title="", xaxis_title="") for fig in out]
+    # Remove legend
+    out = [fig.update_layout(showlegend=False) for fig in out]
     return out
 
 
