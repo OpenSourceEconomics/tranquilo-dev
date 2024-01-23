@@ -32,17 +32,22 @@ dependencies:
   - pytask<0.4
   - black
   - nb_black
-  - pre-commit
   - pdbpp
+  - pre-commit
+  - pytask >=0.2.3
   - pytest
   - pytest-cov
   - pytest-xdist
+  - sphinx
+  - setuptools_scm
+  - toml
   # Misc End
 
   - pip:
     - black
     - blackcellmagic
     - kaleido
+    - snakemd
 
     # install this project locally
     - -e .

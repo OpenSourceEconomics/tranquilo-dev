@@ -14,6 +14,11 @@ src/tranquilo_dev/slidev/public/bld_paper/
 src/tranquilo_dev/slidev/public/bld_slidev/*
 src/tranquilo_dev/slidev/public/bld_slidev/
 
+# docs
+docs/source/bld/*
+docs/source/_static/bld/*
+docs/source/index.md
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

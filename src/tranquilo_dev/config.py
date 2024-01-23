@@ -27,6 +27,10 @@ ROOT = SRC.joinpath("..", "..").resolve()
 BLD = ROOT.joinpath("bld").resolve()
 PUBLIC = BLD.joinpath("public").resolve()
 
+SPHINX = ROOT.joinpath("docs/source/").resolve()
+SPHINX_PAGES_BLD = SPHINX.joinpath("bld").resolve()
+SPHINX_STATIC_BLD = SPHINX.joinpath("_static/bld").resolve()
+
 
 # ======================================================================================
 # Global Options
