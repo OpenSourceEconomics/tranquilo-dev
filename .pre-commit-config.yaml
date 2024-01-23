@@ -59,7 +59,7 @@ repos:
             pydocstyle,
             Pygments,
         ]
-        args: [--ignore, "N806, D404, D100, D103"]
+        args: [--ignore, "N806, D404, D100, D103, E800", --docstring-convention, "google"]
 -   repo: https://github.com/guilatrova/tryceratops
     rev: v1.0.1
     hooks:
@@ -69,6 +69,7 @@ repos:
     hooks:
     -   id: codespell
         args: [--skip, "*.html,*ipynb,*.bib,paper/"]
+
 -   repo: https://github.com/executablebooks/mdformat
     rev: 0.7.14
     hooks:

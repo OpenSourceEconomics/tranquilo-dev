@@ -5,6 +5,14 @@
 
 # bld
 bld/*
+bld/
+
+# slidev
+src/tranquilo_dev/slidev/node_modules/
+src/tranquilo_dev/slidev/public/bld_paper/*
+src/tranquilo_dev/slidev/public/bld_paper/
+src/tranquilo_dev/slidev/public/bld_slidev/*
+src/tranquilo_dev/slidev/public/bld_slidev/
 
 # docs
 docs/source/bld/*
@@ -18,6 +26,26 @@ __pycache__/
 
 # C extensions
 *.so
+
+# latex
+*.synctex(busy)
+*.toc
+*-blx.bib
+*.dvi
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.run.xml
+*.synctex.gz
+*.loc
+*.pdf
+*.soc
+*.upa
+*.upb
 
 # Distribution / packaging
 .Python
@@ -168,3 +196,8 @@ _version.py
 pdfs
 
 sandbox/
+
+
+_bld/
+
+Untitled.ipynb
