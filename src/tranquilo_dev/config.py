@@ -89,6 +89,7 @@ class ProjectOptions(NamedTuple):
 OPTIONS = ProjectOptions(
     PLOT_TYPES=("profile_plot",),
     PROBLEM_SETS=("more_wild",),
+    RUN_DEVELOPMENT_CASES=False,
 )
 
 
